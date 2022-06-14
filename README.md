@@ -1,5 +1,4 @@
 # DR!FT Community API & Racing Server #
-[English Manual](README_EN.md)
  
 * [Was ist das hier?](#einleitung)
 * [kleine Anpassung vor der Installation](#konfiguration)
@@ -8,7 +7,7 @@
 * [Wie bediene ich das?](#bedienung)
 * [Typische Fehler und wie man sie hoffentlich behebt](#fehler-und-lösungen)
 * [DR!FT Community API](#drift-community-api)
-* [OnlineDB Version] (#onlineDB)
+* [OnlineDB Version](#onlineDB)
 
 
 # Einleitung
