@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     # Database
     driftapi_path: str = "http://localhost:8000"
     hostname:str = gethostname()
-    ip_address:str = "192.168.178.73"   # always set your local IP-Address here! (Windows cmd: ipconfig / Linux shell: ifconfig )
+    ip_address:str = "xxx.yyy.zzz.xyz"   # always set your local IP-Address here! (Windows cmd: ipconfig / Linux shell: ifconfig )
 
     class Config:
         env_prefix = "STREAMLIT_"
