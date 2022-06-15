@@ -15,6 +15,8 @@ from ..database import (
     get_playerstatus,
     delete_player,
     delete_players,
+    delete_player_from_stage,
+    delete_players_from_stage,
     start_stage,
     ping_game,
     insert_raceevent,	
@@ -144,6 +146,11 @@ if settings.enable_racedisplay:
         res = await delete_players(lobby_id, game_id, stage_id)
         return res
 
+    @router.get("/manage_game/reset_stage/{lobby_id}/{game_id}/{stage_id}", status_code=200, tags=["racingserver_api"])
+    async def reset_stage(lobby_id: str, game_id:str, stage_id:int):
+        res = await delete_players_from_stage(lobby_id, game_id, stage_id)
+        return res
+
     @router.get("/manage_game/start_stage/{lobby_id}/{game_id}/{stage_id}", status_code=200, tags=["racingserver_api"])
     async def start_stage_game(lobby_id: str, game_id:str, stage_id:int):
         res = await start_stage(lobby_id, game_id, stage_id)
@@ -152,6 +159,11 @@ if settings.enable_racedisplay:
     @router.delete("/manage_game/reset_player/{lobby_id}/{game_id}/{user_name}", status_code=200, tags=["racingserver_api"])
     async def reset_player(lobby_id: str, game_id:str, user_name:str):
         res = await delete_player(lobby_id, game_id, user_name)
+        return
+
+    @router.delete("/manage_game/reset_player_from_stage/{lobby_id}/{game_id}/{stage_id}/{user_name}", status_code=200, tags=["racingserver_api"])
+    async def reset_player_from_stage(lobby_id: str, game_id:str, stage_id:int, user_name:str):
+        res = await delete_player_from_stage(lobby_id, game_id, stage_id, user_name)
         return
 
     @router.get("/manage_game/get/{lobby_id}/{game_id}/{stage_id}/", status_code=200, tags=["racingserver_api"])
