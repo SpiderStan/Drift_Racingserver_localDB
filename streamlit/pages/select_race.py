@@ -5,6 +5,9 @@ from .singletons import settings, logger
 
 def app():
 
+    st.session_state.new_stage_event = False
+    st.session_state.new_game = False
+
     lobby_id = st.session_state.lobby_id        
     game_id = None
 
@@ -21,11 +24,10 @@ def app():
                     st.session_state.game_id = game_id
                     st.session_state.stage_id = 1
                     game = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/get/{lobby_id}/{game_id}/{stage_id}/")
+                    st.session_state.num_stages = game["num_stages"]
                     if(game["num_stages"] == 1):
-                        st.session_state.num_stages = 1
                         st.session_state.nextpage = "racedisplay"
                     else:
-                        st.session_state.num_stages = game["num_stages"]
                         st.session_state.nextpage = "stage_racedisplay"   
                     st.experimental_rerun()
     else:

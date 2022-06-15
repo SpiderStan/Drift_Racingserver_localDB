@@ -365,7 +365,9 @@ def app():
 #    hostname = socket.gethostname()
 #    ip_address = socket.gethostbyname(hostname)
     
-    st.write("Game Statistics of Game " + str(game_id) + " from Lobby " + str(lobby_id))
+    st.header("Game Statistics of Game " + str(game_id) + " from Lobby " + str(lobby_id))
+
+    next_race = st.empty()
 
     game = getGameInfo(lobby_id, game_id, stage_id)
 
@@ -411,6 +413,7 @@ def app():
     with col4:
         if st.button(f"Reset Game {st.session_state.reset_emoji}"):
             result = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/reset/{lobby_id}/{game_id}/{stage_id}")
+            st.session_state.new_game = False
             st.experimental_rerun()
 
     with col5:
@@ -423,6 +426,22 @@ def app():
             st.experimental_rerun()
  
     while True:
+
+        # getting the info from one stage only is ok, since all stages have the same start_time
+        game = getGameInfo(lobby_id, game_id, stage_id)
+        
+        if(game["start_time"] != None):
+            current_time = datetime.now().astimezone(timezone.utc)
+            if (st.session_state.new_game == True):
+                start_time = datetime.strptime(game["start_time"],'%Y-%m-%dT%H:%M:%S%z')
+            else:
+                start_time = datetime.strptime(game["start_time"],'%Y-%m-%d %H:%M:%S.%f%z')
+            time_delay = start_time - current_time
+            if(current_time <= start_time):
+                next_race.text("Game starts in approx. " + str(time_delay))
+            else:
+                next_race.text("Time elapsed! Please press Button 'Reset Game' and Sync. in Sturmkind App before entering the Game")
+
         with scoreboard.container():
         
             scoreboard_data = getScoreBoard(lobby_id, game_id, stage_id)

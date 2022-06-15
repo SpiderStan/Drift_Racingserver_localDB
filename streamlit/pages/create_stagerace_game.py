@@ -220,6 +220,7 @@ def app():
 
 # enbale new stage game racedisplay
             st.session_state.nextpage = "stage_racedisplay"
+            st.session_state.new_stage_event = True
             st.session_state.game_id = game_id
             st.session_state.stage_id = 1
             st.session_state.num_stages = num_stages

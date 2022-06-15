@@ -4,10 +4,13 @@ from  .session import fetch_post, fetch_put, fetch_get, fetch_delete
 from .singletons import settings
 
 def app():
-  
+
+    st.session_state.new_stage_event = False
+    st.session_state.new_game = False
+    
     lobby_id = st.session_state.lobby_id        
 
-    st.write("You are currently in Lobby " + str(lobby_id))
+    st.header("You are currently in Lobby " + str(lobby_id))
 
     if 'game_id' in st.session_state:
         del st.session_state.game_id

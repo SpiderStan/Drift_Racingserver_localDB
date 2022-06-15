@@ -25,7 +25,7 @@ def app():
 
     lobby_id = st.session_state.lobby_id        
 
-    st.write("Create new Race Game in Lobby " + str(lobby_id))
+    st.header("Create new Race Game in Lobby " + str(lobby_id))
         
     with st.form("my_form", clear_on_submit=True):
         gameOptions = {}
@@ -163,6 +163,7 @@ def app():
                     #st.write(result)
 
                 st.session_state.nextpage = "racedisplay"
+                st.session_state.new_game = True
                 st.session_state.game_id = game_id
                 st.session_state.stage_id = stage_id
                 st.session_state.num_stages = num_stages

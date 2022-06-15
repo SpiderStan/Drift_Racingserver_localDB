@@ -20,10 +20,10 @@ def app():
     with st.form("my_form"):
         result = fetch_get(f"{settings.driftapi_path}/driftapi/game/{lobby_id}/{game_id}/{stage_id}/playerstatus")
         result = [r["user_name"] for r in result if (type(r) is dict) and ("user_name" in r.keys())]
-        player_id = st.selectbox(label="Choose Player", options=result)
+        user_name = st.selectbox(label="Choose Player", options=result)
 
         if st.form_submit_button(f"Delete Selected {st.session_state.remove_emoji}"):
-            result = fetch_delete(f"{settings.driftapi_path}/driftapi/manage_game/reset_player/{lobby_id}/{game_id}/{player_id}")
+            result = fetch_delete(f"{settings.driftapi_path}/driftapi/manage_game/reset_player/{lobby_id}/{game_id}/{user_name}")
             game = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/get/{lobby_id}/{game_id}/{stage_id}/")
             if(game["num_stages"] == 1):
                 st.session_state.num_stages = 1
