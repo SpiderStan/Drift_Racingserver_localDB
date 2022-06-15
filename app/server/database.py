@@ -201,6 +201,13 @@ async def delete_player(lobby_id: str, game_id: str, user_name:str):
         await driftapi_playerstatus_collection.delete_one({"lobby_id":lobby_id, "game_id":game_id, "user_name":user_name})
     return True
 
+# Delete a user from a specific game and stage from the user_database
+async def delete_player_from_stage(lobby_id: str, game_id: str, stage_id: int, user_name:str):
+    player = await driftapi_playerstatus_collection.find_one({"lobby_id":lobby_id, "game_id":game_id, "stage_id":stage_id, "user_name":user_name})
+    if player:
+        await driftapi_playerstatus_collection.delete_one({"lobby_id":lobby_id, "game_id":game_id, "stage_id":stage_id, "user_name":user_name})
+    return True
+
 # Delete all users from a specific game from the user_database (also include all stages if multiple) 
 async def delete_players(lobby_id: str, game_id: str, stage_id: int):
     async for player in driftapi_playerstatus_collection.find({"lobby_id":lobby_id, "game_id":game_id}):
@@ -241,7 +248,13 @@ async def delete_players(lobby_id: str, game_id: str, stage_id: int):
             updated_game = await driftapi_game_collection.update_one({"lobby_id":lobby_id, "game_id":game_id, "stage_id":stage_id},{"$set":game_data})
 
     return True
-    
+   
+# Delete all users from a specific stage of a stage game from the user_database
+async def delete_players_from_stage(lobby_id: str, game_id: str, stage_id: int):
+    async for player in driftapi_playerstatus_collection.find({"lobby_id":lobby_id, "game_id":game_id, "stage_id":stage_id}):
+        await driftapi_playerstatus_collection.delete_one({"lobby_id":lobby_id, "game_id":game_id, "stage_id":stage_id})
+    return True
+       
 # Set the starting lights in 2 minutes (also include all stages if multiple) 
 async def start_stage(lobby_id: str, game_id: str, stage_id: int):
     game = await driftapi_game_collection.find_one({"lobby_id":lobby_id, "game_id":game_id})
