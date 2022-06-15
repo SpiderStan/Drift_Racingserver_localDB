@@ -385,7 +385,7 @@ def app():
     with st.expander(f"Game Settings {st.session_state.show_game_emoji}", expanded = False):
         st.write(game)
 
-    with st.expander(f"Connection info {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(settings.ip_address)+":8001/game/driftapi/"+str(lobby_id)+"/"+str(stage_id)+"/ and GAME ID: "+str(game_id), expanded=False):
+    with st.expander(f"Connection info {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(settings.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+"/ and GAME ID: "+str(game_id), expanded=False):
         submitUri:str = "http://"+str(settings.ip_address)+":8001/game/driftapi/"+str(lobby_id)+"/"+str(stage_id)+"/"
         st.image(getqrcode(submitUri), clamp=True)
         st.write("URL: "+submitUri)

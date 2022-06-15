@@ -379,7 +379,7 @@ def app():
             st.session_state.nextpage = "main_page"
             st.experimental_rerun()
         if game:
-            st.write("Game Statistics of Sage " + str(x+1) + " - " + str(game["game_mode"]) + " - Join the game via URL: http://"+str(settings.ip_address)+":8001/game/driftapi/"+str(lobby_id)+"/"+str(x+1)+" and GAME ID: "+str(game_id))
+            st.write("Game Statistics of Sage " + str(x+1) + " - " + str(game["game_mode"]) + " - Join the game via URL: http://"+str(settings.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(x+1)+" and GAME ID: "+str(game_id))
             scoreboard.append(st.empty())
             if "joker_lap_code" in game:
                 joker_lap_code[x] = game["joker_lap_code"]   
@@ -388,7 +388,7 @@ def app():
 #    with st.expander(f"Game Settings {st.session_state.show_game_emoji}", expanded = False):
 #        st.write(game)
 #
-#    with st.expander(f"Connection info {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(settings.ip_address)+":8001/game/driftapi/"+str(lobby_id)+"/"+str(stage_id)+"/ and GAME ID: "+str(game_id), expanded=False):
+#    with st.expander(f"Connection info {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(settings.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+"/ and GAME ID: "+str(game_id), expanded=False):
 #        submitUri:str = "http://"+str(settings.ip_address)+":8001/game/driftapi/"+str(lobby_id)+"/"+str(stage_id)+"/"
 #        st.image(getqrcode(submitUri), clamp=True)
 #        st.write("URL: "+submitUri)
