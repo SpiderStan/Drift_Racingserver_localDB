@@ -399,16 +399,16 @@ def app():
                 game_track_images_set = True
                 track_image = st.image(track_image_upload, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
                 game_track_images = track_image_upload # store in session state
-            elif(game_track_images_set == True): # track image existing
-                if(track_image_upload != None): # user has supplied a new track image
-                    game_track_images_set = True
-                    track_image = st.image(track_image_upload, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
-                    game_track_images = track_image_upload # store in session state
-                else:
-                    track_image = st.image(game_track_images, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Prev. Uploaded Track Image
-            if st.button(f"Remove Image {st.session_state.remove_emoji}", key=None):
-                track_image.empty()
-                game_track_images_set = False
+        elif(game_track_images_set == True): # track image existing
+            if(track_image_upload != None): # user has supplied a new track image
+                game_track_images_set = True
+                track_image = st.image(track_image_upload, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
+                game_track_images = track_image_upload # store in session state
+            else:
+                track_image = st.image(game_track_images, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Prev. Uploaded Track Image
+        if st.button(f"Remove Image {st.session_state.remove_emoji}", key=None):
+            track_image.empty()
+            game_track_images_set = False
 
     with st.expander(f"Connection info {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(settings.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+"/ and GAME ID: "+str(game_id), expanded=False):
         submitUri:str = "http://"+str(settings.ip_address)+":8001/game/driftapi/"+str(lobby_id)+"/"+str(stage_id)+"/"
@@ -428,6 +428,8 @@ def app():
     with col2:
         if st.button(f"Remove Player {st.session_state.remove_emoji}"):
             st.session_state.nextpage = "remove_player_from_race"
+            st.session_state.game_track_images_set = game_track_images_set
+            st.session_state.game_track_images = game_track_images
             st.experimental_rerun()
 
     with col3:
@@ -439,6 +441,8 @@ def app():
     with col4:
         if st.button(f"Download Data {st.session_state.download_emoji}"):
             st.session_state.nextpage = "download_race"
+            st.session_state.game_track_images_set = game_track_images_set
+            st.session_state.game_track_images = game_track_images
             st.experimental_rerun()
 
     with col5:
