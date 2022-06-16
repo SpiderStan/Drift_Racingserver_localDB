@@ -167,6 +167,8 @@ def app():
                 st.session_state.game_id = game_id
                 st.session_state.stage_id = stage_id
                 st.session_state.num_stages = num_stages
+                st.session_state.game_track_images_set = False
+                st.session_state.game_track_images = None
                 st.experimental_rerun()
 
     if st.button(f"Back to Main Menu {st.session_state.back_emoji}"):

@@ -26,8 +26,12 @@ def app():
                     game = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/get/{lobby_id}/{game_id}/{stage_id}/")
                     st.session_state.num_stages = game["num_stages"]
                     if(game["num_stages"] == 1):
+                        st.session_state.game_track_images_set = False
+                        st.session_state.game_track_images = None
                         st.session_state.nextpage = "racedisplay"
                     else:
+                        st.session_state.stage_track_images_set = [False,False,False,False,False,False,False,False,False,False]
+                        st.session_state.stage_track_images = [None,None,None,None,None,None,None,None,None,None]
                         st.session_state.nextpage = "stage_racedisplay"   
                     st.experimental_rerun()
     else:

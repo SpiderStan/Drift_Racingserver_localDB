@@ -362,6 +362,9 @@ def app():
     stage_id = st.session_state.stage_id
     num_stages = st.session_state.num_stages
     
+    stage_track_images_set = st.session_state.stage_track_images_set
+    stage_track_images = st.session_state.stage_track_images
+
 #    hostname = socket.gethostname()
 #    ip_address = socket.gethostbyname(hostname)
     
@@ -370,6 +373,8 @@ def app():
     games = []
     joker_lap_code = [None,None,None,None,None,None,None,None,None,None]
     scoreboard = []
+    track_image_upload = []
+    track_image = []
     
     next_race = st.empty()
     
@@ -381,13 +386,36 @@ def app():
             st.session_state.nextpage = "main_page"
             st.experimental_rerun()
         if game:
-#            st.write("Game Statistics of Sage " + str(x+1) + " - " + str(game["game_mode"]) + " - Join the game via URL: http://"+str(settings.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(x+1)+" and GAME ID: "+str(game_id) + "   " + str(game["track_id"]))
             with st.expander(f"Game Statistics of Sage " + str(x+1) + " - " + str(game["game_mode"]) + " - Join the game via URL: http://"+str(settings.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(x+1)+" and GAME ID: "+str(game_id) + "   " + str(game["track_id"]) +  f"{st.session_state.show_game_emoji}", expanded = False):
                 st.write(game)
+
+                track_image.append(st.empty())
+
+                track_image_upload.append(st.file_uploader("Here you can upload the track layout", type=['png', 'jpg'], accept_multiple_files=False, key="The track layout upload of " + str(x+1), help=None, on_change=None, args=None, kwargs=None, disabled=False))
+
+                if(stage_track_images_set[x] == False): # no track image upload so far
+                    if(track_image_upload[x] != None): # user has supplied a track image
+                        stage_track_images_set[x] = True
+                        track_image[x] = st.image(track_image_upload[x], caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
+                        stage_track_images[x] = track_image_upload[x] # store in session state
+                elif(stage_track_images_set[x] == True): # track image existing
+                    if(track_image_upload[x] != None): # user has supplied a new track image
+                        stage_track_images_set[x] = True
+                        track_image[x] = st.image(track_image_upload[x], caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
+                        stage_track_images[x] = track_image_upload[x] # store in session state
+                    else:
+                        track_image[x] = st.image(stage_track_images[x], caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Prev. Uploaded Track Image
+                if st.button(f"Remove Image {st.session_state.remove_emoji}", key="Remove Image "+str(x+1)):
+                    track_image[x].empty()
+                    stage_track_images_set[x] = False
+
             scoreboard.append(st.empty())
             if "joker_lap_code" in game:
                 joker_lap_code[x] = game["joker_lap_code"]   
         games.append(game)
+
+#placeholder= st.image('loading4.gif')
+#placeholder.empty()
 
 #    with st.expander(f"Connection info {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(settings.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+"/ and GAME ID: "+str(game_id), expanded=False):
 #        submitUri:str = "http://"+str(settings.ip_address)+":8001/game/driftapi/"+str(lobby_id)+"/"+str(stage_id)+"/"
@@ -400,6 +428,8 @@ def app():
     with col1:
         if st.button(f"Back to Menu {st.session_state.back_emoji}"):
             st.session_state.nextpage = "main_page"
+            st.session_state.stage_track_images_set = [False,False,False,False,False,False,False,False,False,False]
+            st.session_state.stage_track_images = [None,None,None,None,None,None,None,None,None,None]
             st.experimental_rerun()
 
     with col2:
@@ -441,6 +471,8 @@ def app():
             st.session_state.stage_id = 1
             st.session_state.num_stages = 1
             st.session_state.nextpage = "main_page"
+            st.session_state.stage_track_images_set = [False,False,False,False,False,False,False,False,False,False]
+            st.session_state.stage_track_images = [None,None,None,None,None,None,None,None,None,None]
             st.experimental_rerun()
  
     while True:
