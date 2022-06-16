@@ -393,7 +393,7 @@ def app():
                     elif( (r["enter_data"]["wheels"] == "gravel_tires" ) ):
                         d["Reifen"] = "RALLY"
                     else:
-                        d["Reifen"] = "STRASSE"
+                        d["Reifen"] = "STRAßE"
                 else:
                     d["Reifen"] = "-"
                         
@@ -681,18 +681,18 @@ def app():
                 for x in range(len(shortest_distance_list)):
                     if x in min_shortest_distance_list_indices_list:
                         if( (shortest_distance_list[x] != "9999km 999m") ):
-                            scoreboard_data[x]["Kuerzeste Strecke"] = f"{st.session_state.award_bonus_emoji}"
+                            scoreboard_data[x]["Kürzeste Strecke"] = f"{st.session_state.award_bonus_emoji}"
                         else:
-                            scoreboard_data[x]["Kuerzeste Strecke"] = "-"
+                            scoreboard_data[x]["Kürzeste Strecke"] = "-"
                     else:
-                        scoreboard_data[x]["Kuerzeste Strecke"] = "-"
+                        scoreboard_data[x]["Kürzeste Strecke"] = "-"
 
 
             df = pd.DataFrame( scoreboard_data )
 
             st.download_button(
                 f"Press to Download as csv {st.session_state.download_emoji}",
-                df.to_csv(index = False),
+                df.to_csv(index = False).encode('utf-8'),
                 game_id+".csv",
                 "text/csv",
                 key='download-csv'
