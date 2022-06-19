@@ -104,7 +104,8 @@ def app():
 
                 sectors = "Sektoren von " + str(user_name) + ":"
                 rounds = "Runden von " + str(user_name) + ":"
-
+                targets = "Targets von " + str(user_name) + ":"
+                
                 d = { } # new dict
 
                 next_section_condition = section_condition
@@ -182,7 +183,7 @@ def app():
                         section_distance = r["target_data"]["driven_distance"] - last_driven_distance
                         section_time = r["target_data"]["driven_time"] - last_driven_time
 
-                        d["Target:"] = f"{st.session_state.distance_emoji}: " + showDistance(section_distance) + f" {st.session_state.time_emoji}:  " + showTime(section_time) + f" {st.session_state.average_speed_emoji}: Ø " + showMeanSpeed(section_distance,section_time) + " - " + gymkhana_target + " Punkte: " + str(r["target_data"]["score"])
+                        d[targets] = f"{st.session_state.distance_emoji}: " + showDistance(section_distance) + f" {st.session_state.time_emoji}:  " + showTime(section_time) + f" {st.session_state.average_speed_emoji}: Ø " + showMeanSpeed(section_distance,section_time) + " - " + gymkhana_target + " Punkte: " + str(r["target_data"]["score"])
 
                 return (d,last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,next_section_condition)
 
