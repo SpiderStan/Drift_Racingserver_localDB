@@ -18,10 +18,10 @@ def app():
         del st.session_state.stage_id
     if 'num_stages' in st.session_state:
         del st.session_state.num_stages
-    if 'stage_track_images_set' in st.session_state:
-        del st.session_state.stage_track_images_set
-    if 'stage_track_images' in st.session_state:
-        del st.session_state.stage_track_images
+    if 'game_track_images_set' in st.session_state:
+        del st.session_state.game_track_images_set
+    if 'game_track_images' in st.session_state:
+        del st.session_state.game_track_images
     if 'game_track_images_set' in st.session_state:
         del st.session_state.game_track_images_set
     if 'game_track_images' in st.session_state:

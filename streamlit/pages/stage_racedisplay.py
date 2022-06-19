@@ -361,9 +361,9 @@ def app():
     game_id = st.session_state.game_id
     stage_id = st.session_state.stage_id
     num_stages = st.session_state.num_stages
-    
-    stage_track_images_set = st.session_state.stage_track_images_set
-    stage_track_images = st.session_state.stage_track_images
+        
+    game_track_images_set = st.session_state.game_track_images_set
+    game_track_images = st.session_state.game_track_images
 
 #    hostname = socket.gethostname()
 #    ip_address = socket.gethostbyname(hostname)
@@ -393,21 +393,21 @@ def app():
 
                 track_image_upload.append(st.file_uploader("Here you can upload the track layout", type=['png', 'jpg'], accept_multiple_files=False, key="The track layout upload of " + str(x+1), help=None, on_change=None, args=None, kwargs=None, disabled=False))
 
-                if(stage_track_images_set[x] == False): # no track image upload so far
+                if(game_track_images_set[x] == False): # no track image upload so far
                     if(track_image_upload[x] != None): # user has supplied a track image
-                        stage_track_images_set[x] = True
+                        game_track_images_set[x] = True
                         track_image[x] = st.image(track_image_upload[x], caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
-                        stage_track_images[x] = track_image_upload[x] # store in session state
-                elif(stage_track_images_set[x] == True): # track image existing
+                        game_track_images[x] = track_image_upload[x] # store in session state
+                elif(game_track_images_set[x] == True): # track image existing
                     if(track_image_upload[x] != None): # user has supplied a new track image
-                        stage_track_images_set[x] = True
+                        game_track_images_set[x] = True
                         track_image[x] = st.image(track_image_upload[x], caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
-                        stage_track_images[x] = track_image_upload[x] # store in session state
+                        game_track_images[x] = track_image_upload[x] # store in session state
                     else:
-                        track_image[x] = st.image(stage_track_images[x], caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Prev. Uploaded Track Image
+                        track_image[x] = st.image(game_track_images[x], caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Prev. Uploaded Track Image
                 if st.button(f"Remove Image {st.session_state.remove_emoji}", key="Remove Image "+str(x+1)):
                     track_image[x].empty()
-                    stage_track_images_set[x] = False
+                    game_track_images_set[x] = False
 
             scoreboard.append(st.empty())
             if "joker_lap_code" in game:
@@ -423,23 +423,23 @@ def app():
 #        st.write("URL: "+submitUri)
 #        st.write("GAME ID: "+game_id)
 
-    col1, col2, col3, col4, col5, col6, col7, col8 = st.columns(8)
+    col1, col2, col3, col4, col5, col6, col7, col8, col9 = st.columns(9)
 
     with col1:
         if st.button(f"Back to Menu {st.session_state.back_emoji}"):
             st.session_state.nextpage = "main_page"
-            st.session_state.stage_track_images_set = [False,False,False,False,False,False,False,False,False,False]
-            st.session_state.stage_track_images = [None,None,None,None,None,None,None,None,None,None]
+            st.session_state.game_track_images_set = [False,False,False,False,False,False,False,False,False,False]
+            st.session_state.game_track_images = [None,None,None,None,None,None,None,None,None,None]
             st.experimental_rerun()
 
     with col2:
-        if st.button(f"Set Starting Lights in 2 Min. {st.session_state.emoji_driving}"):
+        if st.button(f"Start in 2 Min. {st.session_state.emoji_driving}"):
             result = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/start_stage/{lobby_id}/{game_id}/{stage_id}")
             st.session_state.new_stage_event = False
             st.experimental_rerun()
 
     with col3:
-        if st.button(f"Remove Player from Stage {st.session_state.remove_emoji}"):
+        if st.button(f"Remove Player (Stage) {st.session_state.remove_emoji}"):
             st.session_state.nextpage = "remove_player_from_stage_part1"
             st.experimental_rerun()
 
@@ -449,7 +449,7 @@ def app():
             st.experimental_rerun()
 
     with col5:
-        if st.button(f"Remove Player from Event {st.session_state.remove_emoji}"):
+        if st.button(f"Remove Player (Event) {st.session_state.remove_emoji}"):
             st.session_state.nextpage = "remove_player_from_race"
             st.experimental_rerun()
 
@@ -465,14 +465,21 @@ def app():
             st.experimental_rerun()
 
     with col8:
+        if st.button(f"Detailed Statistics {st.session_state.statistics_emoji}"):
+            st.session_state.nextpage = "statistics_stage"
+            st.session_state.game_track_images_set = game_track_images_set
+            st.session_state.game_track_images = game_track_images
+            st.experimental_rerun()
+
+    with col9:
         if st.button(f"Delete Event {st.session_state.delete_emoji}"):
             result = fetch_delete(f"{settings.driftapi_path}/driftapi/manage_game/delete/{lobby_id}/{game_id}")
             st.session_state.game_id = None
             st.session_state.stage_id = 1
             st.session_state.num_stages = 1
             st.session_state.nextpage = "main_page"
-            st.session_state.stage_track_images_set = [False,False,False,False,False,False,False,False,False,False]
-            st.session_state.stage_track_images = [None,None,None,None,None,None,None,None,None,None]
+            st.session_state.game_track_images_set = [False,False,False,False,False,False,False,False,False,False]
+            st.session_state.game_track_images = [None,None,None,None,None,None,None,None,None,None]
             st.experimental_rerun()
  
     while True:
@@ -512,36 +519,7 @@ def app():
                 def constructEntry(r:dict):
                     d = {
                         "Spieler":r["user_name"] if "user_name" in r else "",
-                        "Motor":r["enter_data"]["engine_type"] if "enter_data" in r else "-",
-                        "Tuning":r["enter_data"]["tuning_type"] if "enter_data" in r else "-",
                     }
-
-# handle game_mode:
-                    if "enter_data" in r:
-                        d["Modus"] = r["enter_data"]["game_mode"]
-                    else:
-                        d["Modus"] = "-"
-
-# handle setup_mode:
-                    if "enter_data" in r:
-                        d["Setup"] = r["enter_data"]["setup_mode"]
-                    else:
-                        d["Setup"] = "-"
-                            
-# tracking track condition 
-                    current_track_condition = handleCurrentTrackCondition(r)
-                    d["Strecke"] = current_track_condition
-
-# handle wheels
-                    if "enter_data" in r:
-                        if( (r["enter_data"]["wheels"] == "spikes" ) ):
-                            d["Reifen"] = "SPIKES"
-                        elif( (r["enter_data"]["wheels"] == "gravel_tires" ) ):
-                            d["Reifen"] = "RALLY"
-                        else:
-                            d["Reifen"] = "STRAßE"
-                    else:
-                        d["Reifen"] = "-"
                             
 # differentiate between RACE and GYMKHANA game mode:
                     if ( games[x]["game_mode"] == "RACE" ):
@@ -706,6 +684,41 @@ def app():
                             d["Status"] = f"{st.session_state.emoji_ready}" #"Ready"
                         else:
                             d["Status"] = ""
+
+    # handle engine
+                    if "enter_data" in r:
+                        d["Motor"] = r["enter_data"]["engine_type"]
+                    else:
+                        d["Motor"] = "-"
+
+    # handle tuning
+                    if "enter_data" in r:
+                        d["Tuning"] = r["enter_data"]["tuning_type"]
+                    else:
+                        d["Tuning"] = "-"
+               
+    # handle game_mode:
+                    if "enter_data" in r:
+                        d["Modus"] = r["enter_data"]["game_mode"]
+                    else:
+                        d["Modus"] = "-"
+
+    # handle setup_mode:
+                    if "enter_data" in r:
+                        d["Setup"] = r["enter_data"]["setup_mode"]
+                    else:
+                        d["Setup"] = "-"
+
+    # handle wheels
+                    if "enter_data" in r:
+                        if( (r["enter_data"]["wheels"] == "spikes" ) ):
+                            d["Reifen"] = "SPIKES"
+                        elif( (r["enter_data"]["wheels"] == "gravel_tires" ) ):
+                            d["Reifen"] = "RALLY"
+                        else:
+                            d["Reifen"] = "STRAßE"
+                    else:
+                        d["Reifen"] = "-"
 
                     return (d)
 

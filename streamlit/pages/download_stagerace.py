@@ -690,7 +690,7 @@ def app():
         st.download_button(
             f"Press to Download Stage " + str(x+1) + f" as csv {st.session_state.download_emoji}",
             df.to_csv(index = False).encode('utf-8'),
-            game_id+"_"+str(x+1)+".csv",
+            "Game_" + str(lobby_id) + "_" + str(game_id) + "_" +str(x+1)+".csv",
             "text/csv",
             key='download-csv'
         )
@@ -698,7 +698,7 @@ def app():
         st.download_button(
             f"Press to Download Stage " + str(x+1) + f" as html {st.session_state.download_emoji}",
             df.to_html(),
-            game_id+"_"+str(x+1)+".html",
+            "Game_" + str(lobby_id) + "_" + str(game_id) + "_" +str(x+1)+".html",
             "text/html",
             key='download-html'
         )
@@ -707,7 +707,7 @@ def app():
         st.download_button(
            f"Press to Download Stage " + str(x+1) + f" as json {st.session_state.download_emoji}",
             df.to_json(orient='records'),
-            game_id+"_"+str(x+1)+".json",
+            "Game_" + str(lobby_id) + "_" + str(game_id) + "_" +str(x+1)+".json",
             "text/json",
             key='download-json'
         )

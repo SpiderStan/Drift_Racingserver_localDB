@@ -416,7 +416,7 @@ def app():
         st.write("URL: "+submitUri)
         st.write("GAME ID: "+game_id)
 
-    col1, col2, col3, col4, col5 = st.columns(5)
+    col1, col2, col3, col4, col5, col6 = st.columns(6)
 
     with col1:
         if st.button(f"Back to Menu {st.session_state.back_emoji}"):
@@ -446,6 +446,13 @@ def app():
             st.experimental_rerun()
 
     with col5:
+        if st.button(f"Detailed Statistics {st.session_state.statistics_emoji}"):
+            st.session_state.nextpage = "statistics"
+            st.session_state.game_track_images_set = game_track_images_set
+            st.session_state.game_track_images = game_track_images
+            st.experimental_rerun()
+
+    with col6:
         if st.button(f"Delete Game {st.session_state.delete_emoji}"):
             result = fetch_delete(f"{settings.driftapi_path}/driftapi/manage_game/delete/{lobby_id}/{game_id}")
             st.session_state.game_id = None
@@ -458,7 +465,6 @@ def app():
  
     while True:
 
-        # getting the info from one stage only is ok, since all stages have the same start_time
         game = getGameInfo(lobby_id, game_id, stage_id)
         
         if(game["start_time"] != None):
@@ -490,36 +496,13 @@ def app():
             def constructEntry(r:dict):
                 d = {
                     "Spieler":r["user_name"] if "user_name" in r else "",
-                    "Motor":r["enter_data"]["engine_type"] if "enter_data" in r else "-",
-                    "Tuning":r["enter_data"]["tuning_type"] if "enter_data" in r else "-",
+#                    "Motor":r["enter_data"]["engine_type"] if "enter_data" in r else "-",
+#                    "Tuning":r["enter_data"]["tuning_type"] if "enter_data" in r else "-",
                 }
-
-# handle game_mode:
-                if "enter_data" in r:
-                    d["Modus"] = r["enter_data"]["game_mode"]
-                else:
-                    d["Modus"] = "-"
-
-# handle setup_mode:
-                if "enter_data" in r:
-                    d["Setup"] = r["enter_data"]["setup_mode"]
-                else:
-                    d["Setup"] = "-"
                         
 # tracking track condition 
                 current_track_condition = handleCurrentTrackCondition(r)
                 d["Strecke"] = current_track_condition
-
-# handle wheels
-                if "enter_data" in r:
-                    if( (r["enter_data"]["wheels"] == "spikes" ) ):
-                        d["Reifen"] = "SPIKES"
-                    elif( (r["enter_data"]["wheels"] == "gravel_tires" ) ):
-                        d["Reifen"] = "RALLY"
-                    else:
-                        d["Reifen"] = "STRAßE"
-                else:
-                    d["Reifen"] = "-"
                         
 # differentiate between RACE and GYMKHANA game mode:
                 if ( game["game_mode"] == "RACE" ):
@@ -689,6 +672,41 @@ def app():
                         d["Status"] = f"{st.session_state.emoji_ready}" #"Ready"
                     else:
                         d["Status"] = ""
+
+# handle engine
+                if "enter_data" in r:
+                    d["Motor"] = r["enter_data"]["engine_type"]
+                else:
+                    d["Motor"] = "-"
+
+# handle tuning
+                if "enter_data" in r:
+                    d["Tuning"] = r["enter_data"]["tuning_type"]
+                else:
+                    d["Tuning"] = "-"
+           
+# handle game_mode:
+                if "enter_data" in r:
+                    d["Modus"] = r["enter_data"]["game_mode"]
+                else:
+                    d["Modus"] = "-"
+
+# handle setup_mode:
+                if "enter_data" in r:
+                    d["Setup"] = r["enter_data"]["setup_mode"]
+                else:
+                    d["Setup"] = "-"
+
+# handle wheels
+                if "enter_data" in r:
+                    if( (r["enter_data"]["wheels"] == "spikes" ) ):
+                        d["Reifen"] = "SPIKES"
+                    elif( (r["enter_data"]["wheels"] == "gravel_tires" ) ):
+                        d["Reifen"] = "RALLY"
+                    else:
+                        d["Reifen"] = "STRAßE"
+                else:
+                    d["Reifen"] = "-"
 
                 return (d)
 

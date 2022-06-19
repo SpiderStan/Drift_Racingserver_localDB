@@ -44,6 +44,8 @@ def app():
         st.session_state.track_gravel_emoji = "\U0001FAA8"  # rock         
     if "track_gravel_trap_emoji" not in st.session_state:
         st.session_state.track_gravel_trap_emoji = "🌫️"
+    if "track_unknown_emoji" not in st.session_state:
+        st.session_state.track_unknown_emoji = "🚧"
     if "false_start_emoji" not in st.session_state:
         st.session_state.false_start_emoji = "🛑" 
     if "award_1st_emoji" not in st.session_state:
@@ -56,6 +58,18 @@ def app():
         st.session_state.award_bonus_emoji = "🏅"
     if "award_trophy_emoji" not in st.session_state:
         st.session_state.award_trophy_emoji = "🏆"
+    if "statistics_emoji" not in st.session_state:
+        st.session_state.statistics_emoji = "🧮"       
+    if "time_emoji" not in st.session_state:
+        st.session_state.time_emoji = "⏱️" 
+    if "time2_emoji" not in st.session_state:
+        st.session_state.time2_emoji = "⌚"
+    if "distance_emoji" not in st.session_state:
+        st.session_state.distance_emoji = "📏" 
+    if "distance2_emoji" not in st.session_state:
+        st.session_state.distance2_emoji = "📐" 
+    if "average_speed_emoji" not in st.session_state:
+        st.session_state.average_speed_emoji = "🏎️💨" 
 
     if 'lobby_id' in st.session_state:
         del st.session_state.lobby_id
