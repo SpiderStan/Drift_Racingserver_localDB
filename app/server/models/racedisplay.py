@@ -11,7 +11,7 @@ from time import time
 from typing import Optional
 from uuid import UUID
 from datetime import datetime, timedelta
-from .driftapi import track_condition, track_bundle, wheels, setup_mode, EnterData, StartData, EndData, target_code, game_mode, bonus_target
+from .driftapi import track_condition, track_bundle, wheels, setup_mode, EnterData, StartData, EndData, TargetData, target_code, game_mode, bonus_target
 
 class LobbySchema(BaseModel):
     lobby_id:str = Field(...)
@@ -126,7 +126,27 @@ class PlayerStatusSchema(BaseModel):
 				"end_data": {},
             }
         }
-		
+
+class PlayerTargetsSchema(BaseModel):
+    lobby_id:str = Field(...)
+    game_id:str = Field(...)
+    user_id:UUID = Field(...)
+    user_name:str = Field(...)
+    stage_id:int = Field(...)
+    target_ctr:Optional[int]
+    target_data:Optional[TargetData]
+    
+    class Config:
+        schema_extra = {
+                "lobby_id": "Lobby1",
+                "game_id": "Race1",
+                "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                "user_name": "PlayerNo1",
+                "stage_id": 1,
+                "target_ctr": 1,
+                "target_data": {},
+        }
+
 def ResponseModel(data, message):
     return {
         "data": [data],
