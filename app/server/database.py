@@ -111,6 +111,18 @@ def player_helper(player) -> dict:
         "end_data": player["end_data"],
     }
 
+def playertargets_helper(playertargets) -> dict:
+    return {
+		"id": str(playertargets["_id"]),
+        "lobby_id": str(playertargets["lobby_id"]),
+        "game_id": str(playertargets["game_id"]),
+        "user_id": str(playertargets["user_id"]),
+        "user_name": str(playertargets["user_name"]),
+        "stage_id": playertargets["stage_id"],
+        "target_ctr": playertargets["target_ctr"],
+        "target_data": playertargets["target_data"],
+     }
+     
 def get_time() -> int:
     """Just a helper for getting time in consistent way"""
     return int(time.time())
@@ -121,6 +133,16 @@ def _convert(obj: dict, cls: type):
         obj["id"] = str(obj["_id"])
         del obj["_id"]
         return cls(**obj)
+
+
+## Add a new playertarget 
+#async def add_playertarget(lobby_id: dict, game_id: dict, stage_id: int, playertarget_data: dict) -> dict:
+#    playertarget = await driftapi_playertargets_collection.find_one({"lobby_id":lobby_id, "game_id":game_id, "user_name":playertarget_data["user_name"], "stage_id":stage_id, "target_ctr":playertarget_data["target_ctr"]})
+#    if playertarget:
+#        return playertarget_helper(playertarget)
+#    playertarget = await driftapi_playertargets_collection.insert_one(playertarget_data)
+#    new_playertarget = await driftapi_playertargets_collection.find_one({"_id":playertarget.inserted_id})
+#    return playertarget_helper(new_playertarget)
 
 # Retrieve all lobbies present in the database
 async def find_lobbies():
@@ -168,7 +190,10 @@ async def add_game(lobby_id: str, game_data: dict) -> dict:
 
 # Delete a game from the game_database
 async def delete_game(lobby_id: str, game_id: str):
-#delete all players first (also includes all stages)
+#delete all player targets first (also includes all stages)
+    async for player in driftapi_playertargets_collection.find({"lobby_id":lobby_id, "game_id":game_id}):
+        await driftapi_playertargets_collection.delete_one({"lobby_id":lobby_id, "game_id":game_id})
+#next delete all players (also includes all stages)
     async for player in driftapi_playerstatus_collection.find({"lobby_id":lobby_id, "game_id":game_id}):
         await driftapi_playerstatus_collection.delete_one({"lobby_id":lobby_id, "game_id":game_id})
 # now delete game (also includes all stages)
@@ -194,9 +219,18 @@ async def get_playerstatus(lobby_id: str, game_id: str, stage_id: int):
     async for player in driftapi_playerstatus_collection.find({"lobby_id":lobby_id, "game_id":game_id, "stage_id":stage_id}):
         players.append(player_helper(player))
     return players
+
+# Retrieve all players of a specific game from database
+async def get_targetstatus(lobby_id: str, game_id: str, stage_id: int, user_name: str):
+    targets = []
+    async for target in driftapi_playertargets_collection.find({"lobby_id":lobby_id, "game_id":game_id, "stage_id":stage_id, "user_name":user_name}):
+        targets.append(playertargets_helper(target))
+    return targets
     
 # Delete a user from a specific game from the user_database (this includes all stages as well)
 async def delete_player(lobby_id: str, game_id: str, user_name:str):
+    async for target in driftapi_playertargets_collection.find({"lobby_id":lobby_id, "game_id":game_id, "user_name":user_name}):
+        await driftapi_playertargets_collection.delete_one({"lobby_id":lobby_id, "game_id":game_id, "user_name":user_name})
     async for player in driftapi_playerstatus_collection.find({"lobby_id":lobby_id, "game_id":game_id, "user_name":user_name}):
         await driftapi_playerstatus_collection.delete_one({"lobby_id":lobby_id, "game_id":game_id, "user_name":user_name})
     return True
@@ -210,9 +244,12 @@ async def delete_player_from_stage(lobby_id: str, game_id: str, stage_id: int, u
 
 # Delete all users from a specific game from the user_database (also include all stages if multiple) 
 async def delete_players(lobby_id: str, game_id: str, stage_id: int):
+#delete all player targets first (also includes all stages)
+    async for target in driftapi_playertargets_collection.find({"lobby_id":lobby_id, "game_id":game_id}):
+        await driftapi_playertargets_collection.delete_one({"lobby_id":lobby_id, "game_id":game_id})
+#next delete all players (also includes all stages)   
     async for player in driftapi_playerstatus_collection.find({"lobby_id":lobby_id, "game_id":game_id}):
         await driftapi_playerstatus_collection.delete_one({"lobby_id":lobby_id, "game_id":game_id})
-
 # Feature add: if start time was set in game, than set as current time + 2 min:
     game = await driftapi_game_collection.find_one({"lobby_id":lobby_id, "game_id":game_id})
     if game:
@@ -251,6 +288,9 @@ async def delete_players(lobby_id: str, game_id: str, stage_id: int):
    
 # Delete all users from a specific stage of a stage game from the user_database
 async def delete_players_from_stage(lobby_id: str, game_id: str, stage_id: int):
+#delete all player targets first (also includes all stages)
+    async for player in driftapi_playertargets_collection.find({"lobby_id":lobby_id, "game_id":game_id, "stage_id":stage_id}):
+        await driftapi_playertargets_collection.delete_one({"lobby_id":lobby_id, "game_id":game_id, "stage_id":stage_id})
     async for player in driftapi_playerstatus_collection.find({"lobby_id":lobby_id, "game_id":game_id, "stage_id":stage_id}):
         await driftapi_playerstatus_collection.delete_one({"lobby_id":lobby_id, "game_id":game_id, "stage_id":stage_id})
     return True
@@ -302,17 +342,38 @@ async def ping_game(lobby_id: str, game_id: str, stage_id:int):
     if game:
 	    return game
 
+#def playertargets_helper(playertargets) -> dict:
+#    return {
+#		"id": str(playertargets["_id"]),
+#        "lobby_id": str(playertargets["lobby_id"]),
+#        "game_id": str(playertargets["game_id"]),
+#        "user_id": str(playertargets["user_id"]),
+#        "user_name": str(playertargets["user_name"]),
+#        "stage_id": playertargets["stage_id"],
+#        "target_ctr": playertargets["target_ctr"],
+#        "target_data": playertargets["target_data"],
+#     }
+
+## Add a new playertarget 
+#async def add_playertarget(lobby_id: dict, game_id: dict, user_name:str, stage_id: int, playertarget_data: dict) -> dict:
+#    playertarget = await driftapi_playertargets_collection.find_one({"lobby_id":lobby_id, "game_id":game_id, "user_name":user_name, "stage_id":stage_id, "target_ctr":playertarget_data["target_ctr"]})
+#    if playertarget:
+#        return playertarget_helper(playertarget)
+#    playertarget = await driftapi_playertargets_collection.insert_one(playertarget_data)
+#    new_playertarget = await driftapi_playertargets_collection.find_one({"_id":playertarget.inserted_id})
+#    return playertarget_helper(new_playertarget)
+
 async def insert_or_update_playerstatus(lobby_id:str, game_id:str, stage_id:int, obj:EnterEvent) -> bool:
     targetCounter = {}
     for e in target_code:
         targetCounter[str(e.value)]=0
 
     user_data = PlayerStatusSchema(
-        lobby_id = lobby_id,
-        game_id = game_id,#obj.game_id,	#for safety
+        lobby_id = lobby_id, #for safety
+        game_id = game_id, #for safety
         user_id = obj.user_id,
         user_name = obj.user_name,
-        stage_id = stage_id,
+        stage_id = stage_id, #for safety
         laps_completed = 0,
         target_code_counter=targetCounter,
         total_score = 0,
@@ -335,7 +396,6 @@ async def insert_or_update_playerstatus(lobby_id:str, game_id:str, stage_id:int,
         start_data = None,
         end_data = None
     )
-
     user_data = jsonable_encoder(user_data)
     game_data = await driftapi_game_collection.find_one({"lobby_id":lobby_id, "game_id":game_id, "stage_id":stage_id})
     if game_data:
@@ -390,6 +450,23 @@ async def insert_raceevent(lobby_id: str, game_id:str, stage_id:int, obj: RaceEv
             #increase the target code counter by one (for tracking the number of targets that had been passed)
             user_data["target_code_counter"][str(obj.data.target_code.value)]+=1
 
+            # get total number of crossed targets so far
+            target_ctr = 0
+            for e in target_code:
+                target_ctr += user_data["target_code_counter"][str(e.value)]
+  
+            playertarget_data = PlayerTargetsSchema(
+                lobby_id = lobby_id, #for safety
+                game_id = game_id, #for safety
+                user_id = obj.user_id,
+                user_name = obj.user_name,
+                stage_id = playerStatusId["stage_id"],
+                target_ctr = target_ctr,
+                target_data = obj.data
+            )
+            playertarget_data = jsonable_encoder(playertarget_data)
+            playertarget = await driftapi_playertargets_collection.insert_one(playertarget_data)
+
             game = await driftapi_game_collection.find_one({"lobby_id":lobby_id, "game_id":game_id, "stage_id":stage_id})
             if game:
                 game_data = GameSchema(
@@ -414,68 +491,68 @@ async def insert_raceevent(lobby_id: str, game_id:str, stage_id:int, obj: RaceEv
                 )
                 game_data = jsonable_encoder(game_data)
 
-            #check if joker lap should be increased:
-            if game_data["joker_lap_code"] == obj.data.target_code:
-                if not game_data["joker_lap_precondition_code"]:
-                    user_data["joker_laps_counter"] += 1
-                elif game_data["joker_lap_precondition_code"] == user_data["last_recognized_target"]:
-                    user_data["joker_laps_counter"] += 1
+                #check if joker lap should be increased:
+                if game_data["joker_lap_code"] == obj.data.target_code:
+                    if not game_data["joker_lap_precondition_code"]:
+                        user_data["joker_laps_counter"] += 1
+                    elif game_data["joker_lap_precondition_code"] == user_data["last_recognized_target"]:
+                        user_data["joker_laps_counter"] += 1
 
-            if obj.data.target_code == target_code.start_finish:
-                if user_data["last_lap_timestamp"]:
-                    user_data["laps_completed"] += 1 #only add a lap after the start line has been crossed the second time
-                    if( user_data["laps_completed"] <= 1 ):
-                        new_lap_time:timedelta = obj.data.crossing_time.astimezone(timezone.utc) - (datetime.strptime(user_data["last_lap_timestamp"], '%Y-%m-%dT%H:%M:%S.%f%z'))
-                    else:
-                        new_lap_time:timedelta = obj.data.crossing_time.astimezone(timezone.utc) - (datetime.strptime(user_data["last_lap_timestamp"], '%Y-%m-%dT%H:%M:%S.%f')).astimezone(timezone.utc)
-                    user_data["last_lap"] = str(new_lap_time.total_seconds())
-                    if user_data["best_lap"]:
-                        bestLap = timedelta(seconds=float(user_data["best_lap"]))
-                        if bestLap > new_lap_time:
+                if obj.data.target_code == target_code.start_finish:
+                    if user_data["last_lap_timestamp"]:
+                        user_data["laps_completed"] += 1 #only add a lap after the start line has been crossed the second time
+                        if( user_data["laps_completed"] <= 1 ):
+                            new_lap_time:timedelta = obj.data.crossing_time.astimezone(timezone.utc) - (datetime.strptime(user_data["last_lap_timestamp"], '%Y-%m-%dT%H:%M:%S.%f%z'))
+                        else:
+                            new_lap_time:timedelta = obj.data.crossing_time.astimezone(timezone.utc) - (datetime.strptime(user_data["last_lap_timestamp"], '%Y-%m-%dT%H:%M:%S.%f')).astimezone(timezone.utc)
+                        user_data["last_lap"] = str(new_lap_time.total_seconds())
+                        if user_data["best_lap"]:
+                            bestLap = timedelta(seconds=float(user_data["best_lap"]))
+                            if bestLap > new_lap_time:
+                                user_data["best_lap"] = str(new_lap_time.total_seconds())
+                        else:
                             user_data["best_lap"] = str(new_lap_time.total_seconds())
+                        user_data["last_lap_timestamp"] = obj.data.crossing_time
                     else:
-                        user_data["best_lap"] = str(new_lap_time.total_seconds())
-                    user_data["last_lap_timestamp"] = obj.data.crossing_time
-                else:
-                    #this is only active when the target finished is crossed the first time, as in that case, there is no last_lap_timestamp set:
-                    #for the first lap, we count the time since the signal time, not the first crossing. This is how it is done in the drift app.
-                    user_data["last_lap_timestamp"] = user_data["start_data"]["signal_time"]
+                        #this is only active when the target finished is crossed the first time, as in that case, there is no last_lap_timestamp set:
+                        #for the first lap, we count the time since the signal time, not the first crossing. This is how it is done in the drift app.
+                        user_data["last_lap_timestamp"] = user_data["start_data"]["signal_time"]
 
-            if obj.data.score>0:
-                user_data["total_score"] += obj.data.score
-                if obj.data.target_code == target_code.speed_drift:
-                    if user_data["best_speed_drift"] == None:
-                        user_data["best_speed_drift"] = obj.data.score
-                    else:
-                        if obj.data.score > user_data["best_speed_drift"]:
+                if obj.data.score>0:
+                    user_data["total_score"] += obj.data.score
+                    if obj.data.target_code == target_code.speed_drift:
+                        if user_data["best_speed_drift"] == None:
                             user_data["best_speed_drift"] = obj.data.score
-                if obj.data.target_code == target_code.angle_drift:
-                    if user_data["best_angle_drift"] == None:
-                        user_data["best_angle_drift"] = obj.data.score
-                    else:
-                        if obj.data.score > user_data["best_angle_drift"]:
+                        else:
+                            if obj.data.score > user_data["best_speed_drift"]:
+                                user_data["best_speed_drift"] = obj.data.score
+                    if obj.data.target_code == target_code.angle_drift:
+                        if user_data["best_angle_drift"] == None:
                             user_data["best_angle_drift"] = obj.data.score
-                if obj.data.target_code == target_code.threesixty:
-                    if user_data["best_360_angle"] == None:
-                        user_data["best_360_angle"] = obj.data.score
-                    else:
-                        if obj.data.score > user_data["best_360_angle"]:
+                        else:
+                            if obj.data.score > user_data["best_angle_drift"]:
+                                user_data["best_angle_drift"] = obj.data.score
+                    if obj.data.target_code == target_code.threesixty:
+                        if user_data["best_360_angle"] == None:
                             user_data["best_360_angle"] = obj.data.score
-                if obj.data.target_code == target_code.oneeighty:
-                    if user_data["best_180_speed"] == None:
-                        user_data["best_180_speed"] = obj.data.score
-                    else:
-                        if obj.data.score > user_data["best_180_speed"]:
+                        else:
+                            if obj.data.score > user_data["best_360_angle"]:
+                                user_data["best_360_angle"] = obj.data.score
+                    if obj.data.target_code == target_code.oneeighty:
+                        if user_data["best_180_speed"] == None:
                             user_data["best_180_speed"] = obj.data.score
+                        else:
+                            if obj.data.score > user_data["best_180_speed"]:
+                                user_data["best_180_speed"] = obj.data.score
 
-            user_data["fith_last_recognized_target"] = user_data["forth_last_recognized_target"]
-            user_data["forth_last_recognized_target"] = user_data["third_last_recognized_target"]
-            user_data["third_last_recognized_target"] = user_data["second_last_recognized_target"]
-            user_data["second_last_recognized_target"] = user_data["last_recognized_target"]
-            user_data["last_recognized_target"] = obj.data.target_code
-            user_data["last_target_timestamp"] = datetime.now()  
+                user_data["fith_last_recognized_target"] = user_data["forth_last_recognized_target"]
+                user_data["forth_last_recognized_target"] = user_data["third_last_recognized_target"]
+                user_data["third_last_recognized_target"] = user_data["second_last_recognized_target"]
+                user_data["second_last_recognized_target"] = user_data["last_recognized_target"]
+                user_data["last_recognized_target"] = obj.data.target_code
+                user_data["last_target_timestamp"] = datetime.now()  
 
-            updated_player = await driftapi_playerstatus_collection.update_one({"lobby_id":lobby_id, "game_id":game_id, "stage_id":stage_id, "user_id":playerStatusId["user_id"]},{"$set": user_data})
+                updated_player = await driftapi_playerstatus_collection.update_one({"lobby_id":lobby_id, "game_id":game_id, "stage_id":stage_id, "user_id":playerStatusId["user_id"]},{"$set": user_data})
 
     elif eventType is StartEvent:
         set_user_id = jsonable_encoder(obj.user_id)
