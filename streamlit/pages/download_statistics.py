@@ -159,8 +159,8 @@ def app():
                     gymkhana_target = "360"
                 else:
                     gymkhana_target = "Finish"
-                section_distance = r["target_data"]["driven_distance"] - last_driven_distance
-                section_time = r["target_data"]["driven_time"] - last_driven_time
+                section_distance = r["target_data"]["driven_distance"]
+                section_time = r["target_data"]["driven_time"]
 
                 d[targets] = f"{st.session_state.distance_emoji}: " + showDistance(section_distance) + f" {st.session_state.time_emoji}:  " + showTime(section_time) + f" {st.session_state.average_speed_emoji}: Ø " + showMeanSpeed(section_distance,section_time) + " - " + gymkhana_target + " Punkte: " + str(r["target_data"]["score"])
 
