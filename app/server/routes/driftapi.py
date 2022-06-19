@@ -19,8 +19,10 @@ from ..database import (
     delete_players_from_stage,
     start_stage,
     ping_game,
-    insert_raceevent,	
+    insert_raceevent,
+    get_targetstatus,	
 )
+
 from ..models.driftapi import (
     PingResponse,
 	EndData,
@@ -122,6 +124,11 @@ if settings.enable_racedisplay:
     @router.get("/game/{lobby_id}/{game_id}/{stage_id}/playerstatus", status_code=200, tags=["racingserver_api"])
     async def get_scoreboard(lobby_id: str, game_id:str, stage_id:int):
         res = await get_playerstatus(lobby_id, game_id, stage_id)
+        return res
+
+    @router.get("/game/{lobby_id}/{game_id}/{stage_id}/{user_name}/targetstatus", status_code=200, tags=["racingserver_api"])
+    async def get_targetboard(lobby_id: str, game_id:str, stage_id:int, user_name:str):
+        res = await get_targetstatus(lobby_id, game_id, stage_id, user_name)
         return res
 
     @router.post("/manage_game/create/{lobby_id}/", response_description="Game data added into the database")
