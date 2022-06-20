@@ -21,7 +21,7 @@ def _max_width_(prcnt_width:int = 75):
 def app_meta(icon):
 
     # Set website details
-    st.set_page_config(page_title ="DR!FT Racingserver - Beelzebubs Drift Crew - onlineDB Version", 
+    st.set_page_config(page_title ="DR!FT Racingserver - Beelzebubs Drift Crew - localDB Version", 
                        page_icon=icon, 
                        layout='wide')
     
@@ -105,7 +105,7 @@ if __name__ == '__main__':
     app = MultiPage()
     
 # Title of the main page
-    st.title("DR!FT Racingserver - Beelzebubs Drift Crew - onlineDB Version")
+    st.title("DR!FT Racingserver - Beelzebubs Drift Crew - localDB Version")
     
 # Add all your applications (pages) here
     app.add_page("pre_mainpage", pre_mainpage.app)
