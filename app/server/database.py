@@ -38,6 +38,7 @@ from .models.racedisplay import (
 	PlayerStatusSchema,
 	GameSchema,
     LobbySchema,
+    PlayerTargetsSchema,
 )
 
 # --------------------------------------------------------------------------------
@@ -47,6 +48,7 @@ driftapi_database = client[settings.database_name]
 driftapi_playerstatus_collection = driftapi_database.get_collection("driftapi_playerstatus_collection")
 driftapi_game_collection = driftapi_database.get_collection("driftapi_game_collection")
 driftapi_lobby_collection = driftapi_database.get_collection("driftapi_lobby_collection")
+driftapi_playertargets_collection = driftapi_database.get_collection("driftapi_playertargets_collection")
 # currently not used:
 #driftapi_raceevent_collection = driftapi_database.get_collection("driftapi_raceevent_collection")
 
