@@ -39,6 +39,7 @@ from .models.racedisplay import (
 	GameSchema,
     LobbySchema,
     PlayerTargetsSchema,
+    PlayerGymkhanaHighScoreSchema,
 )
 
 # --------------------------------------------------------------------------------
@@ -49,6 +50,7 @@ driftapi_playerstatus_collection = driftapi_database.get_collection("driftapi_pl
 driftapi_game_collection = driftapi_database.get_collection("driftapi_game_collection")
 driftapi_lobby_collection = driftapi_database.get_collection("driftapi_lobby_collection")
 driftapi_playertargets_collection = driftapi_database.get_collection("driftapi_playertargets_collection")
+driftapi_highscore_collection = driftapi_database.get_collection("driftapi_highscore_collection")
 # currently not used:
 #driftapi_raceevent_collection = driftapi_database.get_collection("driftapi_raceevent_collection")
 
@@ -124,7 +126,25 @@ def playertargets_helper(playertargets) -> dict:
         "target_ctr": playertargets["target_ctr"],
         "target_data": playertargets["target_data"],
      }
-     
+
+def highscores_helper(highscores) -> dict:
+    return {
+		"id": str(highscores["_id"]),
+        "lobby_id": str(highscores["lobby_id"]),
+        "user_id": str(highscores["user_id"]),
+        "user_name": str(highscores["user_name"]),
+        "engine_type": str(highscores["engine_type"]),
+        "tuning_type": str(highscores["tuning_type"]),
+        "steering_angle": float(highscores["steering_angle"]),
+        "driftassist": bool(highscores["driftassist"]),
+        "softsteering": bool(highscores["softsteering"]),
+        "setup_mode": highscores["setup_mode"],
+        "wheels": highscores["wheels"],
+        "track_condition": highscores["track_condition"],
+        "high_score_timestamp": highscores["high_score_timestamp"],
+        "high_score": highscores["high_score"],
+     }
+
 def get_time() -> int:
     """Just a helper for getting time in consistent way"""
     return int(time.time())
@@ -135,16 +155,6 @@ def _convert(obj: dict, cls: type):
         obj["id"] = str(obj["_id"])
         del obj["_id"]
         return cls(**obj)
-
-
-## Add a new playertarget 
-#async def add_playertarget(lobby_id: dict, game_id: dict, stage_id: int, playertarget_data: dict) -> dict:
-#    playertarget = await driftapi_playertargets_collection.find_one({"lobby_id":lobby_id, "game_id":game_id, "user_name":playertarget_data["user_name"], "stage_id":stage_id, "target_ctr":playertarget_data["target_ctr"]})
-#    if playertarget:
-#        return playertarget_helper(playertarget)
-#    playertarget = await driftapi_playertargets_collection.insert_one(playertarget_data)
-#    new_playertarget = await driftapi_playertargets_collection.find_one({"_id":playertarget.inserted_id})
-#    return playertarget_helper(new_playertarget)
 
 # Retrieve all lobbies present in the database
 async def find_lobbies():
@@ -222,13 +232,31 @@ async def get_playerstatus(lobby_id: str, game_id: str, stage_id: int):
         players.append(player_helper(player))
     return players
 
-# Retrieve all players of a specific game from database
+# Retrieve all targets of a specific player of a specific game from database
 async def get_targetstatus(lobby_id: str, game_id: str, stage_id: int, user_name: str):
     targets = []
     async for target in driftapi_playertargets_collection.find({"lobby_id":lobby_id, "game_id":game_id, "stage_id":stage_id, "user_name":user_name}):
         targets.append(playertargets_helper(target))
     return targets
-    
+
+# Retrieve all high scores of a specific lobby from database
+async def get_highscorestatus(lobby_id: str):
+    highscores = []
+    async for highscore in driftapi_highscore_collection.find({"lobby_id":lobby_id}):
+        highscores.append(highscores_helper(highscore))
+    return highscores
+
+# Delete all high scores of a specific lobby from database
+async def reset_highscorestatus(lobby_id: str):
+    async for highscores in driftapi_highscore_collection.find({"lobby_id":lobby_id}):
+        await driftapi_highscore_collection.delete_one({"lobby_id":lobby_id})
+
+# Remove a user from the high score list of a specific lobby
+async def remove_player_highscorestatus(lobby_id: str, user_name:str):
+    async for player in driftapi_highscore_collection.find({"lobby_id":lobby_id, "user_name":user_name}):
+        await driftapi_highscore_collection.delete_one({"lobby_id":lobby_id, "user_name":user_name})
+    return True
+
 # Delete a user from a specific game from the user_database (this includes all stages as well)
 async def delete_player(lobby_id: str, game_id: str, user_name:str):
     async for target in driftapi_playertargets_collection.find({"lobby_id":lobby_id, "game_id":game_id, "user_name":user_name}):
@@ -344,27 +372,6 @@ async def ping_game(lobby_id: str, game_id: str, stage_id:int):
     if game:
 	    return game
 
-#def playertargets_helper(playertargets) -> dict:
-#    return {
-#		"id": str(playertargets["_id"]),
-#        "lobby_id": str(playertargets["lobby_id"]),
-#        "game_id": str(playertargets["game_id"]),
-#        "user_id": str(playertargets["user_id"]),
-#        "user_name": str(playertargets["user_name"]),
-#        "stage_id": playertargets["stage_id"],
-#        "target_ctr": playertargets["target_ctr"],
-#        "target_data": playertargets["target_data"],
-#     }
-
-## Add a new playertarget 
-#async def add_playertarget(lobby_id: dict, game_id: dict, user_name:str, stage_id: int, playertarget_data: dict) -> dict:
-#    playertarget = await driftapi_playertargets_collection.find_one({"lobby_id":lobby_id, "game_id":game_id, "user_name":user_name, "stage_id":stage_id, "target_ctr":playertarget_data["target_ctr"]})
-#    if playertarget:
-#        return playertarget_helper(playertarget)
-#    playertarget = await driftapi_playertargets_collection.insert_one(playertarget_data)
-#    new_playertarget = await driftapi_playertargets_collection.find_one({"_id":playertarget.inserted_id})
-#    return playertarget_helper(new_playertarget)
-
 async def insert_or_update_playerstatus(lobby_id:str, game_id:str, stage_id:int, obj:EnterEvent) -> bool:
     targetCounter = {}
     for e in target_code:
@@ -413,6 +420,9 @@ async def insert_raceevent(lobby_id: str, game_id:str, stage_id:int, obj: RaceEv
     eventType = type(obj)
     if eventType is EnterEvent:
         await insert_or_update_playerstatus(lobby_id, game_id, stage_id, obj)
+        async for target in driftapi_playertargets_collection.find({"lobby_id":lobby_id, "game_id":game_id, "user_name":obj.user_name}):
+            await driftapi_playertargets_collection.delete_one({"lobby_id":lobby_id, "game_id":game_id, "user_name":obj.user_name})
+
 
     elif eventType is TargetEvent:
         set_user_id = jsonable_encoder(obj.user_id)
@@ -558,6 +568,7 @@ async def insert_raceevent(lobby_id: str, game_id:str, stage_id:int, obj: RaceEv
 
     elif eventType is StartEvent:
         set_user_id = jsonable_encoder(obj.user_id)
+        
         playerStatusId = await driftapi_playerstatus_collection.find_one({"lobby_id":lobby_id, "game_id":game_id, "stage_id":stage_id, "user_id":set_user_id})
         if playerStatusId:
             user_data = PlayerStatusSchema(
@@ -631,6 +642,32 @@ async def insert_raceevent(lobby_id: str, game_id:str, stage_id:int, obj: RaceEv
             user_data["total_score"] = user_data["end_data"]["total_score"]
 
             updated_player = await driftapi_playerstatus_collection.update_one({"lobby_id": lobby_id, "game_id": game_id, "stage_id":stage_id, "user_id": playerStatusId["user_id"]},{"$set": user_data})
+
+            player_high_score_data = PlayerGymkhanaHighScoreSchema(
+                lobby_id = lobby_id, #for safety
+                user_id = obj.user_id,
+                user_name = obj.user_name,
+                engine_type =user_data["enter_data"]["engine_type"],
+                tuning_type = user_data["enter_data"]["tuning_type"],
+                steering_angle = user_data["enter_data"]["steering_angle"],
+                driftassist = user_data["enter_data"]["driftassist"],
+                softsteering = user_data["enter_data"]["softsteering"],
+                setup_mode = user_data["enter_data"]["setup_mode"],
+                wheels = user_data["enter_data"]["wheels"],
+                track_condition = user_data["enter_data"]["track_condition"],
+                high_score_timestamp = user_data["end_data"]["finished_time"],
+                high_score = obj.data.total_score
+            )
+            player_high_score_data = jsonable_encoder(player_high_score_data)
+                
+            gym_high_score = await driftapi_highscore_collection.find_one({"lobby_id":lobby_id, "user_name":player_high_score_data["user_name"]})
+            if gym_high_score:
+                if (gym_high_score["high_score"] < player_high_score_data["high_score"]):
+                    updated_high_score = await driftapi_highscore_collection.update_one({"lobby_id":lobby_id, "user_name":player_high_score_data["user_name"]},{"$set": player_high_score_data})
+            else:
+                await driftapi_highscore_collection.insert_one(player_high_score_data)
+
+
 
     return "OK"#self.raceevent_db.insert(values)
 
