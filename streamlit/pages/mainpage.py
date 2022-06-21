@@ -39,6 +39,10 @@ def app():
         st.session_state.nextpage = "create_pre_stagerace_game"
         st.experimental_rerun()
 
+    if st.button(f"Gymkhana High Score List {st.session_state.award_trophy_emoji}"):
+        st.session_state.nextpage = "highscore_list"
+        st.experimental_rerun()
+
     if st.button(f"Show Game {st.session_state.show_game_emoji}"):
         st.session_state.nextpage = "select_race"
         st.experimental_rerun()
@@ -46,7 +50,6 @@ def app():
     if st.button(f"Delete Game {st.session_state.delete_emoji}"):
         st.session_state.nextpage = "delete_race"
         st.experimental_rerun()
-
 
     if st.button(f"Quit Lobby " + str(lobby_id) + f" {st.session_state.quit_emoji}"):
         st.session_state.nextpage = "pre_mainpage"

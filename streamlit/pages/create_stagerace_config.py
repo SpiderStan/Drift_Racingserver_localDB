@@ -11,7 +11,7 @@ def app():
     lobby_id = st.session_state.lobby_id
     num_stages = st.session_state.num_stages
 
-    game_type_selected = ["RACE","RACE","RACE","RACE","RACE","RACE","RACE","RACE","RACE","RACE"]
+    game_type_selected = ["RACE","RACE","RACE","RACE","RACE","RACE","RACE","RACE","RACE","RACE","RACE","RACE","RACE","RACE","RACE","RACE","RACE","RACE","RACE","RACE"]
 
     st.write("Configure the new Stage Race Game in Lobby " + str(lobby_id) + " (Part 1)")
         

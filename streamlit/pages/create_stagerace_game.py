@@ -33,24 +33,24 @@ def app():
     st.write("Configure the new Stage Race Game " + str(game_id) + " in Lobby " + str(lobby_id) + " (Part 2)")
     
     track_id = ["","","","","","","","","",""]
-    time_limit_enabled = [False,False,False,False,False,False,False,False,False,False]
-    time_limit = [None,None,None,None,None,None,None,None,None,None]
-    lap_limit_enabled = [False,False,False,False,False,False,False,False,False,False]
-    lap_count = [None,None,None,None,None,None,None,None,None,None]
-    track_condition_enabled = [False,False,False,False,False,False,False,False,False,False]
-    track_condition_selected = [None,None,None,None,None,None,None,None,None,None]
-    track_bundle_enabled = [False,False,False,False,False,False,False,False,False,False]
-    track_bundle_selected = [None,None,None,None,None,None,None,None,None,None]
-    wheels_enabled = [False,False,False,False,False,False,False,False,False,False]
-    wheels_selected = [None,None,None,None,None,None,None,None,None,None]
-    setup_mode_enabled = [False,False,False,False,False,False,False,False,False,False]
-    setup_mode_selected = [None,None,None,None,None,None,None,None,None,None]
-    joker_lap_enabled = [False,False,False,False,False,False,False,False,False,False]
-    joker_lap_precondition_enabled = [False,False,False,False,False,False,False,False,False,False]
-    joker_lap_code = [None,None,None,None,None,None,None,None,None,None]
-    joker_lap_precondition_code = [None,None,None,None,None,None,None,None,None,None]
-    bonus_target_set = [False,False,False,False,False,False,False,False,False,False]
-    bonus_target_selected = [None,None,None,None,None,None,None,None,None,None]
+    time_limit_enabled = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
+    time_limit = [None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None]
+    lap_limit_enabled = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
+    lap_count = [None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None]
+    track_condition_enabled = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
+    track_condition_selected = [None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None]
+    track_bundle_enabled = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
+    track_bundle_selected = [None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None]
+    wheels_enabled = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
+    wheels_selected = [None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None]
+    setup_mode_enabled = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
+    setup_mode_selected = [None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None]
+    joker_lap_enabled = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
+    joker_lap_precondition_enabled = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
+    joker_lap_code = [None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None]
+    joker_lap_precondition_code = [None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None]
+    bonus_target_set = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
+    bonus_target_selected = [None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None]
     
     with st.form("my_form", clear_on_submit=True):
         gameOptions = {}
@@ -224,8 +224,8 @@ def app():
             st.session_state.game_id = game_id
             st.session_state.stage_id = 1
             st.session_state.num_stages = num_stages
-            st.session_state.game_track_images_set = [False,False,False,False,False,False,False,False,False,False]
-            st.session_state.game_track_images = [None,None,None,None,None,None,None,None,None,None]
+            st.session_state.game_track_images_set = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
+            st.session_state.game_track_images = [None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None]
             st.experimental_rerun()
 
     if st.button(f"Back to Main Menu {st.session_state.back_emoji}"):
