@@ -5,7 +5,7 @@ from PIL import Image
 
 # Custom imports 
 from multipage import MultiPage
-from pages import pre_mainpage, mainpage, create_lobby, select_lobby, delete_lobby, create_race_game, create_gymkhana_game, create_stagerace_config, create_pre_stagerace_game, create_stagerace_game, select_race, delete_race, racedisplay, stage_racedisplay, download_race, download_stagerace, remove_player_from_race, remove_player_from_stage_part1, remove_player_from_stage_part2, reset_stage, statistics, statistics_stage, download_statistics # import your pages here
+from pages import pre_mainpage, mainpage, create_lobby, select_lobby, delete_lobby, create_race_game, create_gymkhana_game, create_stagerace_config, create_pre_stagerace_game, create_stagerace_game, select_race, delete_race, racedisplay, stage_racedisplay, download_race, download_stagerace, remove_player_from_race, remove_player_from_stage_part1, remove_player_from_stage_part2, reset_stage, statistics, statistics_stage, download_statistics, highscore_list, remove_player_from_highscore_list # import your pages here
 
 def _max_width_(prcnt_width:int = 75):
     max_width_str = f"max-width: {prcnt_width}%;"
@@ -131,7 +131,8 @@ if __name__ == '__main__':
     app.add_page("reset_stage", reset_stage.app)
     app.add_page("statistics_stage", statistics_stage.app)
     app.add_page("download_statistics", download_statistics.app)
- 
+    app.add_page("highscore_list", highscore_list.app)
+    app.add_page("remove_player_from_highscore_list", remove_player_from_highscore_list.app)
 
     print(app.pages)
 
