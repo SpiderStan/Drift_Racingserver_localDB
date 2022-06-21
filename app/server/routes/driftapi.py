@@ -20,7 +20,10 @@ from ..database import (
     start_stage,
     ping_game,
     insert_raceevent,
-    get_targetstatus,	
+    get_targetstatus,
+    get_highscorestatus,
+    reset_highscorestatus,
+    remove_player_highscorestatus,
 )
 
 from ..models.driftapi import (
@@ -94,6 +97,12 @@ if settings.enable_racedisplay:
 #        query["game_id"]=game_id
 #        return db_client.find_raceevent(query)
 
+
+
+
+
+
+
     @router.post("/manage_lobby/find/", tags=["racingserver_api"])
     async def find_lobby(query:dict):
         res = await find_lobbies()
@@ -130,6 +139,21 @@ if settings.enable_racedisplay:
     async def get_targetboard(lobby_id: str, game_id:str, stage_id:int, user_name:str):
         res = await get_targetstatus(lobby_id, game_id, stage_id, user_name)
         return res
+
+    @router.get("/game/{lobby_id}/highscores", status_code=200, tags=["racingserver_api"])
+    async def get_highscoreboard(lobby_id: str):
+        res = await get_highscorestatus(lobby_id)
+        return res
+
+    @router.delete("/game/{lobby_id}/reset/highscores", status_code=200, tags=["racingserver_api"])
+    async def reset_highscoreboard(lobby_id: str):
+        res = await reset_highscorestatus(lobby_id)
+        return res
+
+    @router.delete("/game/{lobby_id}/remove_player/{user_name}/highscores", status_code=200, tags=["racingserver_api"])
+    async def remove_player_highscoreboard(lobby_id: str, user_name:str):
+        res = await remove_player_highscorestatus(lobby_id, user_name)
+        return
 
     @router.post("/manage_game/create/{lobby_id}/", response_description="Game data added into the database")
     async def add_game_data(lobby_id: str, game: GameSchema = Body(...)):
