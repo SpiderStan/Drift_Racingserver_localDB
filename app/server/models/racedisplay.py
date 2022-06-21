@@ -147,6 +147,37 @@ class PlayerTargetsSchema(BaseModel):
                 "target_data": {},
         }
 
+class PlayerGymkhanaHighScoreSchema(BaseModel):
+    lobby_id:str = Field(...)   
+    user_id:UUID = Field(...)
+    user_name:str = Field(...)
+    engine_type: str = Field(None, title="The id of the motor type. No ENUM because this might get extended. Example: 'DTM', 'V8' etc.", example="V8") 
+    tuning_type: str = Field(None, title="The id of the motor setup. No ENUM because this might get extended.", example="BASIC SETUP 550 PS")
+    steering_angle: float = Field(None, title="the choosen steering angle as set in the settings menu of the app", example=70.0)
+    driftassist:bool = Field(None, title="if driftassist is enabled in the settings menu of the app.", example=True)
+    softsteering:bool = Field(None, title="if softsteering is enabled in the settings menu of the app.", example=False)
+    setup_mode: setup_mode
+    wheels: wheels
+    track_condition: track_condition
+    high_score_timestamp:Optional[datetime] 
+    high_score:Optional[int]
+    class Config:
+        schema_extra = {
+                "lobby_id": "Lobby1",
+                "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                "user_name": "PlayerNo1",
+                "engine_type": "V8",
+                "tuning_type": "BASIC SETUP 550 PS",
+                "steering_angle": 70.0,
+                "driftassist": True,
+                "softsteering": False,
+                "setup_mode": "DRIFT",
+                "wheels": "normal",
+                "track_condition": "drift_asphalt",
+                "high_score_timestamp": "2022-06-09T19:37:48.357000+00:00",
+                "high_score": 30000,
+        }
+        
 def ResponseModel(data, message):
     return {
         "data": [data],
