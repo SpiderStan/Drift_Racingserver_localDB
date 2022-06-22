@@ -416,52 +416,110 @@ def app():
         st.write("URL: "+submitUri)
         st.write("GAME ID: "+game_id)
 
-    col1, col2, col3, col4, col5, col6 = st.columns(6)
+    if( game["game_mode"] == "GYMKHANA" ):
 
-    with col1:
-        if st.button(f"Back to Menu {st.session_state.back_emoji}"):
-            st.session_state.nextpage = "main_page"
-            st.session_state.game_track_images_set = False
-            st.session_state.game_track_images = None
-            st.experimental_rerun()
+        col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
 
-    with col2:
-        if st.button(f"Remove Player {st.session_state.remove_emoji}"):
-            st.session_state.nextpage = "remove_player_from_race"
-            st.session_state.game_track_images_set = game_track_images_set
-            st.session_state.game_track_images = game_track_images
-            st.experimental_rerun()
+        with col1:
+            if st.button(f"Back to Menu {st.session_state.back_emoji}"):
+                st.session_state.nextpage = "main_page"
+                st.session_state.game_track_images_set = False
+                st.session_state.game_track_images = None
+                st.experimental_rerun()
 
-    with col3:
-        if st.button(f"Reset Game {st.session_state.reset_emoji}"):
-            result = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/reset/{lobby_id}/{game_id}/{stage_id}")
-            st.session_state.new_game = False
-            st.experimental_rerun()
+        with col2:
+            if st.button(f"Remove Player {st.session_state.remove_emoji}"):
+                st.session_state.nextpage = "remove_player_from_race"
+                st.session_state.game_track_images_set = game_track_images_set
+                st.session_state.game_track_images = game_track_images
+                st.experimental_rerun()
 
-    with col4:
-        if st.button(f"Download Data {st.session_state.download_emoji}"):
-            st.session_state.nextpage = "download_race"
-            st.session_state.game_track_images_set = game_track_images_set
-            st.session_state.game_track_images = game_track_images
-            st.experimental_rerun()
+        with col3:
+            if st.button(f"Reset Game {st.session_state.reset_emoji}"):
+                result = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/reset/{lobby_id}/{game_id}/{stage_id}")
+                st.session_state.new_game = False
+                st.experimental_rerun()
 
-    with col5:
-        if st.button(f"Detailed Statistics {st.session_state.statistics_emoji}"):
-            st.session_state.nextpage = "statistics"
-            st.session_state.game_track_images_set = game_track_images_set
-            st.session_state.game_track_images = game_track_images
-            st.experimental_rerun()
+        with col4:
+            if st.button(f"Download Data {st.session_state.download_emoji}"):
+                st.session_state.nextpage = "download_race"
+                st.session_state.game_track_images_set = game_track_images_set
+                st.session_state.game_track_images = game_track_images
+                st.experimental_rerun()
 
-    with col6:
-        if st.button(f"Delete Game {st.session_state.delete_emoji}"):
-            result = fetch_delete(f"{settings.driftapi_path}/driftapi/manage_game/delete/{lobby_id}/{game_id}")
-            st.session_state.game_id = None
-            st.session_state.stage_id = 1
-            st.session_state.num_stages = 1
-            st.session_state.game_track_images_set = False
-            st.session_state.game_track_images = None
-            st.session_state.nextpage = "main_page"
-            st.experimental_rerun()
+        with col5:
+            if st.button(f"Gymkhana High Score List {st.session_state.award_trophy_emoji}"):
+                st.session_state.nextpage = "highscore_list"
+                st.session_state.game_track_images_set = game_track_images_set
+                st.session_state.game_track_images = game_track_images
+                st.experimental_rerun()
+
+        with col6:
+            if st.button(f"Detailed Statistics {st.session_state.statistics_emoji}"):
+                st.session_state.nextpage = "statistics"
+                st.session_state.game_track_images_set = game_track_images_set
+                st.session_state.game_track_images = game_track_images
+                st.experimental_rerun()
+
+        with col7:
+            if st.button(f"Delete Game {st.session_state.delete_emoji}"):
+                result = fetch_delete(f"{settings.driftapi_path}/driftapi/manage_game/delete/{lobby_id}/{game_id}")
+                st.session_state.game_id = None
+                st.session_state.stage_id = 1
+                st.session_state.num_stages = 1
+                st.session_state.game_track_images_set = False
+                st.session_state.game_track_images = None
+                st.session_state.nextpage = "main_page"
+                st.experimental_rerun()
+                
+    else:
+    
+        col1, col2, col3, col4, col5, col6 = st.columns(6)
+
+        with col1:
+            if st.button(f"Back to Menu {st.session_state.back_emoji}"):
+                st.session_state.nextpage = "main_page"
+                st.session_state.game_track_images_set = False
+                st.session_state.game_track_images = None
+                st.experimental_rerun()
+
+        with col2:
+            if st.button(f"Remove Player {st.session_state.remove_emoji}"):
+                st.session_state.nextpage = "remove_player_from_race"
+                st.session_state.game_track_images_set = game_track_images_set
+                st.session_state.game_track_images = game_track_images
+                st.experimental_rerun()
+
+        with col3:
+            if st.button(f"Reset Game {st.session_state.reset_emoji}"):
+                result = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/reset/{lobby_id}/{game_id}/{stage_id}")
+                st.session_state.new_game = False
+                st.experimental_rerun()
+
+        with col4:
+            if st.button(f"Download Data {st.session_state.download_emoji}"):
+                st.session_state.nextpage = "download_race"
+                st.session_state.game_track_images_set = game_track_images_set
+                st.session_state.game_track_images = game_track_images
+                st.experimental_rerun()
+
+        with col5:
+            if st.button(f"Detailed Statistics {st.session_state.statistics_emoji}"):
+                st.session_state.nextpage = "statistics"
+                st.session_state.game_track_images_set = game_track_images_set
+                st.session_state.game_track_images = game_track_images
+                st.experimental_rerun()
+
+        with col6:
+            if st.button(f"Delete Game {st.session_state.delete_emoji}"):
+                result = fetch_delete(f"{settings.driftapi_path}/driftapi/manage_game/delete/{lobby_id}/{game_id}")
+                st.session_state.game_id = None
+                st.session_state.stage_id = 1
+                st.session_state.num_stages = 1
+                st.session_state.game_track_images_set = False
+                st.session_state.game_track_images = None
+                st.session_state.nextpage = "main_page"
+                st.experimental_rerun()
  
     while True:
 

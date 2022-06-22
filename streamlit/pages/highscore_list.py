@@ -23,17 +23,25 @@ def app():
 
     highscoreboard = st.empty()
 
-    if st.button(f"Back {st.session_state.back_emoji}"):
-        st.session_state.nextpage = "main_page"
-        st.experimental_rerun()
+    col1, col2, col3 = st.columns(3)
 
-    if st.button(f"Remove Player from List {st.session_state.remove_emoji}"):
-        st.session_state.nextpage = "remove_player_from_highscore_list"
-        st.experimental_rerun()
- 
-    if st.button(f"Clear List {st.session_state.delete_emoji}"):
-        result = fetch_delete(f"{settings.driftapi_path}/driftapi/game/{lobby_id}/reset/highscores")
-        st.experimental_rerun()
+    with col1:
+        if st.button(f"Back {st.session_state.back_emoji}"):
+            if 'game_id' in st.session_state:
+                st.session_state.nextpage = "racedisplay"
+            else:
+                st.session_state.nextpage = "main_page"
+            st.experimental_rerun()
+
+    with col2:
+        if st.button(f"Remove Player from List {st.session_state.remove_emoji}"):
+            st.session_state.nextpage = "remove_player_from_highscore_list"
+            st.experimental_rerun()
+
+    with col3:
+        if st.button(f"Clear List {st.session_state.delete_emoji}"):
+            result = fetch_delete(f"{settings.driftapi_path}/driftapi/game/{lobby_id}/reset/highscores")
+            st.experimental_rerun()
  
     while True:
 
@@ -101,4 +109,3 @@ def app():
             st.dataframe(df)
 
             time.sleep(2)
-            

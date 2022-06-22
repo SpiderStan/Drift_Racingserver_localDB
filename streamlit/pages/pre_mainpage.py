@@ -34,6 +34,8 @@ def app():
         st.session_state.remove_emoji = "❌"
     if "create_emoji" not in st.session_state:
         st.session_state.create_emoji = "✏️"
+    if "track_emoji" not in st.session_state:
+        st.session_state.track_emoji = "🛣️"
     if "track_dry_emoji" not in st.session_state:
         st.session_state.track_dry_emoji = "☀️"
     if "track_wet_emoji" not in st.session_state:
@@ -70,6 +72,13 @@ def app():
         st.session_state.distance2_emoji = "📐" 
     if "average_speed_emoji" not in st.session_state:
         st.session_state.average_speed_emoji = "🏎️💨" 
+    if "points_emoji" not in st.session_state:
+        st.session_state.points_emoji = "💯"
+    if "target_emoji" not in st.session_state:
+        st.session_state.target_emoji = "🎯"
+
+
+
 
     if 'lobby_id' in st.session_state:
         del st.session_state.lobby_id

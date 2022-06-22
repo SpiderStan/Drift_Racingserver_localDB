@@ -73,8 +73,6 @@ def app():
         st.session_state.nextpage = "main_page"
         st.experimental_rerun()
 
-    targetboard = st.empty()
-
     col1, col2 = st.columns(2)
 
     with col1:
@@ -95,16 +93,14 @@ def app():
             st.session_state.game_track_images_set = game_track_images_set
             st.session_state.game_track_images = game_track_images
             st.experimental_rerun()
+
+    targetboard = st.empty()
  
     while True:
 
         with targetboard.container():
 
-            def constructEntry(r:dict,last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time, section_condition, user_name):
-
-                sectors = "Sektoren von " + str(user_name) + ":"
-                rounds = "Runden von " + str(user_name) + ":"
-                targets = "Targets von " + str(user_name) + ":"
+            def constructEntry(r:dict,last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time, section_condition, user_name, sum_score):
                 
                 d = { } # new dict
 
@@ -124,9 +120,17 @@ def app():
                             section_distance = r["target_data"]["driven_distance"] - last_driven_distance
                             section_time = r["target_data"]["driven_time"] - last_driven_time
                             if(section_time != 0): # normal case
-                                d[sectors] = f"{st.session_state.distance_emoji}: " + showDistance(section_distance) + f" {st.session_state.time_emoji}:  " + showTime(section_time) + f" {st.session_state.average_speed_emoji}: Ø " + showMeanSpeed(section_distance,section_time) + section_condition
+                                d[str(scoreboard_data[player]["user_name"]) + f" Sektor - {st.session_state.distance_emoji}"] = showDistance(section_distance)
+                                d[f"Sektor - {st.session_state.time_emoji}"] = showTime(section_time)
+                                d[f"Sektor - {st.session_state.average_speed_emoji}"] = f"Ø " + showMeanSpeed(section_distance,section_time)
+                                d[f"Sektor - {st.session_state.track_emoji}"] = section_condition
+#                                d[sectors] = f"{st.session_state.distance_emoji}: " + showDistance(section_distance) + f" {st.session_state.time_emoji}:  " + showTime(section_time) + f" {st.session_state.average_speed_emoji}: Ø " + showMeanSpeed(section_distance,section_time) + section_condition
                             else: # this occurs if after finish further targets will be crossed
-                                d[sectors] = f"{st.session_state.false_start_emoji}"
+                                d[str(scoreboard_data[player]["user_name"]) + f" Sektor - {st.session_state.distance_emoji}"] = f"{st.session_state.false_start_emoji}"
+                                d[f"Sektor - {st.session_state.time_emoji}"] = f"{st.session_state.false_start_emoji}"
+                                d[f"Sektor - {st.session_state.average_speed_emoji}"] = f"{st.session_state.false_start_emoji}"
+                                d[f"Sektor - {st.session_state.track_emoji}"] = f"{st.session_state.false_start_emoji}"
+#                                d[sectors] = f"{st.session_state.false_start_emoji}"
                             last_driven_distance = r["target_data"]["driven_distance"]
                             last_driven_time = r["target_data"]["driven_time"]      
                         elif(str(game["track_bundle"]) == "rally_cross"):
@@ -144,50 +148,72 @@ def app():
                             section_distance = r["target_data"]["driven_distance"] - last_driven_distance
                             section_time = r["target_data"]["driven_time"] - last_driven_time
                             if(section_time != 0): # normal case
-                                d[sectors] = f"{st.session_state.distance_emoji}: " + showDistance(section_distance) + f" {st.session_state.time_emoji}:  " + showTime(section_time) + f" {st.session_state.average_speed_emoji}: Ø " + showMeanSpeed(section_distance,section_time) + section_condition
+                                d[str(scoreboard_data[player]["user_name"]) + f" Sektor - {st.session_state.distance_emoji}"] = showDistance(section_distance)
+                                d[f"Sektor - {st.session_state.time_emoji}"] = showTime(section_time)
+                                d[f"Sektor - {st.session_state.average_speed_emoji}"] = f"Ø " + showMeanSpeed(section_distance,section_time)
+                                d[f"Sektor - {st.session_state.track_emoji}"] = section_condition
+#                                d[sectors] = f"{st.session_state.distance_emoji}: " + showDistance(section_distance) + f" {st.session_state.time_emoji}:  " + showTime(section_time) + f" {st.session_state.average_speed_emoji}: Ø " + showMeanSpeed(section_distance,section_time) + section_condition
                             else: # this occurs if after finish further targets will be crossed
-                                d[sectors] = f"{st.session_state.false_start_emoji}"
+                                d[str(scoreboard_data[player]["user_name"]) + f" Sektor - {st.session_state.distance_emoji}"] = f"{st.session_state.false_start_emoji}"
+                                d[f"Sektor - {st.session_state.time_emoji}"] = f"{st.session_state.false_start_emoji}"
+                                d[f"Sektor - {st.session_state.average_speed_emoji}"] = f"{st.session_state.false_start_emoji}"
+                                d[f"Sektor - {st.session_state.track_emoji}"] = f"{st.session_state.false_start_emoji}"
+#                                d[sectors] = f"{st.session_state.false_start_emoji}"
                             last_driven_distance = r["target_data"]["driven_distance"]
                             last_driven_time = r["target_data"]["driven_time"]
                         else:
                             section_distance = r["target_data"]["driven_distance"] - last_driven_distance
                             section_time = r["target_data"]["driven_time"] - last_driven_time
                             if(section_time != 0): # normal case
-                                d[sectors] = f"{st.session_state.distance_emoji}: " + showDistance(section_distance) + f" {st.session_state.time_emoji}:  " + showTime(section_time) + f" {st.session_state.average_speed_emoji}: Ø " + showMeanSpeed(section_distance,section_time)
+                                d[str(scoreboard_data[player]["user_name"]) + f" Sektor - {st.session_state.distance_emoji}"] = showDistance(section_distance)
+                                d[f"Sektor - {st.session_state.time_emoji}"] = showTime(section_time)
+                                d[f"Sektor - {st.session_state.average_speed_emoji}"] = f"Ø " + showMeanSpeed(section_distance,section_time)
+                                d[f"Sektor - {st.session_state.track_emoji}"] = section_condition
+#                                d[sectors] = f"{st.session_state.distance_emoji}: " + showDistance(section_distance) + f" {st.session_state.time_emoji}:  " + showTime(section_time) + f" {st.session_state.average_speed_emoji}: Ø " + showMeanSpeed(section_distance,section_time)
                             else: # this occurs if after finish further targets will be crossed
-                                d[sectors] = f"{st.session_state.false_start_emoji}"
+                                d[str(scoreboard_data[player]["user_name"]) + f" Sektor - {st.session_state.distance_emoji}"] = f"{st.session_state.false_start_emoji}"
+                                d[f"Sektor - {st.session_state.time_emoji}"] = f"{st.session_state.false_start_emoji}"
+                                d[f"Sektor - {st.session_state.average_speed_emoji}"] = f"{st.session_state.false_start_emoji}"
+                                d[f"Sektor - {st.session_state.track_emoji}"] = f"{st.session_state.false_start_emoji}"
+#                                d[sectors] = f"{st.session_state.false_start_emoji}"
                             last_driven_distance = r["target_data"]["driven_distance"]
                             last_driven_time = r["target_data"]["driven_time"]  
 
                         if(r["target_data"]["target_code"] == 0):
                             round_distance = r["target_data"]["driven_distance"] - last_round_driven_distance
                             round_time = r["target_data"]["driven_time"] - last_round_driven_time
-                            d[rounds] = f"{st.session_state.distance2_emoji}: " + showDistance(round_distance) + f" {st.session_state.time2_emoji}:  " + showTime(round_time) + f" {st.session_state.average_speed_emoji}: Ø " + showMeanSpeed(round_distance,round_time)
+                            d["Runden"] = f"{st.session_state.distance2_emoji}: " + showDistance(round_distance) + f" {st.session_state.time2_emoji}:  " + showTime(round_time) + f" {st.session_state.average_speed_emoji}: Ø " + showMeanSpeed(round_distance,round_time)
                             last_round_driven_distance = r["target_data"]["driven_distance"]
                             last_round_driven_time = r["target_data"]["driven_time"]
                         else:
-                            d[rounds] = "-"
+                            d["Runden"] = "-"
                             
                 elif ( game["game_mode"] == "GYMKHANA" ):
                     if "target_data" in r:
                         if(r["target_data"]["target_code"] == 4):
-                            gymkhana_target = "Speed"
+                            gymkhana_target = "Speed Drift"
                         elif(r["target_data"]["target_code"] == 5):
-                            gymkhana_target = "Angle"
+                            gymkhana_target = "Angle Drift"
                         elif(r["target_data"]["target_code"] == 6):
-                            gymkhana_target = "180"
+                            gymkhana_target = "180° Speed"
                         elif(r["target_data"]["target_code"] == 7):
-                            gymkhana_target = "360"
+                            gymkhana_target = "360° Angle"
                         else:
                             gymkhana_target = "Finish"
 
                         section_distance = r["target_data"]["driven_distance"] - last_round_driven_distance
                         section_time = r["target_data"]["driven_time"] - last_round_driven_time
-                        d[targets] = f"{st.session_state.distance_emoji}: " + showDistance(section_distance) + f" {st.session_state.time_emoji}:  " + showTime(section_time) + f" {st.session_state.average_speed_emoji}: Ø " + showMeanSpeed(section_distance,section_time) + " - " + gymkhana_target + " Punkte: " + str(r["target_data"]["score"])
+                        sum_score = sum_score + r["target_data"]["score"]
+                        d[str(scoreboard_data[player]["user_name"]) + f" {st.session_state.target_emoji}"] = gymkhana_target
+                        d[f"{st.session_state.points_emoji}"] = str(r["target_data"]["score"])
+                        d[f" ∑ {st.session_state.points_emoji}"] = sum_score
+                        d[f"{st.session_state.distance_emoji}"] = showDistance(section_distance)
+                        d[f"{st.session_state.time_emoji}"] = showTime(section_time)
+                        d[f"{st.session_state.average_speed_emoji}"] = f"Ø " + showMeanSpeed(section_distance,section_time)
                         last_round_driven_distance = r["target_data"]["driven_distance"]
                         last_round_driven_time = r["target_data"]["driven_time"]
 
-                return (d,last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,next_section_condition)
+                return (d,last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,next_section_condition,sum_score)
 
             scoreboard_data = getScoreBoard(lobby_id, game_id, stage_id)
             num_players = len(scoreboard_data)
@@ -201,6 +227,7 @@ def app():
                 last_driven_time = float(0)
                 last_round_driven_distance = float(0)
                 last_round_driven_time = float(0)
+                sum_score = int(0)
 
                 if "enter_data" in scoreboard_data[player]:
                     if(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_asphalt"):
@@ -214,16 +241,16 @@ def app():
                 else:
                     section_condition = f" {st.session_state.track_unknown_emoji}"
                 for x in range(targetboard_data_len):
-                    (targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition) = constructEntry(targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])
-                    if (x == 0):
+                    (targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition,sum_score) = constructEntry(targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"],sum_score)
+                    if ( game["game_mode"] == "RACE" ) and (x == 0):
                         last_driven_distance = float(0)
                         last_driven_time = float(0)
                         last_round_driven_distance = float(0)
                         last_round_driven_time = float(0)
-
+                        
                 #if there is no entry, just add an empty one by calling the construct Entry with an empty dict
                 while len(targetboard_data)<1:
-                    targetboard_data.append(constructEntry({},last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"]))
+                    targetboard_data.append(constructEntry({},last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"], sum_score))
 
                 df = pd.DataFrame( targetboard_data ) 
                 st.text("Detailed Statistics of " + str(scoreboard_data[player]["user_name"]))
