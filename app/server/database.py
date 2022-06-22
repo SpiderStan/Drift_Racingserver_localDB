@@ -420,9 +420,8 @@ async def insert_raceevent(lobby_id: str, game_id:str, stage_id:int, obj: RaceEv
     eventType = type(obj)
     if eventType is EnterEvent:
         await insert_or_update_playerstatus(lobby_id, game_id, stage_id, obj)
-        async for target in driftapi_playertargets_collection.find({"lobby_id":lobby_id, "game_id":game_id, "user_name":obj.user_name}):
-            await driftapi_playertargets_collection.delete_one({"lobby_id":lobby_id, "game_id":game_id, "user_name":obj.user_name})
-
+        async for target in driftapi_playertargets_collection.find({"lobby_id":lobby_id, "game_id":game_id, "stage_id":stage_id, "user_name":obj.user_name}):
+            await driftapi_playertargets_collection.delete_one({"lobby_id":lobby_id, "game_id":game_id, "stage_id":stage_id, "user_name":obj.user_name})
 
     elif eventType is TargetEvent:
         set_user_id = jsonable_encoder(obj.user_id)
