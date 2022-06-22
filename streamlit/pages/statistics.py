@@ -250,7 +250,7 @@ def app():
                         
                 #if there is no entry, just add an empty one by calling the construct Entry with an empty dict
                 while len(targetboard_data)<1:
-                    targetboard_data.append(constructEntry({},last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"], sum_score))
+                    targetboard_data.append(constructEntry({},last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"], sum_score)[0])
 
                 df = pd.DataFrame( targetboard_data ) 
                 st.text("Detailed Statistics of " + str(scoreboard_data[player]["user_name"]))
