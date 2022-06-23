@@ -28,16 +28,18 @@ def app():
                     if(game["num_stages"] == 1):
                         st.session_state.game_track_images_set = False
                         st.session_state.game_track_images = None
+                        st.session_state.show_awards = False
                         st.session_state.nextpage = "racedisplay"
                     else:
                         st.session_state.game_track_images_set = [False,False,False,False,False,False,False,False,False,False]
                         st.session_state.game_track_images = [None,None,None,None,None,None,None,None,None,None]
+                        st.session_state.show_awards = False
                         st.session_state.nextpage = "stage_racedisplay"   
                     st.experimental_rerun()
     else:
         st.session_state.nextpage = "racedisplay"
         st.experimental_rerun()
 
-    if st.button(f"Back to Main Menu of Lobby {st.session_state.back_emoji}"):
+    if st.button(f"Back {st.session_state.back_emoji}"):
         st.session_state.nextpage = "main_page"
         st.experimental_rerun()

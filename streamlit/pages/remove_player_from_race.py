@@ -28,9 +28,11 @@ def app():
             if(game["num_stages"] == 1):
                 st.session_state.num_stages = 1
                 st.session_state.nextpage = "racedisplay"
+                st.session_state.show_awards = False
             else:
                 st.session_state.num_stages = game["num_stages"]
                 st.session_state.nextpage = "stage_racedisplay"
+                st.session_state.show_awards = False
             st.experimental_rerun()
 
 

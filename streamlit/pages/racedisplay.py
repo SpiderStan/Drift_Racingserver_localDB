@@ -417,109 +417,230 @@ def app():
         st.write("GAME ID: "+game_id)
 
     if( game["game_mode"] == "GYMKHANA" ):
+    
+        if( game["individual_trial"] ):
+        
+            col1, col2, col3, col4, col5, col6, col7, col8 = st.columns(8)
 
-        col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
+            with col1:
+                if st.button(f"Back to Menu {st.session_state.back_emoji}"):
+                    st.session_state.nextpage = "main_page"
+                    st.session_state.game_track_images_set = False
+                    st.session_state.game_track_images = None
+                    st.experimental_rerun()
 
-        with col1:
-            if st.button(f"Back to Menu {st.session_state.back_emoji}"):
-                st.session_state.nextpage = "main_page"
-                st.session_state.game_track_images_set = False
-                st.session_state.game_track_images = None
-                st.experimental_rerun()
+            with col2:
+                if st.button(f"Remove Player {st.session_state.remove_emoji}"):
+                    st.session_state.nextpage = "remove_player_from_race"
+                    st.session_state.game_track_images_set = game_track_images_set
+                    st.session_state.game_track_images = game_track_images
+                    st.experimental_rerun()
 
-        with col2:
-            if st.button(f"Remove Player {st.session_state.remove_emoji}"):
-                st.session_state.nextpage = "remove_player_from_race"
-                st.session_state.game_track_images_set = game_track_images_set
-                st.session_state.game_track_images = game_track_images
-                st.experimental_rerun()
+            with col3:
+                if st.button(f"Reset Game {st.session_state.reset_emoji}"):
+                    result = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/reset/{lobby_id}/{game_id}/{stage_id}")
+                    st.session_state.new_game = False
+                    st.experimental_rerun()
 
-        with col3:
-            if st.button(f"Reset Game {st.session_state.reset_emoji}"):
-                result = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/reset/{lobby_id}/{game_id}/{stage_id}")
-                st.session_state.new_game = False
-                st.experimental_rerun()
+            with col4:
+                if st.button(f"Download Data {st.session_state.download_emoji}"):
+                    st.session_state.nextpage = "download_race"
+                    st.session_state.game_track_images_set = game_track_images_set
+                    st.session_state.game_track_images = game_track_images
+                    st.experimental_rerun()
 
-        with col4:
-            if st.button(f"Download Data {st.session_state.download_emoji}"):
-                st.session_state.nextpage = "download_race"
-                st.session_state.game_track_images_set = game_track_images_set
-                st.session_state.game_track_images = game_track_images
-                st.experimental_rerun()
+            with col5:
+                if st.button(f"Gymkhana High Scores {st.session_state.award_trophy_emoji}"):
+                    st.session_state.nextpage = "highscore_list"
+                    st.session_state.game_track_images_set = game_track_images_set
+                    st.session_state.game_track_images = game_track_images
+                    st.experimental_rerun()
 
-        with col5:
-            if st.button(f"Gymkhana High Score List {st.session_state.award_trophy_emoji}"):
-                st.session_state.nextpage = "highscore_list"
-                st.session_state.game_track_images_set = game_track_images_set
-                st.session_state.game_track_images = game_track_images
-                st.experimental_rerun()
+            with col6:
+                if st.button(f"Detailed Statistics {st.session_state.statistics_emoji}"):
+                    st.session_state.nextpage = "statistics"
+                    st.session_state.game_track_images_set = game_track_images_set
+                    st.session_state.game_track_images = game_track_images
+                    st.experimental_rerun()
+                    
+            with col7:
+                if st.button(f"Award Ceremony {st.session_state.award_1st_emoji}{st.session_state.award_2nd_emoji}{st.session_state.award_3rd_emoji}"):
+                    st.session_state.show_awards = True
+                    st.experimental_rerun()
 
-        with col6:
-            if st.button(f"Detailed Statistics {st.session_state.statistics_emoji}"):
-                st.session_state.nextpage = "statistics"
-                st.session_state.game_track_images_set = game_track_images_set
-                st.session_state.game_track_images = game_track_images
-                st.experimental_rerun()
+            with col8:
+                if st.button(f"Delete Game {st.session_state.delete_emoji}"):
+                    result = fetch_delete(f"{settings.driftapi_path}/driftapi/manage_game/delete/{lobby_id}/{game_id}")
+                    st.session_state.game_id = None
+                    st.session_state.stage_id = 1
+                    st.session_state.num_stages = 1
+                    st.session_state.game_track_images_set = False
+                    st.session_state.game_track_images = None
+                    st.session_state.nextpage = "main_page"
+                    st.experimental_rerun()
 
-        with col7:
-            if st.button(f"Delete Game {st.session_state.delete_emoji}"):
-                result = fetch_delete(f"{settings.driftapi_path}/driftapi/manage_game/delete/{lobby_id}/{game_id}")
-                st.session_state.game_id = None
-                st.session_state.stage_id = 1
-                st.session_state.num_stages = 1
-                st.session_state.game_track_images_set = False
-                st.session_state.game_track_images = None
-                st.session_state.nextpage = "main_page"
-                st.experimental_rerun()
+        
+        else:
+
+            col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
+
+            with col1:
+                if st.button(f"Back to Menu {st.session_state.back_emoji}"):
+                    st.session_state.nextpage = "main_page"
+                    st.session_state.game_track_images_set = False
+                    st.session_state.game_track_images = None
+                    st.experimental_rerun()
+
+            with col2:
+                if st.button(f"Remove Player {st.session_state.remove_emoji}"):
+                    st.session_state.nextpage = "remove_player_from_race"
+                    st.session_state.game_track_images_set = game_track_images_set
+                    st.session_state.game_track_images = game_track_images
+                    st.experimental_rerun()
+
+            with col3:
+                if st.button(f"Reset Game {st.session_state.reset_emoji}"):
+                    result = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/reset/{lobby_id}/{game_id}/{stage_id}")
+                    st.session_state.new_game = False
+                    st.experimental_rerun()
+
+            with col4:
+                if st.button(f"Download Data {st.session_state.download_emoji}"):
+                    st.session_state.nextpage = "download_race"
+                    st.session_state.game_track_images_set = game_track_images_set
+                    st.session_state.game_track_images = game_track_images
+                    st.experimental_rerun()
+
+            with col5:
+                if st.button(f"Gymkhana High Scores {st.session_state.award_trophy_emoji}"):
+                    st.session_state.nextpage = "highscore_list"
+                    st.session_state.game_track_images_set = game_track_images_set
+                    st.session_state.game_track_images = game_track_images
+                    st.experimental_rerun()
+
+            with col6:
+                if st.button(f"Detailed Statistics {st.session_state.statistics_emoji}"):
+                    st.session_state.nextpage = "statistics"
+                    st.session_state.game_track_images_set = game_track_images_set
+                    st.session_state.game_track_images = game_track_images
+                    st.experimental_rerun()
+
+            with col7:
+                if st.button(f"Delete Game {st.session_state.delete_emoji}"):
+                    result = fetch_delete(f"{settings.driftapi_path}/driftapi/manage_game/delete/{lobby_id}/{game_id}")
+                    st.session_state.game_id = None
+                    st.session_state.stage_id = 1
+                    st.session_state.num_stages = 1
+                    st.session_state.game_track_images_set = False
+                    st.session_state.game_track_images = None
+                    st.session_state.nextpage = "main_page"
+                    st.experimental_rerun()
                 
     else:
     
-        col1, col2, col3, col4, col5, col6 = st.columns(6)
+        if( game["individual_trial"] ):
 
-        with col1:
-            if st.button(f"Back to Menu {st.session_state.back_emoji}"):
-                st.session_state.nextpage = "main_page"
-                st.session_state.game_track_images_set = False
-                st.session_state.game_track_images = None
-                st.experimental_rerun()
+            col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
 
-        with col2:
-            if st.button(f"Remove Player {st.session_state.remove_emoji}"):
-                st.session_state.nextpage = "remove_player_from_race"
-                st.session_state.game_track_images_set = game_track_images_set
-                st.session_state.game_track_images = game_track_images
-                st.experimental_rerun()
+            with col1:
+                if st.button(f"Back to Menu {st.session_state.back_emoji}"):
+                    st.session_state.nextpage = "main_page"
+                    st.session_state.game_track_images_set = False
+                    st.session_state.game_track_images = None
+                    st.experimental_rerun()
 
-        with col3:
-            if st.button(f"Reset Game {st.session_state.reset_emoji}"):
-                result = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/reset/{lobby_id}/{game_id}/{stage_id}")
-                st.session_state.new_game = False
-                st.experimental_rerun()
+            with col2:
+                if st.button(f"Remove Player {st.session_state.remove_emoji}"):
+                    st.session_state.nextpage = "remove_player_from_race"
+                    st.session_state.game_track_images_set = game_track_images_set
+                    st.session_state.game_track_images = game_track_images
+                    st.experimental_rerun()
 
-        with col4:
-            if st.button(f"Download Data {st.session_state.download_emoji}"):
-                st.session_state.nextpage = "download_race"
-                st.session_state.game_track_images_set = game_track_images_set
-                st.session_state.game_track_images = game_track_images
-                st.experimental_rerun()
+            with col3:
+                if st.button(f"Reset Game {st.session_state.reset_emoji}"):
+                    result = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/reset/{lobby_id}/{game_id}/{stage_id}")
+                    st.session_state.new_game = False
+                    st.experimental_rerun()
 
-        with col5:
-            if st.button(f"Detailed Statistics {st.session_state.statistics_emoji}"):
-                st.session_state.nextpage = "statistics"
-                st.session_state.game_track_images_set = game_track_images_set
-                st.session_state.game_track_images = game_track_images
-                st.experimental_rerun()
+            with col4:
+                if st.button(f"Download Data {st.session_state.download_emoji}"):
+                    st.session_state.nextpage = "download_race"
+                    st.session_state.game_track_images_set = game_track_images_set
+                    st.session_state.game_track_images = game_track_images
+                    st.experimental_rerun()
 
-        with col6:
-            if st.button(f"Delete Game {st.session_state.delete_emoji}"):
-                result = fetch_delete(f"{settings.driftapi_path}/driftapi/manage_game/delete/{lobby_id}/{game_id}")
-                st.session_state.game_id = None
-                st.session_state.stage_id = 1
-                st.session_state.num_stages = 1
-                st.session_state.game_track_images_set = False
-                st.session_state.game_track_images = None
-                st.session_state.nextpage = "main_page"
-                st.experimental_rerun()
+            with col5:
+                if st.button(f"Detailed Statistics {st.session_state.statistics_emoji}"):
+                    st.session_state.nextpage = "statistics"
+                    st.session_state.game_track_images_set = game_track_images_set
+                    st.session_state.game_track_images = game_track_images
+                    st.experimental_rerun()
+
+            with col6:
+                if st.button(f"Award Ceremony {st.session_state.award_1st_emoji}{st.session_state.award_2nd_emoji}{st.session_state.award_3rd_emoji}"):
+                    st.session_state.show_awards = True
+
+            with col7:
+                if st.button(f"Delete Game {st.session_state.delete_emoji}"):
+                    result = fetch_delete(f"{settings.driftapi_path}/driftapi/manage_game/delete/{lobby_id}/{game_id}")
+                    st.session_state.game_id = None
+                    st.session_state.stage_id = 1
+                    st.session_state.num_stages = 1
+                    st.session_state.game_track_images_set = False
+                    st.session_state.game_track_images = None
+                    st.session_state.nextpage = "main_page"
+                    st.experimental_rerun()
+
+        else:
+        
+            col1, col2, col3, col4, col5, col6 = st.columns(6)
+
+            with col1:
+                if st.button(f"Back to Menu {st.session_state.back_emoji}"):
+                    st.session_state.nextpage = "main_page"
+                    st.session_state.game_track_images_set = False
+                    st.session_state.game_track_images = None
+                    st.session_state.show_awards = False
+                    st.experimental_rerun()
+
+            with col2:
+                if st.button(f"Remove Player {st.session_state.remove_emoji}"):
+                    st.session_state.nextpage = "remove_player_from_race"
+                    st.session_state.game_track_images_set = game_track_images_set
+                    st.session_state.game_track_images = game_track_images
+                    st.experimental_rerun()
+
+            with col3:
+                if st.button(f"Reset Game {st.session_state.reset_emoji}"):
+                    result = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/reset/{lobby_id}/{game_id}/{stage_id}")
+                    st.session_state.new_game = False
+                    st.session_state.show_awards = False
+                    st.experimental_rerun()
+
+            with col4:
+                if st.button(f"Download Data {st.session_state.download_emoji}"):
+                    st.session_state.nextpage = "download_race"
+                    st.session_state.game_track_images_set = game_track_images_set
+                    st.session_state.game_track_images = game_track_images
+                    st.experimental_rerun()
+
+            with col5:
+                if st.button(f"Detailed Statistics {st.session_state.statistics_emoji}"):
+                    st.session_state.nextpage = "statistics"
+                    st.session_state.game_track_images_set = game_track_images_set
+                    st.session_state.game_track_images = game_track_images
+                    st.experimental_rerun()
+
+            with col6:
+                if st.button(f"Delete Game {st.session_state.delete_emoji}"):
+                    result = fetch_delete(f"{settings.driftapi_path}/driftapi/manage_game/delete/{lobby_id}/{game_id}")
+                    st.session_state.game_id = None
+                    st.session_state.stage_id = 1
+                    st.session_state.num_stages = 1
+                    st.session_state.game_track_images_set = False
+                    st.session_state.game_track_images = None
+                    st.session_state.nextpage = "main_page"
+                    st.experimental_rerun()
  
     while True:
 
@@ -782,110 +903,219 @@ def app():
   
             scoreboard_len = len(scoreboard_data)
 
-            if(len(total_time_list) == scoreboard_len): # all players finished race    
-                min_total_time_indices_list = get_minvalue(total_time_list)
-                min_total_time_indices_list_len = len(min_total_time_indices_list)
-# handle normal case: one player on 1st place
-                for x in min_total_time_indices_list:
-                    if( (total_time_list[x] != "1440:00:000") ):
-                        scoreboard_data[x]["Platz"] = f"{st.session_state.award_1st_emoji}"
-                        total_time_list[x] = showTime(172800)  # fake 48h time - meaning player has been handled
-                    else:
-                        scoreboard_data[x]["Platz"] = "-"
-# cont. handle normal case: one player on 2nd place as well as special case more players on 2nd place
-                if min_total_time_indices_list_len == 1:
-                    min_total_time_indices_list = get_minvalue(total_time_list)
-                    min_total_time_indices_list_len = len(min_total_time_indices_list)
-                    for x in min_total_time_indices_list:
-                        if( (total_time_list[x] != "2880:00:000") ):
-                            if( (total_time_list[x] == "1440:00:000") ):
-                                scoreboard_data[x]["Platz"] = "-"
-                            else:
-                                scoreboard_data[x]["Platz"] = f"{st.session_state.award_2nd_emoji}"
+            if( game["individual_trial"] ):
+                if (st.session_state.show_awards):
+                    if(len(total_time_list) == scoreboard_len): # all players finished race    
+                        min_total_time_indices_list = get_minvalue(total_time_list)
+                        min_total_time_indices_list_len = len(min_total_time_indices_list)
+        # handle normal case: one player on 1st place
+                        for x in min_total_time_indices_list:
+                            if( (total_time_list[x] != "1440:00:000") ):
+                                scoreboard_data[x]["Platz"] = f"{st.session_state.award_1st_emoji}"
                                 total_time_list[x] = showTime(172800)  # fake 48h time - meaning player has been handled
-# cont. handle normal case: one player on 3rd place as well as special case more players on 3rd place
-                if min_total_time_indices_list_len == 1:
-                    min_total_time_indices_list = get_minvalue(total_time_list)
-                    min_total_time_indices_list_len = len(min_total_time_indices_list)
-                    for x in min_total_time_indices_list:
-                        if( (total_time_list[x] != "2880:00:000") ):
-                            if( (total_time_list[x] == "1440:00:000") ):
-                                scoreboard_data[x]["Platz"] = "-"
                             else:
-                                scoreboard_data[x]["Platz"] = f"{st.session_state.award_3rd_emoji}"
-                                total_time_list[x] = showTime(172800)  # fake 48h time
-# handle special case: two players on 1st place as well as special case more players on 3rd place                                   
-                elif min_total_time_indices_list_len == 2:
-                    min_total_time_indices_list = get_minvalue(total_time_list)
-                    min_total_time_indices_list_len = len(min_total_time_indices_list)
-                    for x in min_total_time_indices_list:
-                        if( (total_time_list[x] != "2880:00:000") ):
-                            if( (total_time_list[x] == "1440:00:000") ):
                                 scoreboard_data[x]["Platz"] = "-"
-                            else:
-                                scoreboard_data[x]["Platz"] = f"{st.session_state.award_3rd_emoji}"
-                                total_time_list[x] = showTime(172800)  # fake 48h time
+        # cont. handle normal case: one player on 2nd place as well as special case more players on 2nd place
+                        if min_total_time_indices_list_len == 1:
+                            min_total_time_indices_list = get_minvalue(total_time_list)
+                            min_total_time_indices_list_len = len(min_total_time_indices_list)
+                            for x in min_total_time_indices_list:
+                                if( (total_time_list[x] != "2880:00:000") ):
+                                    if( (total_time_list[x] == "1440:00:000") ):
+                                        scoreboard_data[x]["Platz"] = "-"
+                                    else:
+                                        scoreboard_data[x]["Platz"] = f"{st.session_state.award_2nd_emoji}"
+                                        total_time_list[x] = showTime(172800)  # fake 48h time - meaning player has been handled
+        # cont. handle normal case: one player on 3rd place as well as special case more players on 3rd place
+                        if min_total_time_indices_list_len == 1:
+                            min_total_time_indices_list = get_minvalue(total_time_list)
+                            min_total_time_indices_list_len = len(min_total_time_indices_list)
+                            for x in min_total_time_indices_list:
+                                if( (total_time_list[x] != "2880:00:000") ):
+                                    if( (total_time_list[x] == "1440:00:000") ):
+                                        scoreboard_data[x]["Platz"] = "-"
+                                    else:
+                                        scoreboard_data[x]["Platz"] = f"{st.session_state.award_3rd_emoji}"
+                                        total_time_list[x] = showTime(172800)  # fake 48h time
+        # handle special case: two players on 1st place as well as special case more players on 3rd place                                   
+                        elif min_total_time_indices_list_len == 2:
+                            min_total_time_indices_list = get_minvalue(total_time_list)
+                            min_total_time_indices_list_len = len(min_total_time_indices_list)
+                            for x in min_total_time_indices_list:
+                                if( (total_time_list[x] != "2880:00:000") ):
+                                    if( (total_time_list[x] == "1440:00:000") ):
+                                        scoreboard_data[x]["Platz"] = "-"
+                                    else:
+                                        scoreboard_data[x]["Platz"] = f"{st.session_state.award_3rd_emoji}"
+                                        total_time_list[x] = showTime(172800)  # fake 48h time
 
-# award for best lap / best bonus target score                        
-            if(len(best_lap_list) == scoreboard_len): # all players finished race
-                min_best_lap_indices_list = get_minvalue(best_lap_list)
-                for x in range(len(best_lap_list)):
-                    if x in min_best_lap_indices_list:
-                        if( (best_lap_list[x] != "1440:00:000") ):
-                            scoreboard_data[x]["Beste Runde"] = f"{st.session_state.award_bonus_emoji}"
+        # award for best lap / best bonus target score                        
+                    if(len(best_lap_list) == scoreboard_len): # all players finished race
+                        min_best_lap_indices_list = get_minvalue(best_lap_list)
+                        for x in range(len(best_lap_list)):
+                            if x in min_best_lap_indices_list:
+                                if( (best_lap_list[x] != "1440:00:000") ):
+                                    scoreboard_data[x]["Beste Runde"] = f"{st.session_state.award_bonus_emoji}"
+                                else:
+                                    scoreboard_data[x]["Beste Runde"] = "-"
+                            else:
+                                scoreboard_data[x]["Beste Runde"] = "-"
+
+                    if(len(total_score_list) == scoreboard_len): # all players finished race    
+                        max_total_score_indices_list = get_maxvalue(total_score_list)
+                        max_total_score_indices_list_len = len(max_total_score_indices_list)
+        # handle normal case: one player on 1st place
+                        for x in max_total_score_indices_list:
+                            scoreboard_data[x]["Platz"] = f"{st.session_state.award_1st_emoji}"
+                            total_score_list[x] = 0  # fake 0 score - meaning player has been handled
+        # cont. handle normal case: one player on 2nd place as well as special case more players on 2nd place
+                        if max_total_score_indices_list_len == 1:
+                            max_total_score_indices_list = get_maxvalue(total_score_list)
+                            max_total_score_indices_list_len = len(max_total_score_indices_list)
+                            for x in max_total_score_indices_list:
+                                scoreboard_data[x]["Platz"] = f"{st.session_state.award_2nd_emoji}"
+                                total_score_list[x] = 0  # fake 0 score - meaning player has been handled
+        # cont. handle normal case: one player on 3rd place as well as special case more players on 3rd place
+                        if max_total_score_indices_list_len == 1:
+                            max_total_score_indices_list = get_maxvalue(total_score_list)
+                            max_total_score_indices_list_len = len(max_total_score_indices_list)
+                            for x in max_total_score_indices_list:
+                                scoreboard_data[x]["Platz"] = f"{st.session_state.award_3rd_emoji}"
+                                total_score_list[x] = 0  # fake 0 score - meaning player has been handled
+        # handle special case: two players on 1st place as well as special case more players on 3rd place                                   
+                        elif max_total_score_indices_list_len == 2:
+                            max_total_score_indices_list = get_maxvalue(total_score_list)
+                            max_total_score_indices_list_len = len(max_total_score_indices_list)
+                            for x in max_total_score_indices_list:
+                                scoreboard_data[x]["Platz"] = f"{st.session_state.award_3rd_emoji}"
+                                total_score_list[x] = 0  # fake 0 score - meaning player has been handled
+
+                    if(len(best_target_list) == scoreboard_len): # all players finished race
+                        max_best_target_indices_list = get_maxvalue(best_target_list)
+                        for x in range(len(best_target_list)):
+                            if x in max_best_target_indices_list:
+                                scoreboard_data[x]["Bonus Target"] = f"{st.session_state.award_bonus_emoji}"
+                            else:
+                                scoreboard_data[x]["Bonus Target"] = "-"
+
+        # award for shortest distance                        
+                    if(len(shortest_distance_list) == scoreboard_len): # all players finished race
+                        min_shortest_distance_list_indices_list = get_minvalue(shortest_distance_list)
+                        for x in range(len(shortest_distance_list)):
+                            if x in min_shortest_distance_list_indices_list:
+                                if( (shortest_distance_list[x] != "9999km 999m") ):
+                                    scoreboard_data[x]["Kürzeste Strecke"] = f"{st.session_state.award_bonus_emoji}"
+                                else:
+                                    scoreboard_data[x]["Kürzeste Strecke"] = "-"
+                            else:
+                                scoreboard_data[x]["Kürzeste Strecke"] = "-"
+
+            else:
+
+                if(len(total_time_list) == scoreboard_len): # all players finished race    
+                    min_total_time_indices_list = get_minvalue(total_time_list)
+                    min_total_time_indices_list_len = len(min_total_time_indices_list)
+    # handle normal case: one player on 1st place
+                    for x in min_total_time_indices_list:
+                        if( (total_time_list[x] != "1440:00:000") ):
+                            scoreboard_data[x]["Platz"] = f"{st.session_state.award_1st_emoji}"
+                            total_time_list[x] = showTime(172800)  # fake 48h time - meaning player has been handled
+                        else:
+                            scoreboard_data[x]["Platz"] = "-"
+    # cont. handle normal case: one player on 2nd place as well as special case more players on 2nd place
+                    if min_total_time_indices_list_len == 1:
+                        min_total_time_indices_list = get_minvalue(total_time_list)
+                        min_total_time_indices_list_len = len(min_total_time_indices_list)
+                        for x in min_total_time_indices_list:
+                            if( (total_time_list[x] != "2880:00:000") ):
+                                if( (total_time_list[x] == "1440:00:000") ):
+                                    scoreboard_data[x]["Platz"] = "-"
+                                else:
+                                    scoreboard_data[x]["Platz"] = f"{st.session_state.award_2nd_emoji}"
+                                    total_time_list[x] = showTime(172800)  # fake 48h time - meaning player has been handled
+    # cont. handle normal case: one player on 3rd place as well as special case more players on 3rd place
+                    if min_total_time_indices_list_len == 1:
+                        min_total_time_indices_list = get_minvalue(total_time_list)
+                        min_total_time_indices_list_len = len(min_total_time_indices_list)
+                        for x in min_total_time_indices_list:
+                            if( (total_time_list[x] != "2880:00:000") ):
+                                if( (total_time_list[x] == "1440:00:000") ):
+                                    scoreboard_data[x]["Platz"] = "-"
+                                else:
+                                    scoreboard_data[x]["Platz"] = f"{st.session_state.award_3rd_emoji}"
+                                    total_time_list[x] = showTime(172800)  # fake 48h time
+    # handle special case: two players on 1st place as well as special case more players on 3rd place                                   
+                    elif min_total_time_indices_list_len == 2:
+                        min_total_time_indices_list = get_minvalue(total_time_list)
+                        min_total_time_indices_list_len = len(min_total_time_indices_list)
+                        for x in min_total_time_indices_list:
+                            if( (total_time_list[x] != "2880:00:000") ):
+                                if( (total_time_list[x] == "1440:00:000") ):
+                                    scoreboard_data[x]["Platz"] = "-"
+                                else:
+                                    scoreboard_data[x]["Platz"] = f"{st.session_state.award_3rd_emoji}"
+                                    total_time_list[x] = showTime(172800)  # fake 48h time
+
+    # award for best lap / best bonus target score                        
+                if(len(best_lap_list) == scoreboard_len): # all players finished race
+                    min_best_lap_indices_list = get_minvalue(best_lap_list)
+                    for x in range(len(best_lap_list)):
+                        if x in min_best_lap_indices_list:
+                            if( (best_lap_list[x] != "1440:00:000") ):
+                                scoreboard_data[x]["Beste Runde"] = f"{st.session_state.award_bonus_emoji}"
+                            else:
+                                scoreboard_data[x]["Beste Runde"] = "-"
                         else:
                             scoreboard_data[x]["Beste Runde"] = "-"
-                    else:
-                        scoreboard_data[x]["Beste Runde"] = "-"
 
-            if(len(total_score_list) == scoreboard_len): # all players finished race    
-                max_total_score_indices_list = get_maxvalue(total_score_list)
-                max_total_score_indices_list_len = len(max_total_score_indices_list)
-# handle normal case: one player on 1st place
-                for x in max_total_score_indices_list:
-                    scoreboard_data[x]["Platz"] = f"{st.session_state.award_1st_emoji}"
-                    total_score_list[x] = 0  # fake 0 score - meaning player has been handled
-# cont. handle normal case: one player on 2nd place as well as special case more players on 2nd place
-                if max_total_score_indices_list_len == 1:
+                if(len(total_score_list) == scoreboard_len): # all players finished race    
                     max_total_score_indices_list = get_maxvalue(total_score_list)
                     max_total_score_indices_list_len = len(max_total_score_indices_list)
+    # handle normal case: one player on 1st place
                     for x in max_total_score_indices_list:
-                        scoreboard_data[x]["Platz"] = f"{st.session_state.award_2nd_emoji}"
+                        scoreboard_data[x]["Platz"] = f"{st.session_state.award_1st_emoji}"
                         total_score_list[x] = 0  # fake 0 score - meaning player has been handled
-# cont. handle normal case: one player on 3rd place as well as special case more players on 3rd place
-                if max_total_score_indices_list_len == 1:
-                    max_total_score_indices_list = get_maxvalue(total_score_list)
-                    max_total_score_indices_list_len = len(max_total_score_indices_list)
-                    for x in max_total_score_indices_list:
-                        scoreboard_data[x]["Platz"] = f"{st.session_state.award_3rd_emoji}"
-                        total_score_list[x] = 0  # fake 0 score - meaning player has been handled
-# handle special case: two players on 1st place as well as special case more players on 3rd place                                   
-                elif max_total_score_indices_list_len == 2:
-                    max_total_score_indices_list = get_maxvalue(total_score_list)
-                    max_total_score_indices_list_len = len(max_total_score_indices_list)
-                    for x in max_total_score_indices_list:
-                        scoreboard_data[x]["Platz"] = f"{st.session_state.award_3rd_emoji}"
-                        total_score_list[x] = 0  # fake 0 score - meaning player has been handled
+    # cont. handle normal case: one player on 2nd place as well as special case more players on 2nd place
+                    if max_total_score_indices_list_len == 1:
+                        max_total_score_indices_list = get_maxvalue(total_score_list)
+                        max_total_score_indices_list_len = len(max_total_score_indices_list)
+                        for x in max_total_score_indices_list:
+                            scoreboard_data[x]["Platz"] = f"{st.session_state.award_2nd_emoji}"
+                            total_score_list[x] = 0  # fake 0 score - meaning player has been handled
+    # cont. handle normal case: one player on 3rd place as well as special case more players on 3rd place
+                    if max_total_score_indices_list_len == 1:
+                        max_total_score_indices_list = get_maxvalue(total_score_list)
+                        max_total_score_indices_list_len = len(max_total_score_indices_list)
+                        for x in max_total_score_indices_list:
+                            scoreboard_data[x]["Platz"] = f"{st.session_state.award_3rd_emoji}"
+                            total_score_list[x] = 0  # fake 0 score - meaning player has been handled
+    # handle special case: two players on 1st place as well as special case more players on 3rd place                                   
+                    elif max_total_score_indices_list_len == 2:
+                        max_total_score_indices_list = get_maxvalue(total_score_list)
+                        max_total_score_indices_list_len = len(max_total_score_indices_list)
+                        for x in max_total_score_indices_list:
+                            scoreboard_data[x]["Platz"] = f"{st.session_state.award_3rd_emoji}"
+                            total_score_list[x] = 0  # fake 0 score - meaning player has been handled
 
-            if(len(best_target_list) == scoreboard_len): # all players finished race
-                max_best_target_indices_list = get_maxvalue(best_target_list)
-                for x in range(len(best_target_list)):
-                    if x in max_best_target_indices_list:
-                        scoreboard_data[x]["Bonus Target"] = f"{st.session_state.award_bonus_emoji}"
-                    else:
-                        scoreboard_data[x]["Bonus Target"] = "-"
+                if(len(best_target_list) == scoreboard_len): # all players finished race
+                    max_best_target_indices_list = get_maxvalue(best_target_list)
+                    for x in range(len(best_target_list)):
+                        if x in max_best_target_indices_list:
+                            scoreboard_data[x]["Bonus Target"] = f"{st.session_state.award_bonus_emoji}"
+                        else:
+                            scoreboard_data[x]["Bonus Target"] = "-"
 
-# award for shortest distance                        
-            if(len(shortest_distance_list) == scoreboard_len): # all players finished race
-                min_shortest_distance_list_indices_list = get_minvalue(shortest_distance_list)
-                for x in range(len(shortest_distance_list)):
-                    if x in min_shortest_distance_list_indices_list:
-                        if( (shortest_distance_list[x] != "9999km 999m") ):
-                            scoreboard_data[x]["Kürzeste Strecke"] = f"{st.session_state.award_bonus_emoji}"
+    # award for shortest distance                        
+                if(len(shortest_distance_list) == scoreboard_len): # all players finished race
+                    min_shortest_distance_list_indices_list = get_minvalue(shortest_distance_list)
+                    for x in range(len(shortest_distance_list)):
+                        if x in min_shortest_distance_list_indices_list:
+                            if( (shortest_distance_list[x] != "9999km 999m") ):
+                                scoreboard_data[x]["Kürzeste Strecke"] = f"{st.session_state.award_bonus_emoji}"
+                            else:
+                                scoreboard_data[x]["Kürzeste Strecke"] = "-"
                         else:
                             scoreboard_data[x]["Kürzeste Strecke"] = "-"
-                    else:
-                        scoreboard_data[x]["Kürzeste Strecke"] = "-"
 
             df = pd.DataFrame( scoreboard_data )
             st.dataframe(df)

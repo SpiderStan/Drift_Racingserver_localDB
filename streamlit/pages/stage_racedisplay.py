@@ -371,7 +371,7 @@ def app():
     st.header("Game Statistics of Event " + str(game_id) + " from Lobby " + str(lobby_id))
 
     games = []
-    joker_lap_code = [None,None,None,None,None,None,None,None,None,None]
+    joker_lap_code = [None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None]
     scoreboard = []
     track_image_upload = []
     track_image = []
@@ -428,12 +428,12 @@ def app():
     with col1:
         if st.button(f"Back to Menu {st.session_state.back_emoji}"):
             st.session_state.nextpage = "main_page"
-            st.session_state.game_track_images_set = [False,False,False,False,False,False,False,False,False,False]
-            st.session_state.game_track_images = [None,None,None,None,None,None,None,None,None,None]
+            st.session_state.game_track_images_set = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
+            st.session_state.game_track_images = [None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None]
             st.experimental_rerun()
 
     with col2:
-        if st.button(f"Start in 2 Min. {st.session_state.emoji_driving}"):
+        if st.button(f"Start in 1 Min. {st.session_state.emoji_driving}"):
             result = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/start_stage/{lobby_id}/{game_id}/{stage_id}")
             st.session_state.new_stage_event = False
             st.experimental_rerun()
@@ -478,8 +478,8 @@ def app():
             st.session_state.stage_id = 1
             st.session_state.num_stages = 1
             st.session_state.nextpage = "main_page"
-            st.session_state.game_track_images_set = [False,False,False,False,False,False,False,False,False,False]
-            st.session_state.game_track_images = [None,None,None,None,None,None,None,None,None,None]
+            st.session_state.game_track_images_set = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
+            st.session_state.game_track_images = [None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None]
             st.experimental_rerun()
  
     while True:
@@ -495,7 +495,7 @@ def app():
         if(current_time <= start_time):
             next_race.text("Stage starts in approx. " + str(time_delay))
         else:
-            next_race.text("Time elapsed! Please press Button 'Set Starting Lights in 2 Min.' or 'Reset Event' and Sync. in Sturmkind App before entering a Stage")
+            next_race.text("Time elapsed! Please press Button 'Start in 1 Min.' or 'Reset Event' and Sync. in Sturmkind App before entering a Stage")
 
         scoreboard_data = []
         scoreboard_len = []

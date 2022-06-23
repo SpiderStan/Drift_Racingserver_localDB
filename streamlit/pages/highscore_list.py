@@ -34,7 +34,7 @@ def app():
             st.experimental_rerun()
 
     with col2:
-        if st.button(f"Remove Player from List {st.session_state.remove_emoji}"):
+        if st.button(f"Remove Player {st.session_state.remove_emoji}"):
             st.session_state.nextpage = "remove_player_from_highscore_list"
             st.experimental_rerun()
 

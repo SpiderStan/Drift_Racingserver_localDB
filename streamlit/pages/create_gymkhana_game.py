@@ -30,6 +30,7 @@ def app():
     with st.form("my_form", clear_on_submit=True):
         gameOptions = {}
         game_id = st.text_input("Game ID", value="Drift1", max_chars=None, key=None, type="default", help=None, autocomplete=None, on_change=None, disabled=False)
+        individual_trial = st.checkbox("Individual Time Trail Mode", value=False, key=None, help="if set, user can decide when award ceremony should take place", on_change=None)
 
         with st.expander(f"Optional settings {st.session_state.tweak_game_emoji}", expanded=True):
             #password = st.text_input("password", value="", max_chars=None, key=None, type="default", help=None, autocomplete=None, on_change=None, disabled=False)
@@ -115,6 +116,8 @@ def app():
                 if bonus_target_set:
                     body['bonus_target'] = str(bonus_target_selected)
 
+                body['individual_trial'] = individual_trial
+
                 num_stages = 1
                 stage_id = 1
                 body['num_stages'] = str(num_stages)
@@ -133,8 +136,9 @@ def app():
                 st.session_state.num_stages = num_stages
                 st.session_state.game_track_images_set = False
                 st.session_state.game_track_images = None
+                st.session_state.show_awards = False
                 st.experimental_rerun()
 
-    if st.button(f"Back to Main Menu {st.session_state.back_emoji}"):
+    if st.button(f"Back {st.session_state.back_emoji}"):
         st.session_state.nextpage = "main_page"
         st.experimental_rerun()

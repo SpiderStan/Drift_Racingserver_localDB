@@ -18,6 +18,6 @@ def app():
             st.session_state.nextpage = "create_stagerace_config"
             st.experimental_rerun()
 
-    if st.button(f"Back to Main Menu of Lobby {st.session_state.back_emoji}"):
+    if st.button(f"Back {st.session_state.back_emoji}"):
         st.session_state.nextpage = "main_page"
         st.experimental_rerun()

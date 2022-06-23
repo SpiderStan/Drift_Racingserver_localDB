@@ -26,34 +26,47 @@ def app():
         del st.session_state.game_track_images_set
     if 'game_track_images' in st.session_state:
         del st.session_state.game_track_images
+    if 'show_awards' in  st.session_state:
+        del st.session_state.show_awards
 
-    if st.button(f"New Race Game {st.session_state.create_emoji}"):
-        st.session_state.nextpage = "create_race_game"
-        st.experimental_rerun()
-        
-    if st.button(f"New Gymkhana Game {st.session_state.create_emoji}"):
-        st.session_state.nextpage = "create_gymkhana_game"
-        st.experimental_rerun()
+    colM11, colM12, colM13, colM14 = st.columns(4)
 
-    if st.button(f"New Stage Race Game {st.session_state.create_emoji}"):
-        st.session_state.nextpage = "create_pre_stagerace_game"
-        st.experimental_rerun()
+    with colM11:
+        if st.button(f"New Race Game {st.session_state.create_emoji}"):
+            st.session_state.nextpage = "create_race_game"
+            st.experimental_rerun()
 
-    if st.button(f"Gymkhana High Score List {st.session_state.award_trophy_emoji}"):
-        st.session_state.nextpage = "highscore_list"
-        st.experimental_rerun()
+    with colM12:        
+        if st.button(f"New Gymkhana Game {st.session_state.create_emoji}"):
+            st.session_state.nextpage = "create_gymkhana_game"
+            st.experimental_rerun()
 
-    if st.button(f"Show Game {st.session_state.show_game_emoji}"):
-        st.session_state.nextpage = "select_race"
-        st.experimental_rerun()
+    with colM13:
+        if st.button(f"New Stage Race Game {st.session_state.create_emoji}"):
+            st.session_state.nextpage = "create_pre_stagerace_game"
+            st.experimental_rerun()
 
-    if st.button(f"Delete Game {st.session_state.delete_emoji}"):
-        st.session_state.nextpage = "delete_race"
-        st.experimental_rerun()
+    with colM14:
+        if st.button(f"Gymkhana High Scores {st.session_state.award_trophy_emoji}"):
+            st.session_state.nextpage = "highscore_list"
+            st.experimental_rerun()
 
-    if st.button(f"Quit Lobby " + str(lobby_id) + f" {st.session_state.quit_emoji}"):
-        st.session_state.nextpage = "pre_mainpage"
-        st.experimental_rerun()
+    colM21, colM22, colM23, colM24 = st.columns(4)
+
+    with colM21:
+        if st.button(f"Show Game {st.session_state.show_game_emoji}"):
+            st.session_state.nextpage = "select_race"
+            st.experimental_rerun()
+
+    with colM22:
+        if st.button(f"Delete Game {st.session_state.delete_emoji}"):
+            st.session_state.nextpage = "delete_race"
+            st.experimental_rerun()
+
+    with colM23:
+        if st.button(f"Quit Lobby " + str(lobby_id) + f" {st.session_state.quit_emoji}"):
+            st.session_state.nextpage = "pre_mainpage"
+            st.experimental_rerun()
 
     st.write("Available Games in Lobby " + str(lobby_id))
     result = fetch_post(f"{settings.driftapi_path}/driftapi/manage_game/find/{lobby_id}/", {})

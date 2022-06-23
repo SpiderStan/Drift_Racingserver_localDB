@@ -29,6 +29,6 @@ def app():
             st.session_state.num_stages = num_stages
             st.experimental_rerun()
 
-    if st.button(f"Back to Main Menu {st.session_state.back_emoji}"):
+    if st.button(f"Back {st.session_state.back_emoji}"):
         st.session_state.nextpage = "main_page"
         st.experimental_rerun()

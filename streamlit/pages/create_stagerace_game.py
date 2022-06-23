@@ -178,6 +178,8 @@ def app():
 
                 body['start_time'] = str(start_time)
 
+                body['individual_trial'] = False
+
                 if(game_type_selected[x] == "RACE"):
                     if time_limit_enabled[x]:
                         body['time_limit'] = str(time_limit[x])
@@ -226,9 +228,10 @@ def app():
             st.session_state.num_stages = num_stages
             st.session_state.game_track_images_set = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
             st.session_state.game_track_images = [None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None]
+            st.session_state.show_awards = False
             st.experimental_rerun()
 
-    if st.button(f"Back to Main Menu {st.session_state.back_emoji}"):
+    if st.button(f"Back {st.session_state.back_emoji}"):
         if 'game_type_selected' in st.session_state:
             del st.session_state.game_type_selected
         st.session_state.game_id = None
