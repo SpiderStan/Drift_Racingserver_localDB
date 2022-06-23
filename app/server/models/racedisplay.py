@@ -44,6 +44,7 @@ class GameSchema(BaseModel):
     bonus_target:Optional[bonus_target]
     joker_lap_code:Optional[int] = Field(None, title="if set, this target code counter is displayed to be used for joker-laps etc.")
     joker_lap_precondition_code:Optional[int] = Field(None, title="if set, this target code is required to be detected before the joker-lap code to count as actual joker lap.")
+    individual_trial:bool = Field(False, title="enable/disable individual time/score trial")
 
     class Config:
         schema_extra = {
@@ -64,6 +65,7 @@ class GameSchema(BaseModel):
 				"bonus_target": "SPEED",
 				"joker_lap_code": 0,
 				"joker_lap_precondition_code": 0,
+                "individual_trial": False,
             }
         }
 
