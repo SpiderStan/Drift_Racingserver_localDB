@@ -81,7 +81,8 @@ def game_helper(game) -> dict:
         "game_mode": game["game_mode"],
         "bonus_target": game["bonus_target"],
         "joker_lap_code": game["joker_lap_code"],
-        "joker_lap_precondition_code": game["joker_lap_precondition_code"],	
+        "joker_lap_precondition_code": game["joker_lap_precondition_code"],
+        "individual_trial": game["individual_trial"],
     }
 
 def player_helper(player) -> dict:
@@ -280,7 +281,7 @@ async def delete_players(lobby_id: str, game_id: str, stage_id: int):
 #next delete all players (also includes all stages)   
     async for player in driftapi_playerstatus_collection.find({"lobby_id":lobby_id, "game_id":game_id}):
         await driftapi_playerstatus_collection.delete_one({"lobby_id":lobby_id, "game_id":game_id})
-# Feature add: if start time was set in game, than set as current time + 2 min:
+# Feature add: if start time was set in game, than set as current time + 1 min:
     game = await driftapi_game_collection.find_one({"lobby_id":lobby_id, "game_id":game_id})
     if game:
         game_data = GameSchema(
@@ -301,13 +302,14 @@ async def delete_players(lobby_id: str, game_id: str, stage_id: int):
             game_mode = game["game_mode"],
             bonus_target = game["bonus_target"],
             joker_lap_code = game["joker_lap_code"],
-            joker_lap_precondition_code = game["joker_lap_precondition_code"]
+            joker_lap_precondition_code = game["joker_lap_precondition_code"],
+            individual_trial = game["individual_trial"]
         )
         game_data = jsonable_encoder(game_data)
 
         if ( game_data["start_time"] != None):
             current_time = datetime.now()
-            n = 2
+            n = 1
             future_time = current_time + timedelta(minutes=n)
             start_time = future_time.astimezone(timezone.utc)
             
@@ -325,7 +327,7 @@ async def delete_players_from_stage(lobby_id: str, game_id: str, stage_id: int):
         await driftapi_playerstatus_collection.delete_one({"lobby_id":lobby_id, "game_id":game_id, "stage_id":stage_id})
     return True
        
-# Set the starting lights in 2 minutes (also include all stages if multiple) 
+# Set the starting lights in 1 minutes (also include all stages if multiple) 
 async def start_stage(lobby_id: str, game_id: str, stage_id: int):
     game = await driftapi_game_collection.find_one({"lobby_id":lobby_id, "game_id":game_id})
     if game:
@@ -350,12 +352,13 @@ async def start_stage(lobby_id: str, game_id: str, stage_id: int):
                     game_mode = game["game_mode"],
                     bonus_target = game["bonus_target"],
                     joker_lap_code = game["joker_lap_code"],
-                    joker_lap_precondition_code = game["joker_lap_precondition_code"]
+                    joker_lap_precondition_code = game["joker_lap_precondition_code"],
+                    individual_trial = game["individual_trial"]
                 )
                 game_data = jsonable_encoder(game_data)
 
                 current_time = datetime.now()
-                n = 2
+                n = 1
                 future_time = current_time + timedelta(minutes=n)
                 start_time = future_time.astimezone(timezone.utc)
                     
@@ -499,6 +502,7 @@ async def insert_raceevent(lobby_id: str, game_id:str, stage_id:int, obj: RaceEv
                     bonus_target = game["bonus_target"],
                     joker_lap_code = game["joker_lap_code"],
                     joker_lap_precondition_code = game["joker_lap_precondition_code"], 
+                    individual_trial = game["individual_trial"]
                 )
                 game_data = jsonable_encoder(game_data)
 
