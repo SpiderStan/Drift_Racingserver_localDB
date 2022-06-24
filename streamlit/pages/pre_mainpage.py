@@ -77,9 +77,6 @@ def app():
     if "target_emoji" not in st.session_state:
         st.session_state.target_emoji = "🎯"
 
-
-
-
     if 'lobby_id' in st.session_state:
         del st.session_state.lobby_id
         
@@ -93,6 +90,10 @@ def app():
 
     if st.button(f"Delete Lobby {st.session_state.delete_emoji}"):
         st.session_state.nextpage = "delete_lobby"
+        st.experimental_rerun()
+
+    if st.button(f"System Settings {st.session_state.tweak_game_emoji}"):
+        st.session_state.nextpage = "system_settings"
         st.experimental_rerun()
 
     st.write("Available Lobbies:")

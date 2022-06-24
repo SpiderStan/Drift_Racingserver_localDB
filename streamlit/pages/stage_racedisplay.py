@@ -386,7 +386,7 @@ def app():
             st.session_state.nextpage = "main_page"
             st.experimental_rerun()
         if game:
-            with st.expander(f"Game Statistics of Sage " + str(x+1) + " - " + str(game["game_mode"]) + " - Join the game via URL: http://"+str(settings.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(x+1)+" and GAME ID: "+str(game_id) + "   " + str(game["track_id"]) +  f"{st.session_state.show_game_emoji}", expanded = False):
+            with st.expander(f"Game Statistics of Sage " + str(x+1) + " - " + str(game["game_mode"]) + " - Join the game via URL: http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(x+1)+" and GAME ID: "+str(game_id) + "   " + str(game["track_id"]) +  f"{st.session_state.show_game_emoji}", expanded = False):
                 st.write(game)
 
                 track_image.append(st.empty())
@@ -417,8 +417,8 @@ def app():
 #placeholder= st.image('loading4.gif')
 #placeholder.empty()
 
-#    with st.expander(f"Connection info {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(settings.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+"/ and GAME ID: "+str(game_id), expanded=False):
-#        submitUri:str = "http://"+str(settings.ip_address)+":8001/game/driftapi/"+str(lobby_id)+"/"+str(stage_id)+"/"
+#    with st.expander(f"Connection info {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+"/ and GAME ID: "+str(game_id), expanded=False):
+#        submitUri:str = "http://"+str(st.session_state.ip_address)+":8001/game/driftapi/"+str(lobby_id)+"/"+str(stage_id)+"/"
 #        st.image(getqrcode(submitUri), clamp=True)
 #        st.write("URL: "+submitUri)
 #        st.write("GAME ID: "+game_id)
