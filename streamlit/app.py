@@ -5,7 +5,7 @@ from PIL import Image
 
 # Custom imports 
 from multipage import MultiPage
-from pages import pre_mainpage, mainpage, create_lobby, select_lobby, delete_lobby, create_race_game, create_gymkhana_game, create_stagerace_config, create_pre_stagerace_game, create_stagerace_game, select_race, delete_race, racedisplay, stage_racedisplay, download_race, download_stagerace, remove_player_from_race, remove_player_from_stage_part1, remove_player_from_stage_part2, reset_stage, statistics, statistics_stage, download_statistics, highscore_list, remove_player_from_highscore_list # import your pages here
+from pages import pre_mainpage, mainpage, create_lobby, select_lobby, delete_lobby, create_race_game, create_gymkhana_game, create_stagerace_config, create_pre_stagerace_game, create_stagerace_game, select_race, delete_race, racedisplay, stage_racedisplay, download_race, download_stagerace, remove_player_from_race, remove_player_from_stage_part1, remove_player_from_stage_part2, reset_stage, statistics, statistics_stage, download_statistics, highscore_list, remove_player_from_highscore_list, system_settings # import your pages here
 
 def _max_width_(prcnt_width:int = 75):
     max_width_str = f"max-width: {prcnt_width}%;"
@@ -103,9 +103,15 @@ if __name__ == '__main__':
 #    set_png_as_page_bg('black_background.png')
  
     app = MultiPage()
+
+    if "app_title" not in st.session_state:
+        st.session_state.app_title = f"🏎️ DR!FT Racingserver ⛽"
+
+    if "ip_address" not in st.session_state:
+        st.session_state.ip_address = "127.0.0.1"
     
 # Title of the main page
-    st.title(f"🏎️ DR!FT Racingserver ⛽")
+    st.title(st.session_state.app_title)
 #    colT1,colT2 = st.columns([1,7])
 #    with colT2:
 #        st.title(f"🏎️ DR!FT Racingserver ⛽")
@@ -115,6 +121,7 @@ if __name__ == '__main__':
     app.add_page("create_lobby", create_lobby.app)
     app.add_page("select_lobby", select_lobby.app)
     app.add_page("delete_lobby", delete_lobby.app)
+    app.add_page("system_settings", system_settings.app)
     app.add_page("main_page", mainpage.app)
     app.add_page("create_race_game", create_race_game.app)
     app.add_page("create_gymkhana_game", create_gymkhana_game.app)
