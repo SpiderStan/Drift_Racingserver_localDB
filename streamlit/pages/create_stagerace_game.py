@@ -32,7 +32,7 @@ def app():
 
     st.write("Configure the new Stage Race Game " + str(game_id) + " in Lobby " + str(lobby_id) + " (Part 2)")
     
-    track_id = ["","","","","","","","","",""]
+    track_id = ["","","","","","","","","","","","","","","","","","","",""]
     time_limit_enabled = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
     time_limit = [None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None]
     lap_limit_enabled = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]

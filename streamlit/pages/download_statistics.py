@@ -180,17 +180,20 @@ def app():
                 else:
                     gymkhana_target = "Finish"
 
-            section_distance = r["target_data"]["driven_distance"] - last_round_driven_distance
-            section_time = r["target_data"]["driven_time"] - last_round_driven_time
-            sum_score = sum_score + r["target_data"]["score"]
-            d[str(scoreboard_data[player]["user_name"]) + f" {st.session_state.target_emoji}"] = gymkhana_target
-            d[f"{st.session_state.points_emoji}"] = str(r["target_data"]["score"])
-            d[f" ∑ {st.session_state.points_emoji}"] = sum_score
-            d[f"{st.session_state.distance_emoji}"] = showDistance(section_distance)
-            d[f"{st.session_state.time_emoji}"] = showTime(section_time)
-            d[f"{st.session_state.average_speed_emoji}"] = f"Ø " + showMeanSpeed(section_distance,section_time)
-            last_round_driven_distance = r["target_data"]["driven_distance"]
-            last_round_driven_time = r["target_data"]["driven_time"]
+                section_distance = r["target_data"]["driven_distance"] - last_round_driven_distance
+                section_time = r["target_data"]["driven_time"] - last_round_driven_time
+                sum_score = sum_score + r["target_data"]["score"]
+                d[str(scoreboard_data[player]["user_name"]) + f" {st.session_state.target_emoji}"] = gymkhana_target
+                d[f"{st.session_state.points_emoji}"] = str(r["target_data"]["score"])
+                d[f" ∑ {st.session_state.points_emoji}"] = sum_score
+                d[f"{st.session_state.distance_emoji}"] = showDistance(section_distance)
+                d[f"{st.session_state.time_emoji}"] = showTime(section_time)
+                d[f"Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(section_distance,section_time)
+                d[f" ∑ {st.session_state.distance2_emoji}"] = showDistance(r["target_data"]["driven_distance"])
+                d[f" ∑ {st.session_state.time2_emoji}"] = showTime(r["target_data"]["driven_time"])
+                d[f"Cum. Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(r["target_data"]["driven_distance"],r["target_data"]["driven_time"])
+                last_round_driven_distance = r["target_data"]["driven_distance"]
+                last_round_driven_time = r["target_data"]["driven_time"]
 
         return (d,last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,next_section_condition,sum_score)
 

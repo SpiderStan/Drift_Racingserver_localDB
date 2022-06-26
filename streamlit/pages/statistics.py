@@ -12,7 +12,6 @@ from math import floor
 from  .session import fetch_post, fetch_put, fetch_get, fetch_delete
 from .singletons import settings, logger
 
-
 def getGameInfo(lobby_id, game_id, stage_id):
     return fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/get/{lobby_id}/{game_id}/{stage_id}/")
 
@@ -209,7 +208,10 @@ def app():
                         d[f" ∑ {st.session_state.points_emoji}"] = sum_score
                         d[f"{st.session_state.distance_emoji}"] = showDistance(section_distance)
                         d[f"{st.session_state.time_emoji}"] = showTime(section_time)
-                        d[f"{st.session_state.average_speed_emoji}"] = f"Ø " + showMeanSpeed(section_distance,section_time)
+                        d[f"Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(section_distance,section_time)
+                        d[f" ∑ {st.session_state.distance2_emoji}"] = showDistance(r["target_data"]["driven_distance"])
+                        d[f" ∑ {st.session_state.time2_emoji}"] = showTime(r["target_data"]["driven_time"])
+                        d[f"Cum. Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(r["target_data"]["driven_distance"],r["target_data"]["driven_time"])
                         last_round_driven_distance = r["target_data"]["driven_distance"]
                         last_round_driven_time = r["target_data"]["driven_time"]
 
