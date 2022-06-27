@@ -18,6 +18,8 @@ def app():
         st.session_state.emoji_driving = "🏎️"
     if "emoji_finish" not in st.session_state:
         st.session_state.emoji_finish = "🏁"
+    if "emoji_round" not in st.session_state:
+        st.session_state.emoji_round = "🚩"           
     if "back_emoji" not in st.session_state:
         st.session_state.back_emoji = "◀️"
     if "delete_emoji" not in st.session_state:
