@@ -31,8 +31,8 @@ def app():
                         st.session_state.show_awards = False
                         st.session_state.nextpage = "racedisplay"
                     else:
-                        st.session_state.game_track_images_set = [False,False,False,False,False,False,False,False,False,False]
-                        st.session_state.game_track_images = [None,None,None,None,None,None,None,None,None,None]
+                        st.session_state.game_track_images_set = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
+                        st.session_state.game_track_images = [None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None]
                         st.session_state.show_awards = False
                         st.session_state.nextpage = "stage_racedisplay"   
                     st.experimental_rerun()
