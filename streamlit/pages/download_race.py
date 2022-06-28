@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 from math import floor
 
-from  .session import fetch_post, fetch_put, fetch_get, fetch_delete
+from .session import fetch_post, fetch_put, fetch_get, fetch_delete
 from .singletons import settings, logger
 
 def getGameInfo(lobby_id, game_id, stage_id):

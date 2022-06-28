@@ -423,7 +423,7 @@ def app():
             col1, col2, col3, col4, col5, col6, col7, col8 = st.columns(8)
 
             with col1:
-                if st.button(f"Back to Menu {st.session_state.back_emoji}"):
+                if st.button(f"Back {st.session_state.back_emoji}"):
                     st.session_state.nextpage = "main_page"
                     st.session_state.game_track_images_set = False
                     st.session_state.game_track_images = None
@@ -485,7 +485,7 @@ def app():
             col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
 
             with col1:
-                if st.button(f"Back to Menu {st.session_state.back_emoji}"):
+                if st.button(f"Back {st.session_state.back_emoji}"):
                     st.session_state.nextpage = "main_page"
                     st.session_state.game_track_images_set = False
                     st.session_state.game_track_images = None
@@ -543,7 +543,7 @@ def app():
             col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
 
             with col1:
-                if st.button(f"Back to Menu {st.session_state.back_emoji}"):
+                if st.button(f"Back {st.session_state.back_emoji}"):
                     st.session_state.nextpage = "main_page"
                     st.session_state.game_track_images_set = False
                     st.session_state.game_track_images = None
@@ -596,7 +596,7 @@ def app():
             col1, col2, col3, col4, col5, col6 = st.columns(6)
 
             with col1:
-                if st.button(f"Back to Menu {st.session_state.back_emoji}"):
+                if st.button(f"Back {st.session_state.back_emoji}"):
                     st.session_state.nextpage = "main_page"
                     st.session_state.game_track_images_set = False
                     st.session_state.game_track_images = None

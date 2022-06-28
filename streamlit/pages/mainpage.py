@@ -47,23 +47,28 @@ def app():
             st.experimental_rerun()
 
     with colM14:
-        if st.button(f"Gymkhana High Scores {st.session_state.award_trophy_emoji}"):
-            st.session_state.nextpage = "highscore_list"
+        if st.button(f"New Gymkhana Training {st.session_state.create_emoji}"):
+            st.session_state.nextpage = "create_gymkhana_training"
             st.experimental_rerun()
 
     colM21, colM22, colM23, colM24 = st.columns(4)
 
     with colM21:
+        if st.button(f"Gymkhana High Scores {st.session_state.award_trophy_emoji}"):
+            st.session_state.nextpage = "highscore_list"
+            st.experimental_rerun()
+
+    with colM22:
         if st.button(f"Show Game {st.session_state.show_game_emoji}"):
             st.session_state.nextpage = "select_race"
             st.experimental_rerun()
 
-    with colM22:
+    with colM23:
         if st.button(f"Delete Game {st.session_state.delete_emoji}"):
             st.session_state.nextpage = "delete_race"
             st.experimental_rerun()
 
-    with colM23:
+    with colM24:
         if st.button(f"Quit Lobby " + str(lobby_id) + f" {st.session_state.quit_emoji}"):
             st.session_state.nextpage = "pre_mainpage"
             st.experimental_rerun()

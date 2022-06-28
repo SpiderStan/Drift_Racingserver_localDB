@@ -4,6 +4,7 @@ import base64
 from PIL import Image
 import pandas as pd 
 from .singletons import settings
+import configparser
 
 def save_uploadedfile(uploadedfile):
     with open(os.path.join("background", "background.png"), "wb") as f:
@@ -41,6 +42,13 @@ def app():
         submitted = st.form_submit_button(f"Change {st.session_state.create_emoji}")
 
         if submitted:
+            config = configparser.ConfigParser()
+            config['DEFAULT'] = {'serverIPaddress': '127.0.0.1','serverName': f"🏎️ DR!FT Racingserver ⛽"}
+            config['racingserver'] = {}
+            config['racingserver']['serverIPaddress'] = str(st.session_state.ip_address)
+            config['racingserver']['serverName'] = str(app_title)
+            with open('config/config.ini', 'w') as configfile:
+                config.write(configfile)
             st.session_state.app_title = app_title
             st.experimental_rerun()
 
@@ -50,6 +58,13 @@ def app():
         submitted = st.form_submit_button(f"Change {st.session_state.create_emoji}")
 
         if submitted:
+            config = configparser.ConfigParser()
+            config['DEFAULT'] = {'serverIPaddress': '127.0.0.1','serverName': f"🏎️ DR!FT Racingserver ⛽"}
+            config['racingserver'] = {}
+            config['racingserver']['serverIPaddress'] = str(ip_address)
+            config['racingserver']['serverName'] = str(st.session_state.app_title)
+            with open('config/config.ini', 'w') as configfile:
+                config.write(configfile)
             st.session_state.ip_address = ip_address
             st.experimental_rerun()
             

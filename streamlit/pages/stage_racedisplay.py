@@ -426,7 +426,7 @@ def app():
     col1, col2, col3, col4, col5, col6, col7, col8, col9 = st.columns(9)
 
     with col1:
-        if st.button(f"Back to Menu {st.session_state.back_emoji}"):
+        if st.button(f"Back {st.session_state.back_emoji}"):
             st.session_state.nextpage = "main_page"
             st.session_state.game_track_images_set = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
             st.session_state.game_track_images = [None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None]

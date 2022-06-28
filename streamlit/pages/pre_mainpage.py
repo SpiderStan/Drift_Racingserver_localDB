@@ -32,6 +32,8 @@ def app():
         st.session_state.show_game_emoji = "🔍"
     if "tweak_game_emoji" not in st.session_state:
         st.session_state.tweak_game_emoji = "⚙️"
+    if "checkmark_emoji" not in st.session_state:
+        st.session_state.checkmark_emoji = "✔️"   
     if "remove_emoji" not in st.session_state:
         st.session_state.remove_emoji = "❌"
     if "create_emoji" not in st.session_state:

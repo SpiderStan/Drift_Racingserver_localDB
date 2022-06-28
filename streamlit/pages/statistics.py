@@ -121,7 +121,7 @@ def app():
                             if(section_time != 0): # normal case
                                 d[str(scoreboard_data[player]["user_name"]) + f" Sektor - {st.session_state.distance_emoji}"] = showDistance(section_distance)
                                 d[f"Sektor - {st.session_state.time_emoji}"] = showTime(section_time)
-                                d[f"Sektor - {st.session_state.average_speed_emoji}"] = f"Ø " + showMeanSpeed(section_distance,section_time)
+                                d[f"Sektor - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(section_distance,section_time)
                                 d[f"Sektor - {st.session_state.track_emoji}"] = section_condition
                             else: # this occurs if after finish further targets will be crossed
                                 d[str(scoreboard_data[player]["user_name"]) + f" Sektor - {st.session_state.distance_emoji}"] = f"{st.session_state.false_start_emoji}"
@@ -147,7 +147,7 @@ def app():
                             if(section_time != 0): # normal case
                                 d[str(scoreboard_data[player]["user_name"]) + f" Sektor - {st.session_state.distance_emoji}"] = showDistance(section_distance)
                                 d[f"Sektor - {st.session_state.time_emoji}"] = showTime(section_time)
-                                d[f"Sektor - {st.session_state.average_speed_emoji}"] = f"Ø " + showMeanSpeed(section_distance,section_time)
+                                d[f"Sektor - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(section_distance,section_time)
                                 d[f"Sektor - {st.session_state.track_emoji}"] = section_condition
                             else: # this occurs if after finish further targets will be crossed
                                 d[str(scoreboard_data[player]["user_name"]) + f" Sektor - {st.session_state.distance_emoji}"] = f"{st.session_state.false_start_emoji}"
@@ -162,7 +162,7 @@ def app():
                             if(section_time != 0): # normal case
                                 d[str(scoreboard_data[player]["user_name"]) + f" Sektor - {st.session_state.distance_emoji}"] = showDistance(section_distance)
                                 d[f"Sektor - {st.session_state.time_emoji}"] = showTime(section_time)
-                                d[f"Sektor - {st.session_state.average_speed_emoji}"] = f"Ø " + showMeanSpeed(section_distance,section_time)
+                                d[f"Sektor - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(section_distance,section_time)
                                 d[f"Sektor - {st.session_state.track_emoji}"] = section_condition
                             else: # this occurs if after finish further targets will be crossed
                                 d[str(scoreboard_data[player]["user_name"]) + f" Sektor - {st.session_state.distance_emoji}"] = f"{st.session_state.false_start_emoji}"
