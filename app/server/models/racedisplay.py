@@ -11,7 +11,7 @@ from time import time
 from typing import Optional
 from uuid import UUID
 from datetime import datetime, timedelta
-from .driftapi import track_condition, track_bundle, wheels, setup_mode, EnterData, StartData, EndData, TargetData, target_code, game_mode, bonus_target
+from .driftapi import track_condition, track_bundle, wheels, setup_mode, EnterData, StartData, EndData, TargetData, target_code, game_mode, bonus_target, gymkhana_training_targets
 
 class LobbySchema(BaseModel):
     lobby_id:str = Field(...)
@@ -45,6 +45,7 @@ class GameSchema(BaseModel):
     joker_lap_code:Optional[int] = Field(None, title="if set, this target code counter is displayed to be used for joker-laps etc.")
     joker_lap_precondition_code:Optional[int] = Field(None, title="if set, this target code is required to be detected before the joker-lap code to count as actual joker lap.")
     individual_trial:bool = Field(False, title="enable/disable individual time/score trial")
+    gymkhana_training_targets:Optional[gymkhana_training_targets]
 
     class Config:
         schema_extra = {
@@ -66,6 +67,7 @@ class GameSchema(BaseModel):
 				"joker_lap_code": 0,
 				"joker_lap_precondition_code": 0,
                 "individual_trial": False,
+                "gymkhana_training_targets": "ANGLE -> 180° -> SPEED -> 360°"
             }
         }
 
