@@ -83,6 +83,7 @@ def game_helper(game) -> dict:
         "joker_lap_code": game["joker_lap_code"],
         "joker_lap_precondition_code": game["joker_lap_precondition_code"],
         "individual_trial": game["individual_trial"],
+        "gymkhana_training_targets": game["gymkhana_training_targets"],
     }
 
 def player_helper(player) -> dict:
@@ -303,7 +304,8 @@ async def delete_players(lobby_id: str, game_id: str, stage_id: int):
             bonus_target = game["bonus_target"],
             joker_lap_code = game["joker_lap_code"],
             joker_lap_precondition_code = game["joker_lap_precondition_code"],
-            individual_trial = game["individual_trial"]
+            individual_trial = game["individual_trial"],
+            gymkhana_training_targets = game["gymkhana_training_targets"]
         )
         game_data = jsonable_encoder(game_data)
 
@@ -353,7 +355,8 @@ async def start_stage(lobby_id: str, game_id: str, stage_id: int):
                     bonus_target = game["bonus_target"],
                     joker_lap_code = game["joker_lap_code"],
                     joker_lap_precondition_code = game["joker_lap_precondition_code"],
-                    individual_trial = game["individual_trial"]
+                    individual_trial = game["individual_trial"],
+                    gymkhana_training_targets = game["gymkhana_training_targets"]
                 )
                 game_data = jsonable_encoder(game_data)
 
@@ -502,7 +505,8 @@ async def insert_raceevent(lobby_id: str, game_id:str, stage_id:int, obj: RaceEv
                     bonus_target = game["bonus_target"],
                     joker_lap_code = game["joker_lap_code"],
                     joker_lap_precondition_code = game["joker_lap_precondition_code"], 
-                    individual_trial = game["individual_trial"]
+                    individual_trial = game["individual_trial"],
+                    gymkhana_training_targets = game["gymkhana_training_targets"]
                 )
                 game_data = jsonable_encoder(game_data)
 
