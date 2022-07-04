@@ -84,6 +84,7 @@ def game_helper(game) -> dict:
         "joker_lap_precondition_code": game["joker_lap_precondition_code"],
         "individual_trial": game["individual_trial"],
         "gymkhana_training_targets": game["gymkhana_training_targets"],
+        "num_sectors": game["num_sectors"],
     }
 
 def player_helper(player) -> dict:
@@ -102,6 +103,7 @@ def player_helper(player) -> dict:
         "last_lap": player["last_lap"],
         "last_lap_timestamp": player["last_lap_timestamp"],
         "last_target_timestamp": player["last_target_timestamp"],
+        "second_last_target_timestamp": player["second_last_target_timestamp"],
         "best_speed_drift": player["best_speed_drift"],
         "best_angle_drift": player["best_angle_drift"],
         "best_360_angle": player["best_360_angle"],
@@ -111,6 +113,10 @@ def player_helper(player) -> dict:
         "third_last_recognized_target": player["third_last_recognized_target"],
         "forth_last_recognized_target": player["forth_last_recognized_target"],
         "fith_last_recognized_target": player["fith_last_recognized_target"],
+        "sixth_last_recognized_target" : player["sixth_last_recognized_target"],
+        "seventh_last_recognized_target" : player["seventh_last_recognized_target"],
+        "eighth_last_recognized_target" : player["eighth_last_recognized_target"],
+        "ninth_last_recognized_target" : player["ninth_last_recognized_target"],
         "joker_laps_counter": player["joker_laps_counter"],
         "enter_data": player["enter_data"],
         "start_data": player["start_data"],
@@ -305,7 +311,8 @@ async def delete_players(lobby_id: str, game_id: str, stage_id: int):
             joker_lap_code = game["joker_lap_code"],
             joker_lap_precondition_code = game["joker_lap_precondition_code"],
             individual_trial = game["individual_trial"],
-            gymkhana_training_targets = game["gymkhana_training_targets"]
+            gymkhana_training_targets = game["gymkhana_training_targets"],
+            num_sectors = game["num_sectors"]
         )
         game_data = jsonable_encoder(game_data)
 
@@ -356,7 +363,8 @@ async def start_stage(lobby_id: str, game_id: str, stage_id: int):
                     joker_lap_code = game["joker_lap_code"],
                     joker_lap_precondition_code = game["joker_lap_precondition_code"],
                     individual_trial = game["individual_trial"],
-                    gymkhana_training_targets = game["gymkhana_training_targets"]
+                    gymkhana_training_targets = game["gymkhana_training_targets"],
+                    num_sectors = game["num_sectors"]
                 )
                 game_data = jsonable_encoder(game_data)
 
@@ -396,6 +404,7 @@ async def insert_or_update_playerstatus(lobby_id:str, game_id:str, stage_id:int,
         best_lap = None,
         last_lap = None,
         last_lap_timestamp = None,
+        second_last_target_timestamp = None,
         last_target_timestamp = None,
         best_speed_drift = None,
         best_angle_drift = None,
@@ -406,6 +415,10 @@ async def insert_or_update_playerstatus(lobby_id:str, game_id:str, stage_id:int,
         third_last_recognized_target = None,
         forth_last_recognized_target = None,
         fith_last_recognized_target = None,
+        sixth_last_recognized_target = None,
+        seventh_last_recognized_target = None,
+        eighth_last_recognized_target = None,
+        ninth_last_recognized_target = None,
         joker_laps_counter = 0,
         enter_data = obj.data,
         start_data = None,
@@ -447,6 +460,7 @@ async def insert_raceevent(lobby_id: str, game_id:str, stage_id:int, obj: RaceEv
                 last_lap = playerStatusId["last_lap"],
                 last_lap_timestamp = playerStatusId["last_lap_timestamp"],
                 last_target_timestamp = playerStatusId["last_target_timestamp"],
+                second_last_target_timestamp = playerStatusId["second_last_target_timestamp"],
                 best_speed_drift = playerStatusId["best_speed_drift"],
                 best_angle_drift = playerStatusId["best_angle_drift"],
                 best_360_angle = playerStatusId["best_360_angle"],
@@ -456,6 +470,10 @@ async def insert_raceevent(lobby_id: str, game_id:str, stage_id:int, obj: RaceEv
                 third_last_recognized_target = playerStatusId["third_last_recognized_target"],
                 forth_last_recognized_target = playerStatusId["forth_last_recognized_target"],
                 fith_last_recognized_target = playerStatusId["fith_last_recognized_target"],
+                sixth_last_recognized_target = playerStatusId["sixth_last_recognized_target"],
+                seventh_last_recognized_target = playerStatusId["seventh_last_recognized_target"],
+                eighth_last_recognized_target = playerStatusId["eighth_last_recognized_target"],
+                ninth_last_recognized_target = playerStatusId["ninth_last_recognized_target"],
                 joker_laps_counter = playerStatusId["joker_laps_counter"],
                 enter_data = playerStatusId["enter_data"],
                 start_data = playerStatusId["start_data"],
@@ -506,7 +524,8 @@ async def insert_raceevent(lobby_id: str, game_id:str, stage_id:int, obj: RaceEv
                     joker_lap_code = game["joker_lap_code"],
                     joker_lap_precondition_code = game["joker_lap_precondition_code"], 
                     individual_trial = game["individual_trial"],
-                    gymkhana_training_targets = game["gymkhana_training_targets"]
+                    gymkhana_training_targets = game["gymkhana_training_targets"],
+                    num_sectors = game["num_sectors"]
                 )
                 game_data = jsonable_encoder(game_data)
 
@@ -564,11 +583,16 @@ async def insert_raceevent(lobby_id: str, game_id:str, stage_id:int, obj: RaceEv
                             if obj.data.score > user_data["best_180_speed"]:
                                 user_data["best_180_speed"] = obj.data.score
 
+                user_data["ninth_last_recognized_target"] = user_data["eighth_last_recognized_target"]
+                user_data["eighth_last_recognized_target"] = user_data["seventh_last_recognized_target"]
+                user_data["seventh_last_recognized_target"] = user_data["sixth_last_recognized_target"]
+                user_data["sixth_last_recognized_target"] = user_data["fith_last_recognized_target"]
                 user_data["fith_last_recognized_target"] = user_data["forth_last_recognized_target"]
                 user_data["forth_last_recognized_target"] = user_data["third_last_recognized_target"]
                 user_data["third_last_recognized_target"] = user_data["second_last_recognized_target"]
                 user_data["second_last_recognized_target"] = user_data["last_recognized_target"]
                 user_data["last_recognized_target"] = obj.data.target_code
+                user_data["second_last_target_timestamp"] = user_data["last_target_timestamp"]
                 user_data["last_target_timestamp"] = datetime.now()  
 
                 updated_player = await driftapi_playerstatus_collection.update_one({"lobby_id":lobby_id, "game_id":game_id, "stage_id":stage_id, "user_id":playerStatusId["user_id"]},{"$set": user_data})
@@ -592,6 +616,7 @@ async def insert_raceevent(lobby_id: str, game_id:str, stage_id:int, obj: RaceEv
                 last_lap = playerStatusId["last_lap"],
                 last_lap_timestamp = playerStatusId["last_lap_timestamp"],
                 last_target_timestamp = playerStatusId["last_target_timestamp"],
+                second_last_target_timestamp = playerStatusId["second_last_target_timestamp"],
                 best_speed_drift = playerStatusId["best_speed_drift"],
                 best_angle_drift = playerStatusId["best_angle_drift"],
                 best_360_angle = playerStatusId["best_360_angle"],
@@ -601,6 +626,10 @@ async def insert_raceevent(lobby_id: str, game_id:str, stage_id:int, obj: RaceEv
                 third_last_recognized_target = playerStatusId["third_last_recognized_target"],
                 forth_last_recognized_target = playerStatusId["forth_last_recognized_target"],
                 fith_last_recognized_target = playerStatusId["fith_last_recognized_target"],
+                sixth_last_recognized_target = playerStatusId["sixth_last_recognized_target"],
+                seventh_last_recognized_target = playerStatusId["seventh_last_recognized_target"],
+                eighth_last_recognized_target = playerStatusId["eighth_last_recognized_target"],
+                ninth_last_recognized_target = playerStatusId["ninth_last_recognized_target"],
                 joker_laps_counter = playerStatusId["joker_laps_counter"],
                 enter_data = playerStatusId["enter_data"],
                 start_data = obj.data,
@@ -627,6 +656,7 @@ async def insert_raceevent(lobby_id: str, game_id:str, stage_id:int, obj: RaceEv
                 last_lap = playerStatusId["last_lap"],
                 last_lap_timestamp = playerStatusId["last_lap_timestamp"],
                 last_target_timestamp = playerStatusId["last_target_timestamp"],
+                second_last_target_timestamp = playerStatusId["second_last_target_timestamp"],
                 best_speed_drift = playerStatusId["best_speed_drift"],
                 best_angle_drift = playerStatusId["best_angle_drift"],
                 best_360_angle = playerStatusId["best_360_angle"],
@@ -636,6 +666,10 @@ async def insert_raceevent(lobby_id: str, game_id:str, stage_id:int, obj: RaceEv
                 third_last_recognized_target = playerStatusId["third_last_recognized_target"],
                 forth_last_recognized_target = playerStatusId["forth_last_recognized_target"],
                 fith_last_recognized_target = playerStatusId["fith_last_recognized_target"],
+                sixth_last_recognized_target = playerStatusId["sixth_last_recognized_target"],
+                seventh_last_recognized_target = playerStatusId["seventh_last_recognized_target"],
+                eighth_last_recognized_target = playerStatusId["eighth_last_recognized_target"],
+                ninth_last_recognized_target = playerStatusId["ninth_last_recognized_target"],
                 joker_laps_counter = playerStatusId["joker_laps_counter"],
                 enter_data = playerStatusId["enter_data"],
                 start_data = playerStatusId["start_data"],
@@ -650,29 +684,32 @@ async def insert_raceevent(lobby_id: str, game_id:str, stage_id:int, obj: RaceEv
 
             updated_player = await driftapi_playerstatus_collection.update_one({"lobby_id": lobby_id, "game_id": game_id, "stage_id":stage_id, "user_id": playerStatusId["user_id"]},{"$set": user_data})
 
-            player_high_score_data = PlayerGymkhanaHighScoreSchema(
-                lobby_id = lobby_id, #for safety
-                user_id = obj.user_id,
-                user_name = obj.user_name,
-                engine_type =user_data["enter_data"]["engine_type"],
-                tuning_type = user_data["enter_data"]["tuning_type"],
-                steering_angle = user_data["enter_data"]["steering_angle"],
-                driftassist = user_data["enter_data"]["driftassist"],
-                softsteering = user_data["enter_data"]["softsteering"],
-                setup_mode = user_data["enter_data"]["setup_mode"],
-                wheels = user_data["enter_data"]["wheels"],
-                track_condition = user_data["enter_data"]["track_condition"],
-                high_score_timestamp = user_data["end_data"]["finished_time"],
-                high_score = obj.data.total_score
-            )
-            player_high_score_data = jsonable_encoder(player_high_score_data)
-                
-            gym_high_score = await driftapi_highscore_collection.find_one({"lobby_id":lobby_id, "user_name":player_high_score_data["user_name"]})
-            if gym_high_score:
-                if (gym_high_score["high_score"] < player_high_score_data["high_score"]):
-                    updated_high_score = await driftapi_highscore_collection.update_one({"lobby_id":lobby_id, "user_name":player_high_score_data["user_name"]},{"$set": player_high_score_data})
-            else:
-                await driftapi_highscore_collection.insert_one(player_high_score_data)
+            game = await driftapi_game_collection.find_one({"lobby_id":lobby_id, "game_id":game_id, "stage_id":stage_id})
+            if (game["game_mode"] == "GYMKHANA") or (game["game_mode"] == "GYMKHANA_TRAINING"):
+
+                player_high_score_data = PlayerGymkhanaHighScoreSchema(
+                    lobby_id = lobby_id, #for safety
+                    user_id = obj.user_id,
+                    user_name = obj.user_name,
+                    engine_type =user_data["enter_data"]["engine_type"],
+                    tuning_type = user_data["enter_data"]["tuning_type"],
+                    steering_angle = user_data["enter_data"]["steering_angle"],
+                    driftassist = user_data["enter_data"]["driftassist"],
+                    softsteering = user_data["enter_data"]["softsteering"],
+                    setup_mode = user_data["enter_data"]["setup_mode"],
+                    wheels = user_data["enter_data"]["wheels"],
+                    track_condition = user_data["enter_data"]["track_condition"],
+                    high_score_timestamp = user_data["end_data"]["finished_time"],
+                    high_score = obj.data.total_score
+                )
+                player_high_score_data = jsonable_encoder(player_high_score_data)
+                            
+                gym_high_score = await driftapi_highscore_collection.find_one({"lobby_id":lobby_id, "user_name":player_high_score_data["user_name"]})
+                if gym_high_score:
+                    if (gym_high_score["high_score"] < player_high_score_data["high_score"]):
+                        updated_high_score = await driftapi_highscore_collection.update_one({"lobby_id":lobby_id, "user_name":player_high_score_data["user_name"]},{"$set": player_high_score_data})
+                else:
+                    await driftapi_highscore_collection.insert_one(player_high_score_data)
 
 
 
