@@ -80,7 +80,7 @@ class target_code(int, Enum):
     threesixty = 7 #Gymkhana
     drift_ice = 7 # Rally
     drift_sand = 7 # Rally Cross
-
+    
 class PingResponse(BaseModel):
     status:bool = Field(None, example=True)
     start_time:Optional[datetime]

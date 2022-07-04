@@ -46,6 +46,7 @@ class GameSchema(BaseModel):
     joker_lap_precondition_code:Optional[int] = Field(None, title="if set, this target code is required to be detected before the joker-lap code to count as actual joker lap.")
     individual_trial:bool = Field(False, title="enable/disable individual time/score trial")
     gymkhana_training_targets:Optional[gymkhana_training_targets]
+    num_sectors:Optional[int]
 
     class Config:
         schema_extra = {
@@ -67,7 +68,8 @@ class GameSchema(BaseModel):
 				"joker_lap_code": 0,
 				"joker_lap_precondition_code": 0,
                 "individual_trial": False,
-                "gymkhana_training_targets": "ANGLE -> 180° -> SPEED -> 360°"
+                "gymkhana_training_targets": "ANGLE -> 180° -> SPEED -> 360°",
+                "num_sectors": 5,
             }
         }
 
@@ -86,6 +88,7 @@ class PlayerStatusSchema(BaseModel):
     last_lap:Optional[str]
     last_lap_timestamp:Optional[datetime]
     last_target_timestamp:Optional[datetime]
+    second_last_target_timestamp:Optional[datetime]
     best_speed_drift:Optional[int]
     best_angle_drift:Optional[int]
     best_360_angle:Optional[int]
@@ -95,6 +98,10 @@ class PlayerStatusSchema(BaseModel):
     third_last_recognized_target:Optional[target_code]
     forth_last_recognized_target:Optional[target_code]
     fith_last_recognized_target:Optional[target_code]
+    sixth_last_recognized_target:Optional[target_code]
+    seventh_last_recognized_target:Optional[target_code]
+    eighth_last_recognized_target:Optional[target_code]
+    ninth_last_recognized_target:Optional[target_code]
     joker_laps_counter:Optional[int]
     enter_data:Optional[EnterData]
     start_data:Optional[StartData]
@@ -108,6 +115,7 @@ class PlayerStatusSchema(BaseModel):
                 "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
                 "user_name": "PlayerNo1",
                 "stage_id": 1,
+                "laps_completed": 0,
                 "target_code_counter": {},
                 "total_score": 0,
 				"total_time": "-", 
@@ -115,6 +123,7 @@ class PlayerStatusSchema(BaseModel):
 				"last_lap": "-",
 				"last_lap_timestamp": "2022-06-09T19:37:48.357000+00:00",
 				"last_target_timestamp": "2022-06-09T19:37:48.357000+00:00",
+                "second_last_target_timestamp": "2022-06-09T19:37:48.357000+00:00",
 				"best_speed_drift": 0,
 				"best_angle_drift": 0,
 				"best_360_angle": 0,
@@ -124,6 +133,10 @@ class PlayerStatusSchema(BaseModel):
 				"third_last_recognized_target": 0,
 				"forth_last_recognized_target": 0,
 				"fith_last_recognized_target": 0,
+                "sixth_last_recognized_target": 0,
+                "seventh_last_recognized_target": 0,
+                "eighth_last_recognized_target": 0,
+                "ninth_last_recognized_target": 0,
 				"joker_laps_counter": 0,
 				"enter_data": {},
 				"start_data": {},
