@@ -274,8 +274,12 @@ def app():
                         d[f"Sektor - {st.session_state.time_emoji}"] = f"∑ {st.session_state.time2_emoji} " + showTime(scoreboard_data[player]["total_time"])
                         d[f"Sektor - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.average_speed_emoji} " + showMeanSpeed(scoreboard_data[player]["end_data"]["total_driven_distance"],scoreboard_data[player]["total_time"])
                         d[f"Sektor - {st.session_state.track_emoji}"] = ""
-                        d[f" ∑ Sektoren - {st.session_state.distance2_emoji}"] = f"Ø {st.session_state.distance2_emoji} / {st.session_state.round_emoji} " + showDistance(float(float(scoreboard_data[player]["end_data"]["total_driven_distance"])/float(scoreboard_data[player]["laps_completed"]))) 
-                        d[f" ∑ Sektoren - {st.session_state.time2_emoji}"] = f"Ø {st.session_state.time2_emoji} / {st.session_state.round_emoji} " + showTime(float(float(scoreboard_data[player]["total_time"])/float(scoreboard_data[player]["laps_completed"])))
+                        if(scoreboard_data[player]["laps_completed"] != 0):
+                            d[f" ∑ Sektoren - {st.session_state.distance2_emoji}"] = f"Ø {st.session_state.distance2_emoji} / {st.session_state.round_emoji} " + showDistance(float(float(scoreboard_data[player]["end_data"]["total_driven_distance"])/float(scoreboard_data[player]["laps_completed"]))) 
+                            d[f" ∑ Sektoren - {st.session_state.time2_emoji}"] = f"Ø {st.session_state.time2_emoji} / {st.session_state.round_emoji} " + showTime(float(float(scoreboard_data[player]["total_time"])/float(scoreboard_data[player]["laps_completed"])))
+                        else:
+                            d[f" ∑ Sektoren - {st.session_state.distance2_emoji}"] = ""
+                            d[f" ∑ Sektoren - {st.session_state.time2_emoji}"] = ""
                         d[f"Cum. Sektoren - Ø {st.session_state.average_speed_emoji}"] = ""
                         targetboard_data.append(d)
                         
