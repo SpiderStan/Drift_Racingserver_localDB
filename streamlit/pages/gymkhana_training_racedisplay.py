@@ -1,10 +1,12 @@
 import streamlit as st
+import time
 import os
 from os.path import exists
 import time
 #import socket
 from zoneinfo import ZoneInfo #to set the timezone to german time
 from datetime import timedelta, timezone, datetime
+#import operator
 import pandas as pd 
 import numpy as np
 import qrcode
@@ -52,7 +54,7 @@ def showTime(s):
     s = floor(s)
     m = floor(s / 60)
     s = s -60*m
-    return f"{m:02d}m {s:02d}s {ms:03d}ms"
+    return f"{m:02d}:{s:02d}.{ms:03d}"
     #return round(float(s),2) if not((s is None) or s== '') else None
 
 def showDistance(s):
@@ -170,93 +172,121 @@ def app():
     output_filename = "Gymkhana_Training_" + str(lobby_id) + "_" + str(game_id)
     zip_path = "gymkhana_training/" + str(lobby_id) + "/" + str(game_id) + "/"
 
-    col1, col2, col3, col4 = st.columns(4)
+    placeholder1 = st.empty()
+    placeholder2 = st.empty()
+    targetboard = st.empty()
+    placeholder3 = st.empty()
+    placeholder4 = st.empty()
 
-    with col1:
-        if st.button(f"Back {st.session_state.back_emoji}"):
-            st.session_state.num_stages = 1
-            st.session_state.nextpage = "main_page"
-            st.experimental_rerun()
+    with placeholder1.container():
+        col1, col2, col3, col4, col5 = st.columns(5)
 
-    with col2:
-        if len(os.listdir(str(dir_name))) != 0:
-            with open(str(zip_path) + str(output_filename) + ".zip", 'rb') as fp:
-                btn = st.download_button(
-                    label=f"Download Saved Runs as zip {st.session_state.download_emoji}",
-                    data=fp,
-                    file_name=output_filename  + ".zip",
-                    mime="application/zip"
-                )
-
-    with col3:
-        if len(os.listdir(str(dir_name))) != 0:
-            if st.button(f"Delete Saved Runs {st.session_state.delete_emoji}"):
-                for f in os.listdir(dir_name):
-                    os.remove(os.path.join(dir_name, f))
-                if os.path.exists(str(zip_path) + str(output_filename) + ".zip"):
-                    os.remove(str(zip_path) + str(output_filename) + ".zip")                    
+        with col1:
+            if st.button(f"Back {st.session_state.back_emoji}"):
+                st.session_state.num_stages = 1
+                st.session_state.nextpage = "main_page"
+                placeholder1.empty()
+                placeholder2.empty()
+                targetboard.empty()
+                placeholder3.empty()
+                placeholder4.empty()
+                time.sleep(0.1)
                 st.experimental_rerun()
 
-    with col4:
-        if st.button(f"Delete Game {st.session_state.delete_emoji}"):
+        with col2:
             if len(os.listdir(str(dir_name))) != 0:
-                for f in os.listdir(dir_name):
-                    os.remove(os.path.join(dir_name, f))
-                if os.path.exists(str(zip_path) + str(output_filename) + ".zip"):
-                    os.remove(str(zip_path) + str(output_filename) + ".zip")
-            result = fetch_delete(f"{settings.driftapi_path}/driftapi/manage_game/delete/{lobby_id}/{game_id}")
-            st.session_state.game_id = None
-            st.session_state.stage_id = 1
-            st.session_state.num_stages = 1
-            st.session_state.game_track_images_set = False
-            st.session_state.game_track_images = None
-            st.session_state.nextpage = "main_page"
-            st.experimental_rerun()
+                with open(str(zip_path) + str(output_filename) + ".zip", 'rb') as fp:
+                    btn = st.download_button(
+                        label=f"Download Saved Runs as zip {st.session_state.download_emoji}",
+                        data=fp,
+                        file_name=output_filename  + ".zip",
+                        mime="application/zip"
+                    )
 
-    autosave = st.checkbox("AutoSave", value=False, key=None, help="if set, gymkhana runs will be saved", on_change=None)
+        with col3:
+            if len(os.listdir(str(dir_name))) != 0:
+                if st.button(f"Delete Saved Runs {st.session_state.delete_emoji}"):
+                    for f in os.listdir(dir_name):
+                        os.remove(os.path.join(dir_name, f))
+                    if os.path.exists(str(zip_path) + str(output_filename) + ".zip"):
+                        os.remove(str(zip_path) + str(output_filename) + ".zip")  
+                    placeholder1.empty()
+                    placeholder2.empty()
+                    targetboard.empty()
+                    placeholder3.empty()
+                    placeholder4.empty()
+                    time.sleep(0.1)
+                    st.experimental_rerun()
+
+        with col4:
+            if st.button(f"Gymkhana High Scores {st.session_state.award_trophy_emoji}"):
+                st.session_state.nextpage = "highscore_list"
+                st.session_state.game_track_images_set = game_track_images_set
+                st.session_state.game_track_images = game_track_images
+                placeholder1.empty()
+                placeholder2.empty()
+                targetboard.empty()
+                placeholder3.empty()
+                placeholder4.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
+
+        with col5:
+            if st.button(f"Delete Game {st.session_state.delete_emoji}"):
+                if len(os.listdir(str(dir_name))) != 0:
+                    for f in os.listdir(dir_name):
+                        os.remove(os.path.join(dir_name, f))
+                    if os.path.exists(str(zip_path) + str(output_filename) + ".zip"):
+                        os.remove(str(zip_path) + str(output_filename) + ".zip")
+                result = fetch_delete(f"{settings.driftapi_path}/driftapi/manage_game/delete/{lobby_id}/{game_id}")
+                st.session_state.game_id = None
+                st.session_state.stage_id = 1
+                st.session_state.num_stages = 1
+                st.session_state.game_track_images_set = False
+                st.session_state.game_track_images = None
+                st.session_state.nextpage = "main_page"
+                placeholder1.empty()
+                placeholder2.empty()
+                targetboard.empty()
+                placeholder3.empty()
+                placeholder4.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
+
+    with placeholder2.container():
+        autosave = st.checkbox("AutoSave", value=False, key=None, help="if set, gymkhana runs will be saved", on_change=None)
     
     t_list = decode_targets(game["gymkhana_training_targets"])
 
-#    start_finish = 0 #Gymkhana, Race, Rally, Rally Cross
-#    speed_drift = 4 #Gymkhana
-#    drift_asphalt = 4 #Rally, Rally Cross
-#    angle_drift = 5 #Gymkhana
-#    drift_asphalt_wet = 5 #Rally, Rally Cross
-#    oneeighty = 6 #Gymkhana
-#    drift_dirt = 6 # Rally, Rally Cross
-#    threesixty = 7 #Gymkhana
-#    drift_ice = 7 # Rally
-#    drift_sand = 7 # Rally Cross
+    with placeholder3.container():
+        with st.expander(f"Game Settings {st.session_state.show_game_emoji}", expanded = False):
+            st.write(game)
+            
+            track_image = st.empty()
+            track_image_upload = st.file_uploader("Here you can upload the track layout", type=['png', 'jpg'], accept_multiple_files=False, key=None, help=None, on_change=None, args=None, kwargs=None, disabled=False)
 
-    targetboard = st.empty()
+            if(game_track_images_set == False): # no track image upload so far
+                if(track_image_upload != None): # user has supplied a track image
+                    game_track_images_set = True
+                    track_image = st.image(track_image_upload, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
+                    game_track_images = track_image_upload # store in session state
+            elif(game_track_images_set == True): # track image existing
+                if(track_image_upload != None): # user has supplied a new track image
+                    game_track_images_set = True
+                    track_image = st.image(track_image_upload, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
+                    game_track_images = track_image_upload # store in session state
+                else:
+                    track_image = st.image(game_track_images, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Prev. Uploaded Track Image
+            if st.button(f"Remove Image {st.session_state.remove_emoji}", key=None):
+                track_image.empty()
+                game_track_images_set = False
 
-    with st.expander(f"Game Settings {st.session_state.show_game_emoji}", expanded = False):
-        st.write(game)
-        
-        track_image = st.empty()
-        track_image_upload = st.file_uploader("Here you can upload the track layout", type=['png', 'jpg'], accept_multiple_files=False, key=None, help=None, on_change=None, args=None, kwargs=None, disabled=False)
-
-        if(game_track_images_set == False): # no track image upload so far
-            if(track_image_upload != None): # user has supplied a track image
-                game_track_images_set = True
-                track_image = st.image(track_image_upload, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
-                game_track_images = track_image_upload # store in session state
-        elif(game_track_images_set == True): # track image existing
-            if(track_image_upload != None): # user has supplied a new track image
-                game_track_images_set = True
-                track_image = st.image(track_image_upload, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
-                game_track_images = track_image_upload # store in session state
-            else:
-                track_image = st.image(game_track_images, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Prev. Uploaded Track Image
-        if st.button(f"Remove Image {st.session_state.remove_emoji}", key=None):
-            track_image.empty()
-            game_track_images_set = False
-
-    with st.expander(f"Connection info {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+" and GAME ID: "+str(game_id), expanded=False):
-        submitUri:str = "http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)
-        st.image(getqrcode(submitUri), clamp=True)
-        st.write("URL: "+submitUri)
-        st.write("GAME ID: "+game_id)
+    with placeholder4.container():
+        with st.expander(f"Connection info {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+" and GAME ID: "+str(game_id), expanded=False):
+            submitUri:str = "http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)
+            st.image(getqrcode(submitUri), clamp=True)
+            st.write("URL: "+submitUri)
+            st.write("GAME ID: "+game_id)
 
     while True:
 
@@ -280,18 +310,6 @@ def app():
                 last_round_score = int(0)
                 t_cnt = int(0)
 
-#                if "enter_data" in scoreboard_data[player]:
-#                    if(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_asphalt"):
-#                        section_condition = f" {st.session_state.track_dry_emoji}"
-#                    elif(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-#                        section_condition = f" {st.session_state.track_wet_emoji}"
-#                    elif(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_dirt"):
-#                        section_condition = f" {st.session_state.track_gravel_emoji}"
-#                    elif(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_ice"):
-#                        section_condition = f" {st.session_state.track_snow_emoji}"
-#                else:
-#                    section_condition = f" {st.session_state.track_unknown_emoji}"                    
-                    
                 for x in range(targets_data_len):
                 
                     if "target_data" in targets_data[x]:
@@ -308,9 +326,7 @@ def app():
                 
                         if ( targets_data[x]["target_data"]["target_code"] != 0 ): # target is not finish
                             while (targets_data[x]["target_data"]["target_code"] != t_list[t_cnt]): # missed targets
-                            
-# TDB: what if missed target is last one (round indicator) - how to handle this?
-                            
+
                                 d = {}
                                 d[str(targets_data[x]["user_name"]) + f" {st.session_state.target_emoji}"] = f"{st.session_state.remove_emoji}"
                                 
@@ -322,15 +338,15 @@ def app():
                                 d[f"Sektor - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.remove_emoji}"
 
                                 if(t_cnt == 3): #the fourth (last) target
-                                    d[f"∑ Sektoren - {st.session_state.distance2_emoji}"] = f"{st.session_state.remove_emoji} {st.session_state.emoji_round}"
-                                    d[f"∑ Sektoren - {st.session_state.time2_emoji}"] = f"{st.session_state.remove_emoji} {st.session_state.emoji_round}"
-                                    d[f"Cum. Sektoren - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.remove_emoji} {st.session_state.emoji_round}"
-                                    d[f"{st.session_state.emoji_round} {st.session_state.points_emoji}"] = f"- {st.session_state.emoji_round}"
+                                    d[f"∑ Sektoren - {st.session_state.distance2_emoji}"] = f"{st.session_state.remove_emoji} {st.session_state.round_emoji}"
+                                    d[f"∑ Sektoren - {st.session_state.time2_emoji}"] = f"{st.session_state.remove_emoji} {st.session_state.round_emoji}"
+                                    d[f"Cum. Sektoren - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.remove_emoji} {st.session_state.round_emoji}"
+                                    d[f"{st.session_state.round_emoji} {st.session_state.points_emoji}"] = f"- {st.session_state.round_emoji}"
                                 else:
                                     d[f"∑ Sektoren - {st.session_state.distance2_emoji}"] = f"{st.session_state.remove_emoji}"
                                     d[f"∑ Sektoren - {st.session_state.time2_emoji}"] = f"{st.session_state.remove_emoji}"
                                     d[f"Cum. Sektoren - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.remove_emoji}"
-                                    d[f"{st.session_state.emoji_round} {st.session_state.points_emoji}"] = ""
+                                    d[f"{st.session_state.round_emoji} {st.session_state.points_emoji}"] = ""
                                 
                                 targetboard_data.append(d)
 
@@ -361,10 +377,10 @@ def app():
                                 round_distance = targets_data[x]["target_data"]["driven_distance"] - last_round_driven_distance
                                 round_time = targets_data[x]["target_data"]["driven_time"] - last_round_driven_time
                                 round_score = sum_score - last_round_score
-                                d[f"∑ Sektoren - {st.session_state.distance2_emoji}"] = showDistance(round_distance) + f" {st.session_state.emoji_round}"
-                                d[f"∑ Sektoren - {st.session_state.time2_emoji}"] = showTime(round_time) + f" {st.session_state.emoji_round}"
-                                d[f"Cum. Sektoren - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(round_distance,round_time) + f" {st.session_state.emoji_round}"
-                                d[f"{st.session_state.emoji_round} {st.session_state.points_emoji}"] = str(round_score) + f" {st.session_state.emoji_round}"
+                                d[f"∑ Sektoren - {st.session_state.distance2_emoji}"] = showDistance(round_distance) + f" {st.session_state.round_emoji}"
+                                d[f"∑ Sektoren - {st.session_state.time2_emoji}"] = showTime(round_time) + f" {st.session_state.round_emoji}"
+                                d[f"Cum. Sektoren - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(round_distance,round_time) + f" {st.session_state.round_emoji}"
+                                d[f"{st.session_state.round_emoji} {st.session_state.points_emoji}"] = str(round_score) + f" {st.session_state.round_emoji}"
                                 last_round_driven_distance = targets_data[x]["target_data"]["driven_distance"]
                                 last_round_driven_time = targets_data[x]["target_data"]["driven_time"]
                                 last_round_score = last_round_score + round_score
@@ -372,15 +388,13 @@ def app():
                                 d[f"∑ Sektoren - {st.session_state.distance2_emoji}"] = showDistance(targets_data[x]["target_data"]["driven_distance"] - last_round_driven_distance)
                                 d[f"∑ Sektoren - {st.session_state.time2_emoji}"] = showTime(targets_data[x]["target_data"]["driven_time"] - last_round_driven_time)
                                 d[f"Cum. Sektoren - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(targets_data[x]["target_data"]["driven_distance"] - last_round_driven_distance,targets_data[x]["target_data"]["driven_time"] - last_round_driven_time)
-                                d[f"{st.session_state.emoji_round} {st.session_state.points_emoji}"] = ""
+                                d[f"{st.session_state.round_emoji} {st.session_state.points_emoji}"] = ""
                                 
                             targetboard_data.append(d)
                             
                             t_cnt = (t_cnt + 1) % 4
                         else:   # target is finish
                             d = {}
-#                            section_distance = targets_data[x]["target_data"]["driven_distance"] - last_driven_distance
-#                            section_time = targets_data[x]["target_data"]["driven_time"] - last_driven_time
                             sum_score = sum_score + targets_data[x]["target_data"]["score"]
 
                             round_distance = targets_data[x]["target_data"]["driven_distance"] - last_round_driven_distance
@@ -403,7 +417,7 @@ def app():
                             d[f"∑ Sektoren - {st.session_state.distance2_emoji}"] = showDistance(targets_data[x]["target_data"]["driven_distance"])
                             d[f"∑ Sektoren - {st.session_state.time2_emoji}"] = showTime(targets_data[x]["target_data"]["driven_time"])
                             d[f"Cum. Sektoren - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(targets_data[x]["target_data"]["driven_distance"],targets_data[x]["target_data"]["driven_time"])
-                            d[f"{st.session_state.emoji_round} {st.session_state.points_emoji}"] = str(round_score) + f" {st.session_state.emoji_finish}"
+                            d[f"{st.session_state.round_emoji} {st.session_state.points_emoji}"] = str(round_score) + f" {st.session_state.finish_emoji}"
                             
                             last_driven_distance = targets_data[x]["target_data"]["driven_distance"]
                             last_driven_time = targets_data[x]["target_data"]["driven_time"]
@@ -412,31 +426,13 @@ def app():
                             
                             t_cnt = (t_cnt + 1) % 4
 
-#                #if there is no entry, just add an empty one by calling the construct Entry with an empty dict
-#                while len(targetboard_data)<1:
-#                    d = {}
-#                    d[str(targets_data[player]["user_name"]) + f" {st.session_state.target_emoji}"] = ""
-#                                
-#                    d[f"{st.session_state.points_emoji}"] = ""
-#                    d[f" ∑ {st.session_state.points_emoji}"] = ""
-#
-#                    d[f"{st.session_state.distance_emoji}"] = ""
-#                    d[f"{st.session_state.time_emoji}"] = ""
-#                    d[f"Ø {st.session_state.average_speed_emoji}"] = ""
-#
-#                    d[f" ∑ {st.session_state.distance2_emoji}"] = ""
-#                    d[f" ∑ {st.session_state.time2_emoji}"] = ""
-#                    d[f"Cum. Ø {st.session_state.average_speed_emoji}"] = ""
-#
-#                    targetboard_data.append(d)
-
                 df = pd.DataFrame( targetboard_data )
                 
                 if ( ( "end_data" in scoreboard_data[player] ) and not ( scoreboard_data[player]["end_data"] is None ) ):               
                     if(scoreboard_data[player]["end_data"]["false_start"]):
                         player_status = f"{st.session_state.false_start_emoji}" #"False Start!"
                     else:
-                        player_status = f"{st.session_state.emoji_finish}" #"Finished"
+                        player_status = f"{st.session_state.finish_emoji}" #"Finished"
                     
                     if ( autosave ):
                     
@@ -447,8 +443,6 @@ def app():
                         file_exists = exists("gymkhana_training/" + str(lobby_id) + "/" + str(game_id) + "/runs/" + str(filename))
                     
                         if ( not file_exists ):
-#                            df_to_save = df
-#                            df_to_save.to_csv(str(dir_name) + str(filename), encoding="utf-8")
                             df.to_csv(str(dir_name) + str(filename), encoding="utf-8")
                             shutil.make_archive(str(zip_path) + str(output_filename), 'zip', dir_name)
                             st.success("Gymkhana Run Saved to File " + str(filename))
@@ -456,9 +450,9 @@ def app():
                             st.experimental_rerun()
                     
                 elif ( ( "start_data" in scoreboard_data[player] ) and not ( scoreboard_data[player]["start_data"] is None ) ):
-                    player_status = f"{st.session_state.emoji_driving}" #"Driving"
+                    player_status = f"{st.session_state.driving_emoji}" #"Driving"
                 elif "enter_data" in scoreboard_data[player]:
-                    player_status = f"{st.session_state.emoji_ready}" #"Ready"
+                    player_status = f"{st.session_state.ready_emoji}" #"Ready"
                 else:
                     player_status = ""
 

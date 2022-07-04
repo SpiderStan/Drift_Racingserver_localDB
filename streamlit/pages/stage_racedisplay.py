@@ -45,7 +45,7 @@ def showTime(s):
     s = floor(s)
     m = floor(s / 60)
     s = s -60*m
-    return f"{m:02d}:{s:02d}:{ms:03d}"
+    return f"{m:02d}:{s:02d}.{ms:03d}"
     #return round(float(s),2) if not((s is None) or s== '') else None
 
 def showDistance(s):
@@ -371,116 +371,153 @@ def app():
     st.header("Game Statistics of Event " + str(game_id) + " from Lobby " + str(lobby_id))
 
     games = []
-    joker_lap_code = [None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None]
+    joker_lap_code = [None] * 20
     scoreboard = []
     track_image_upload = []
     track_image = []
     
     next_race = st.empty()
-    
-    for x in range(num_stages):
-        game = getGameInfo(lobby_id, game_id, x+1)
-        if not game:
-            st.error("No Game with that id exists, going back to main menu...")
-            time.sleep(1)
-            st.session_state.nextpage = "main_page"
-            st.experimental_rerun()
-        if game:
-            with st.expander(f"Game Statistics of Sage " + str(x+1) + " - " + str(game["game_mode"]) + " - Join the game via URL: http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(x+1)+" and GAME ID: "+str(game_id) + "   " + str(game["track_id"]) +  f"{st.session_state.show_game_emoji}", expanded = False):
-                st.write(game)
+    placeholder1 = st.empty()
+    placeholder2 = st.empty()
 
-                track_image.append(st.empty())
+    with placeholder1.container():
+        for x in range(num_stages):
+            game = getGameInfo(lobby_id, game_id, x+1)
+            if not game:
+                st.error("No Game with that id exists, going back to main menu...")
+                time.sleep(1)
+                st.session_state.nextpage = "main_page"
+                st.experimental_rerun()
+            if game:
+                with st.expander(f"Game Statistics of Sage " + str(x+1) + " - " + str(game["game_mode"]) + " - Join the game via URL: http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(x+1)+" and GAME ID: "+str(game_id) + "   " + str(game["track_id"]) +  f"{st.session_state.show_game_emoji}", expanded = False):
+                    st.write(game)
 
-                track_image_upload.append(st.file_uploader("Here you can upload the track layout", type=['png', 'jpg'], accept_multiple_files=False, key="The track layout upload of " + str(x+1), help=None, on_change=None, args=None, kwargs=None, disabled=False))
+                    track_image.append(st.empty())
 
-                if(game_track_images_set[x] == False): # no track image upload so far
-                    if(track_image_upload[x] != None): # user has supplied a track image
-                        game_track_images_set[x] = True
-                        track_image[x] = st.image(track_image_upload[x], caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
-                        game_track_images[x] = track_image_upload[x] # store in session state
-                elif(game_track_images_set[x] == True): # track image existing
-                    if(track_image_upload[x] != None): # user has supplied a new track image
-                        game_track_images_set[x] = True
-                        track_image[x] = st.image(track_image_upload[x], caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
-                        game_track_images[x] = track_image_upload[x] # store in session state
-                    else:
-                        track_image[x] = st.image(game_track_images[x], caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Prev. Uploaded Track Image
-                if st.button(f"Remove Image {st.session_state.remove_emoji}", key="Remove Image "+str(x+1)):
-                    track_image[x].empty()
-                    game_track_images_set[x] = False
+                    track_image_upload.append(st.file_uploader("Here you can upload the track layout", type=['png', 'jpg'], accept_multiple_files=False, key="The track layout upload of " + str(x+1), help=None, on_change=None, args=None, kwargs=None, disabled=False))
 
-            scoreboard.append(st.empty())
-            if "joker_lap_code" in game:
-                joker_lap_code[x] = game["joker_lap_code"]   
-        games.append(game)
+                    if(game_track_images_set[x] == False): # no track image upload so far
+                        if(track_image_upload[x] != None): # user has supplied a track image
+                            game_track_images_set[x] = True
+                            track_image[x] = st.image(track_image_upload[x], caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
+                            game_track_images[x] = track_image_upload[x] # store in session state
+                    elif(game_track_images_set[x] == True): # track image existing
+                        if(track_image_upload[x] != None): # user has supplied a new track image
+                            game_track_images_set[x] = True
+                            track_image[x] = st.image(track_image_upload[x], caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
+                            game_track_images[x] = track_image_upload[x] # store in session state
+                        else:
+                            track_image[x] = st.image(game_track_images[x], caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Prev. Uploaded Track Image
+                    if st.button(f"Remove Image {st.session_state.remove_emoji}", key="Remove Image "+str(x+1)):
+                        track_image[x].empty()
+                        game_track_images_set[x] = False
 
-#placeholder= st.image('loading4.gif')
-#placeholder.empty()
+                with st.expander(f"Connection info {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+"/ and GAME ID: "+str(game_id), expanded=False):
+                    submitUri:str = "http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+"/"
+                    st.image(getqrcode(submitUri), clamp=True)
+                    st.write("URL: "+submitUri)
+                    st.write("GAME ID: "+game_id)
 
-#    with st.expander(f"Connection info {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+"/ and GAME ID: "+str(game_id), expanded=False):
-#        submitUri:str = "http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+"/"
-#        st.image(getqrcode(submitUri), clamp=True)
-#        st.write("URL: "+submitUri)
-#        st.write("GAME ID: "+game_id)
+                scoreboard.append(st.empty())
+                if "joker_lap_code" in game:
+                    joker_lap_code[x] = game["joker_lap_code"]   
+            games.append(game)
 
-    col1, col2, col3, col4, col5, col6, col7, col8, col9 = st.columns(9)
+    with placeholder2.container():
+        col1, col2, col3, col4, col5, col6, col7, col8, col9 = st.columns(9)
 
-    with col1:
-        if st.button(f"Back {st.session_state.back_emoji}"):
-            st.session_state.nextpage = "main_page"
-            st.session_state.game_track_images_set = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
-            st.session_state.game_track_images = [None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None]
-            st.experimental_rerun()
+        with col1:
+            if st.button(f"Back {st.session_state.back_emoji}"):
+                st.session_state.nextpage = "main_page"
+                st.session_state.game_track_images_set = [False] * 20
+                st.session_state.game_track_images = [None] * 20
+                next_race.empty()
+                placeholder1.empty()
+                placeholder2.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
 
-    with col2:
-        if st.button(f"Start in 1 Min. {st.session_state.emoji_driving}"):
-            result = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/start_stage/{lobby_id}/{game_id}/{stage_id}")
-            st.session_state.new_stage_event = False
-            st.experimental_rerun()
+        with col2:
+            if st.button(f"Start in 1 Min. {st.session_state.driving_emoji}"):
+                result = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/start_stage/{lobby_id}/{game_id}/{stage_id}")
+                st.session_state.new_stage_event = False
+                next_race.empty()
+                placeholder1.empty()
+                placeholder2.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
 
-    with col3:
-        if st.button(f"Remove Player (Stage) {st.session_state.remove_emoji}"):
-            st.session_state.nextpage = "remove_player_from_stage_part1"
-            st.experimental_rerun()
+        with col3:
+            if st.button(f"Remove Player (Stage) {st.session_state.remove_emoji}"):
+                st.session_state.nextpage = "remove_player_from_stage_part1"
+                next_race.empty()
+                placeholder1.empty()
+                placeholder2.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
 
-    with col4:
-        if st.button(f"Reset Stage {st.session_state.reset_emoji}"):
-            st.session_state.nextpage = "reset_stage"
-            st.experimental_rerun()
+        with col4:
+            if st.button(f"Reset Stage {st.session_state.reset_emoji}"):
+                st.session_state.nextpage = "reset_stage"
+                next_race.empty()
+                placeholder1.empty()
+                placeholder2.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
 
-    with col5:
-        if st.button(f"Remove Player (Event) {st.session_state.remove_emoji}"):
-            st.session_state.nextpage = "remove_player_from_race"
-            st.experimental_rerun()
+        with col5:
+            if st.button(f"Remove Player (Event) {st.session_state.remove_emoji}"):
+                st.session_state.nextpage = "remove_player_from_race"
+                next_race.empty()
+                placeholder1.empty()
+                placeholder2.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
 
-    with col6:
-        if st.button(f"Reset Event {st.session_state.reset_emoji}"):
-            result = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/reset/{lobby_id}/{game_id}/{stage_id}")
-            st.session_state.new_stage_event = False
-            st.experimental_rerun()
+        with col6:
+            if st.button(f"Reset Event {st.session_state.reset_emoji}"):
+                result = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/reset/{lobby_id}/{game_id}/{stage_id}")
+                st.session_state.new_stage_event = False
+                next_race.empty()
+                placeholder1.empty()
+                placeholder2.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
 
-    with col7:
-        if st.button(f"Download Data {st.session_state.download_emoji}"):
-            st.session_state.nextpage = "download_stagerace"
-            st.experimental_rerun()
+        with col7:
+            if st.button(f"Download Data {st.session_state.download_emoji}"):
+                st.session_state.nextpage = "download_stagerace"
+                next_race.empty()
+                placeholder1.empty()
+                placeholder2.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
 
-    with col8:
-        if st.button(f"Detailed Statistics {st.session_state.statistics_emoji}"):
-            st.session_state.nextpage = "statistics_stage"
-            st.session_state.game_track_images_set = game_track_images_set
-            st.session_state.game_track_images = game_track_images
-            st.experimental_rerun()
+        with col8:
+            if st.button(f"Detailed Statistics {st.session_state.statistics_emoji}"):
+                st.session_state.nextpage = "statistics_stage"
+                st.session_state.game_track_images_set = game_track_images_set
+                st.session_state.game_track_images = game_track_images
+                next_race.empty()
+                placeholder1.empty()
+                placeholder2.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
 
-    with col9:
-        if st.button(f"Delete Event {st.session_state.delete_emoji}"):
-            result = fetch_delete(f"{settings.driftapi_path}/driftapi/manage_game/delete/{lobby_id}/{game_id}")
-            st.session_state.game_id = None
-            st.session_state.stage_id = 1
-            st.session_state.num_stages = 1
-            st.session_state.nextpage = "main_page"
-            st.session_state.game_track_images_set = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
-            st.session_state.game_track_images = [None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None]
-            st.experimental_rerun()
+        with col9:
+            if st.button(f"Delete Event {st.session_state.delete_emoji}"):
+                result = fetch_delete(f"{settings.driftapi_path}/driftapi/manage_game/delete/{lobby_id}/{game_id}")
+                st.session_state.game_id = None
+                st.session_state.stage_id = 1
+                st.session_state.num_stages = 1
+                st.session_state.nextpage = "main_page"
+                st.session_state.game_track_images_set = [False] * 20
+                st.session_state.game_track_images = [None] * 20
+                next_race.empty()
+                placeholder1.empty()
+                placeholder2.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
  
     while True:
 
@@ -581,7 +618,7 @@ def app():
                                 best_lap_list.append(showTime(86400)) # fake 24h time
                                 shortest_distance_list.append(showDistance(9999999)) # fake 9999999 m
                             else:
-                                d["Status"] = f"{st.session_state.emoji_finish}" #"Finished"
+                                d["Status"] = f"{st.session_state.finish_emoji}" #"Finished"
                                 if(d["Ges. Runden"] == d["Abg. Runden"]):
                                     total_time_list.append(showTime(r["total_time"])) # real driven time
                                     best_lap_list.append(showTime(r["best_lap"])) # real best lap/target time
@@ -591,9 +628,9 @@ def app():
                                     best_lap_list.append(showTime(86400)) # fake 24h time
                                     shortest_distance_list.append(showDistance(9999999)) # fake 9999999 m
                         elif ( ( "start_data" in r ) and not ( r["start_data"] is None ) ):
-                            d["Status"] = f"{st.session_state.emoji_driving}" #"Driving"
+                            d["Status"] = f"{st.session_state.driving_emoji}" #"Driving"
                         elif "enter_data" in r:
-                            d["Status"] = f"{st.session_state.emoji_ready}" #"Ready"
+                            d["Status"] = f"{st.session_state.ready_emoji}" #"Ready"
                         else:
                             d["Status"] = ""
 
@@ -674,14 +711,14 @@ def app():
                                 best_target_list.append(best_target_set) # best_target_set, default is 360
                                 shortest_distance_list.append(showDistance(r["end_data"]["total_driven_distance"])) # real total driven distance
                             else:
-                                d["Status"] = f"{st.session_state.emoji_finish}" #"Finished"
+                                d["Status"] = f"{st.session_state.finish_emoji}" #"Finished"
                                 total_score_list.append(int(r["total_score"]))
                                 best_target_list.append(best_target_set) # best_target_set, default is 360
                                 shortest_distance_list.append(showDistance(r["end_data"]["total_driven_distance"])) # real total driven distance
                         elif ( ( "start_data" in r ) and not ( r["start_data"] is None ) ):
-                            d["Status"] = f"{st.session_state.emoji_driving}" #"Driving"
+                            d["Status"] = f"{st.session_state.driving_emoji}" #"Driving"
                         elif "enter_data" in r:
-                            d["Status"] = f"{st.session_state.emoji_ready}" #"Ready"
+                            d["Status"] = f"{st.session_state.ready_emoji}" #"Ready"
                         else:
                             d["Status"] = ""
 
@@ -742,7 +779,7 @@ def app():
                     min_total_time_indices_list_len = len(min_total_time_indices_list)
 # handle normal case: one player on 1st place
                     for y in min_total_time_indices_list:
-                        if( (total_time_list[y] != "1440:00:000") ):
+                        if( (total_time_list[y] != "1440:00.000") ):
                             scoreboard_data[x][y]["Platz"] = f"{st.session_state.award_1st_emoji}"
                             total_time_list[y] = showTime(172800)  # fake 48h time - meaning player has been handled
                         else:
@@ -752,30 +789,30 @@ def app():
                         min_total_time_indices_list = get_minvalue(total_time_list)
                         min_total_time_indices_list_len = len(min_total_time_indices_list)
                         for y in min_total_time_indices_list:
-                            if( (total_time_list[y] != "2880:00:000") ):
-                                if( (total_time_list[y] == "1440:00:000") ):
+                            if( (total_time_list[y] != "2880:00.000") ):
+                                if( (total_time_list[y] == "1440:00.000") ):
                                     scoreboard_data[x][y]["Platz"] = "-"
                                 else:
                                     scoreboard_data[x][y]["Platz"] = f"{st.session_state.award_2nd_emoji}"
                                     total_time_list[y] = showTime(172800)  # fake 48h time - meaning player has been handled
 # cont. handle normal case: one player on 3rd place as well as special case more players on 3rd place
-                    if min_total_time_indices_list_len == 1:
-                        min_total_time_indices_list = get_minvalue(total_time_list)
-                        min_total_time_indices_list_len = len(min_total_time_indices_list)
-                        for y in min_total_time_indices_list:
-                            if( (total_time_list[y] != "2880:00:000") ):
-                                if( (total_time_list[y] == "1440:00:000") ):
-                                    scoreboard_data[x][y]["Platz"] = "-"
-                                else:
-                                    scoreboard_data[x][y]["Platz"] = f"{st.session_state.award_3rd_emoji}"
-                                    total_time_list[y] = showTime(172800)  # fake 48h time
+                        if min_total_time_indices_list_len == 1:
+                            min_total_time_indices_list = get_minvalue(total_time_list)
+                            min_total_time_indices_list_len = len(min_total_time_indices_list)
+                            for y in min_total_time_indices_list:
+                                if( (total_time_list[y] != "2880:00.000") ):
+                                    if( (total_time_list[y] == "1440:00.000") ):
+                                        scoreboard_data[x][y]["Platz"] = "-"
+                                    else:
+                                        scoreboard_data[x][y]["Platz"] = f"{st.session_state.award_3rd_emoji}"
+                                        total_time_list[y] = showTime(172800)  # fake 48h time
 # handle special case: two players on 1st place as well as special case more players on 3rd place                                   
                     elif min_total_time_indices_list_len == 2:
                         min_total_time_indices_list = get_minvalue(total_time_list)
                         min_total_time_indices_list_len = len(min_total_time_indices_list)
                         for y in min_total_time_indices_list:
-                            if( (total_time_list[y] != "2880:00:000") ):
-                                if( (total_time_list[y] == "1440:00:000") ):
+                            if( (total_time_list[y] != "2880:00.000") ):
+                                if( (total_time_list[y] == "1440:00.000") ):
                                     scoreboard_data[x][y]["Platz"] = "-"
                                 else:
                                     scoreboard_data[x][y]["Platz"] = f"{st.session_state.award_3rd_emoji}"
@@ -786,7 +823,7 @@ def app():
                     min_best_lap_indices_list = get_minvalue(best_lap_list)
                     for y in range(len(best_lap_list)):
                         if y in min_best_lap_indices_list:
-                            if( (best_lap_list[y] != "1440:00:000") ):
+                            if( (best_lap_list[y] != "1440:00.000") ):
                                 scoreboard_data[x][y]["Beste Runde"] = f"{st.session_state.award_bonus_emoji}"
                             else:
                                 scoreboard_data[x][y]["Beste Runde"] = "-"

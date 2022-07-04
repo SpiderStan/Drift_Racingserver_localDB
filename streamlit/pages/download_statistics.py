@@ -29,7 +29,7 @@ def showTime(s):
     s = floor(s)
     m = floor(s / 60)
     s = s -60*m
-    return f"{m:02d}m {s:02d}s {ms:03d}ms"
+    return f"{m:02d}:{s:02d}.{ms:03d}"
     #return round(float(s),2) if not((s is None) or s== '') else None
 
 def showDistance(s):
@@ -64,6 +64,8 @@ def app():
     
     st.header("Download detailed Game Statistics of Game " + str(game_id) + " Stage " + str(stage_id) + " from Lobby " + str(lobby_id))
 
+    placeholder1 = st.empty()
+
     game = getGameInfo(lobby_id, game_id, stage_id)
     if not game:
         st.error("No Game with that id exists, going back to main menu...")
@@ -71,12 +73,15 @@ def app():
         st.session_state.nextpage = "main_page"
         st.experimental_rerun()
 
-    if st.button(f"Back {st.session_state.back_emoji}"):
-        st.session_state.num_stages = game["num_stages"]
-        st.session_state.nextpage = "statistics"
-        st.session_state.game_track_images_set = game_track_images_set
-        st.session_state.game_track_images = game_track_images
-        st.experimental_rerun()
+    with placeholder1.container():
+        if st.button(f"Back {st.session_state.back_emoji}"):
+            st.session_state.num_stages = game["num_stages"]
+            st.session_state.nextpage = "statistics"
+            st.session_state.game_track_images_set = game_track_images_set
+            st.session_state.game_track_images = game_track_images
+            placeholder1.empty()
+            time.sleep(0.1)
+            st.experimental_rerun()
 
 
     def constructEntry(r:dict,last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time, section_condition, user_name, sum_score):
@@ -155,9 +160,9 @@ def app():
                 if(r["target_data"]["target_code"] == 0):
                     round_distance = r["target_data"]["driven_distance"] - last_round_driven_distance
                     round_time = r["target_data"]["driven_time"] - last_round_driven_time
-                    d[f" ∑ Sektoren - {st.session_state.distance2_emoji}"] = showDistance(round_distance) + f" {st.session_state.emoji_round}"
-                    d[f" ∑ Sektoren - {st.session_state.time2_emoji}"] = showTime(round_time) + f" {st.session_state.emoji_round}"
-                    d[f"Cum. Sektoren - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(round_distance,round_time) + f" {st.session_state.emoji_round}"
+                    d[f" ∑ Sektoren - {st.session_state.distance2_emoji}"] = showDistance(round_distance) + f" {st.session_state.round_emoji}"
+                    d[f" ∑ Sektoren - {st.session_state.time2_emoji}"] = showTime(round_time) + f" {st.session_state.round_emoji}"
+                    d[f"Cum. Sektoren - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(round_distance,round_time) + f" {st.session_state.round_emoji}"
                     last_round_driven_distance = r["target_data"]["driven_distance"]
                     last_round_driven_time = r["target_data"]["driven_time"]
                 else:
@@ -234,8 +239,8 @@ def app():
             d[f"Sektor - {st.session_state.time_emoji}"] = f"∑ {st.session_state.time2_emoji} " + showTime(scoreboard_data[player]["total_time"])
             d[f"Sektor - {st.session_state.average_speed_emoji}"] = f"Ø {st.session_state.average_speed_emoji} " + showMeanSpeed(scoreboard_data[player]["end_data"]["total_driven_distance"],scoreboard_data[player]["total_time"])
             d[f"Sektor - {st.session_state.track_emoji}"] = ""
-            d[f" ∑ Sektoren - {st.session_state.distance2_emoji}"] = f"Ø {st.session_state.distance2_emoji} / {st.session_state.emoji_round} " + showDistance(float(float(scoreboard_data[player]["end_data"]["total_driven_distance"])/float(scoreboard_data[player]["laps_completed"]))) 
-            d[f" ∑ Sektoren - {st.session_state.time2_emoji}"] = f"Ø {st.session_state.time2_emoji} / {st.session_state.emoji_round} " + showTime(float(float(scoreboard_data[player]["total_time"])/float(scoreboard_data[player]["laps_completed"])))
+            d[f" ∑ Sektoren - {st.session_state.distance2_emoji}"] = f"Ø {st.session_state.distance2_emoji} / {st.session_state.round_emoji} " + showDistance(float(float(scoreboard_data[player]["end_data"]["total_driven_distance"])/float(scoreboard_data[player]["laps_completed"]))) 
+            d[f" ∑ Sektoren - {st.session_state.time2_emoji}"] = f"Ø {st.session_state.time2_emoji} / {st.session_state.round_emoji} " + showTime(float(float(scoreboard_data[player]["total_time"])/float(scoreboard_data[player]["laps_completed"])))
             d[f"Cum. Sektoren - Ø {st.session_state.average_speed_emoji}"] = ""
             targetboard_data.append(d)
 

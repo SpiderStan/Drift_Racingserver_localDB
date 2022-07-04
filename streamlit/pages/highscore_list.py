@@ -12,6 +12,9 @@ from math import floor
 from  .session import fetch_post, fetch_put, fetch_get, fetch_delete
 from .singletons import settings, logger
 
+def getGameInfo(lobby_id, game_id, stage_id):
+    return fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/get/{lobby_id}/{game_id}/{stage_id}/")
+
 def getHighScoreBoard(lobby_id):
     return fetch_get(f"{settings.driftapi_path}/driftapi/game/{lobby_id}/highscores")
 
@@ -22,26 +25,47 @@ def app():
     st.header("Gymkhana High Score List of Lobby " + str(lobby_id))
 
     highscoreboard = st.empty()
+    placeholder1 = st.empty()
 
-    col1, col2, col3 = st.columns(3)
+    with placeholder1.container():
 
-    with col1:
-        if st.button(f"Back {st.session_state.back_emoji}"):
-            if 'game_id' in st.session_state:
-                st.session_state.nextpage = "racedisplay"
-            else:
-                st.session_state.nextpage = "main_page"
-            st.experimental_rerun()
+        col1, col2, col3 = st.columns(3)
 
-    with col2:
-        if st.button(f"Remove Player {st.session_state.remove_emoji}"):
-            st.session_state.nextpage = "remove_player_from_highscore_list"
-            st.experimental_rerun()
+        with col1:
+            if st.button(f"Back {st.session_state.back_emoji}"):
+                if 'game_id' in st.session_state:
+                    game = getGameInfo(lobby_id, st.session_state.game_id, 1)
+                    if not game:
+                        st.error("No Game with that id exists, going back to main menu...")
+                        time.sleep(1)
+                        st.session_state.nextpage = "main_page"
+                        st.experimental_rerun()
+                    if (game["game_mode"] == "GYMKHANA"):
+                        st.session_state.nextpage = "racedisplay"
+                    elif (game["game_mode"] == "GYMKHANA_TRAINING"):
+                        st.session_state.nextpage = "gymkhana_training_racedisplay"
+                else:
+                    st.session_state.nextpage = "main_page"
+                highscoreboard.empty()
+                placeholder1.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
 
-    with col3:
-        if st.button(f"Clear List {st.session_state.delete_emoji}"):
-            result = fetch_delete(f"{settings.driftapi_path}/driftapi/game/{lobby_id}/reset/highscores")
-            st.experimental_rerun()
+        with col2:
+            if st.button(f"Remove Player {st.session_state.remove_emoji}"):
+                st.session_state.nextpage = "remove_player_from_highscore_list"
+                highscoreboard.empty()
+                placeholder1.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
+
+        with col3:
+            if st.button(f"Clear List {st.session_state.delete_emoji}"):
+                result = fetch_delete(f"{settings.driftapi_path}/driftapi/game/{lobby_id}/reset/highscores")
+                highscoreboard.empty()
+                placeholder1.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
  
     while True:
 

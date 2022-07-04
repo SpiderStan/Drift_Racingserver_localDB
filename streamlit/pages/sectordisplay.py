@@ -1,13 +1,41 @@
 import streamlit as st
 import time
-from datetime import timedelta
+#import socket
+from datetime import timedelta, timezone, datetime
 import pandas as pd 
 import numpy as np
+import qrcode
+import operator
 from PIL import Image
 from math import floor
 
-from .session import fetch_post, fetch_put, fetch_get, fetch_delete
+#streamlit-aggrid
+#plotly
+#from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
+#import plotly.graph_objects as go
+
+from  .session import fetch_post, fetch_put, fetch_get, fetch_delete
 from .singletons import settings, logger
+
+
+@st.cache
+def getqrcode(content):
+    logger.info("create qr code")
+    logger.info(content)
+
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4
+    )
+    qr.add_data(content)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="white", back_color="#212529")
+    logger.info(str(img))
+    img.save('./qrcode_test.png')
+    return Image.open('./qrcode_test.png')
+
 
 def getGameInfo(lobby_id, game_id, stage_id):
     return fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/get/{lobby_id}/{game_id}/{stage_id}/")
@@ -313,6 +341,7 @@ def handleCurrentTrackCondition(r:dict):
         current_track_condition = "-"
     return current_track_condition
 
+
 # added function to handle awards after the race (Race: 1st, 2nd, 3rd and bonus award for fastest lap)
 def get_minvalue(inputlist):
     #get the minimum value in the list
@@ -325,32 +354,32 @@ def get_minvalue(inputlist):
 def get_maxvalue(inputlist):
     #get the maximum value in the list
     max_value = max(inputlist)
-    if max_value == 0:
-        res = []
-        return res
     #return the index of maximum value 
     res = [i for i,val in enumerate(inputlist) if val==max_value]
     return res
 
-def app():
+def get_truevalue(inputlist):
+    res = [i for i, val in enumerate(inputlist) if val==True]
+    return res
 
-    lobby_id = st.session_state.lobby_id
+def get_nonevalue(inputlist):
+    res = [i for i, val in enumerate(inputlist) if val==None]
+    return res
+ 
+def app():   
+
+    lobby_id = st.session_state.lobby_id        
     game_id = st.session_state.game_id
     stage_id = st.session_state.stage_id
     num_stages = st.session_state.num_stages
 
-    st.header("Download Game Data of Game " + str(game_id) + " from Lobby " + str(lobby_id))
+    game_track_images_set = st.session_state.game_track_images_set
+    game_track_images = st.session_state.game_track_images
 
-    placeholder1 = st.empty()
-
-    with placeholder1.container(): 
-        if st.button(f"Back to Race {st.session_state.back_emoji}"):
-            st.session_state.nextpage = "racedisplay"
-            placeholder1.empty()
-            time.sleep(0.1)
-            st.experimental_rerun()
+    st.header("Sector Display of Game " + str(game_id) + " from Lobby " + str(lobby_id))
 
     game = getGameInfo(lobby_id, game_id, stage_id)
+
     if not game:
         st.error("No Game with that id exists, going back to main menu...")
         time.sleep(1)
@@ -362,360 +391,271 @@ def app():
         if "joker_lap_code" in game:
             joker_lap_code = game["joker_lap_code"]
 
-        scoreboard_data = getScoreBoard(lobby_id, game_id, stage_id)
+    num_sectors = game["num_sectors"]
 
-        def constructEntry(r:dict):
-            d = {
-                "Spieler":r["user_name"] if "user_name" in r else "",
-                "Motor":r["enter_data"]["engine_type"] if "enter_data" in r else "-",
-                "Tuning":r["enter_data"]["tuning_type"] if "enter_data" in r else "-",
-            }
+    scoreboard = st.empty()
+    placeholder1 = st.empty()
 
-# handle game_mode:
-            if "enter_data" in r:
-                d["Modus"] = r["enter_data"]["game_mode"]
-            else:
-                d["Modus"] = "-"
+    with placeholder1.container():
+        col1, col2, col3, col4, col5, col6, col7, col8 = st.columns(8)
+        
+        with col1:
+            if st.button(f"Back {st.session_state.back_emoji}"):
+                st.session_state.nextpage = "racedisplay"
+                scoreboard.empty()
+                placeholder1.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
 
-# handle setup_mode:
-            if "enter_data" in r:
-                d["Setup"] = r["enter_data"]["setup_mode"]
-            else:
-                d["Setup"] = "-"
+    x_toggle = [1,2,3,4,5,6,7,0]
+#    x_toggle = [1,2,3,0]
+    toggle=0
+
+    while True:
+
+        with scoreboard.container():
+        
+            scoreboard_data = getScoreBoard(lobby_id, game_id, stage_id)
+            scoreboard_data_len = len(scoreboard_data)
+            
+            # CSS to inject contained in a string
+            hide_dataframe_row_index = """
+                        <style>
+                        .row_heading.level0 {display:none}
+                        .blank {display:none}
+                        </style>
+            """
+            # Inject CSS with Markdown
+            st.markdown(hide_dataframe_row_index, unsafe_allow_html=True)
                         
-# tracking track condition 
-            current_track_condition = handleCurrentTrackCondition(r)
-            d["Strecke"] = current_track_condition
+#            def constructEntry(r:dict,current_sector):
+            def constructEntry(r:dict):
+            
+                d = {}
 
-# handle wheels
-            if "enter_data" in r:
-                if( (r["enter_data"]["wheels"] == "spikes" ) ):
-                    d["Reifen"] = "SPIKES"
-                elif( (r["enter_data"]["wheels"] == "gravel_tires" ) ):
-                    d["Reifen"] = "RALLY"
-                else:
-                    d["Reifen"] = "STRAßE"
-            else:
-                d["Reifen"] = "-"
-                        
-# differentiate between RACE and GYMKHANA game mode:
-            if ( game["game_mode"] == "RACE" ):
-                
-# handle track_bundle:
-                if "enter_data" in r:
-                    if( (r["enter_data"]["track_bundle"] == "rally_cross" ) ):
-                        d["Kursmodus"] = "RALLY CROSS"
-                    elif( (r["enter_data"]["track_bundle"] == "rally" ) ):
-                        d["Kursmodus"] = "RALLY"
+                if "user_name" in r:
+                    if ( ( "end_data" in r ) and not ( r["end_data"] is None ) ):
+                        if(r["end_data"]["false_start"]):
+                            player_status = f"{st.session_state.false_start_emoji}" #"False Start!"
+                            completed_sectors_cnt = 0
+                        else:
+                            player_status = f"{st.session_state.finish_emoji}" #"Finished"
+                            completed_sectors_cnt = 0
+                    elif ( ( "start_data" in r ) and not ( r["start_data"] is None ) ):
+                        current_track_condition = handleCurrentTrackCondition(r)
+                        if(r["laps_completed"] == r["enter_data"]["lap_count"]):
+                            player_status = f"{st.session_state.finish_emoji}" #"Finished - Player completed all rounds"
+                        else:
+                            player_status = current_track_condition #Driving - show Track Condition here
+
+# add determination of sectors here
+                        if(r["last_recognized_target"] == 0): # start/finish
+                            if(r["laps_completed"] == r["enter_data"]["lap_count"]):
+                                completed_sectors_cnt = 0
+                            else:
+                                completed_sectors_cnt = 1
+                        elif(r["second_last_recognized_target"] == 0):
+                            completed_sectors_cnt = 2
+                        elif(r["third_last_recognized_target"] == 0):
+                            completed_sectors_cnt = 3
+                        elif(r["forth_last_recognized_target"] == 0):
+                            completed_sectors_cnt = 4
+                        elif(r["fith_last_recognized_target"] == 0):
+                            completed_sectors_cnt = 5
+                        elif(r["sixth_last_recognized_target"] == 0):
+                            completed_sectors_cnt = 6
+                        elif(r["seventh_last_recognized_target"] == 0):
+                            completed_sectors_cnt = 7
+                        elif(r["eighth_last_recognized_target"] == 0):
+                            completed_sectors_cnt = 8
+                        elif(r["ninth_last_recognized_target"] == 0):
+                            completed_sectors_cnt = 9
+                        else:
+                            completed_sectors_cnt = 0
+                    elif "enter_data" in r:
+                        player_status = f"{st.session_state.ready_emoji}" #"Ready"
+                        completed_sectors_cnt = 0
                     else:
-                        d["Kursmodus"] = "KEINER"
-                else:
-                    d["Kursmodus"] = "-"
-
-# handle lap_count:
-                if "enter_data" in r:
-                    d["Ges. Runden"] = r["enter_data"]["lap_count"]
-                else:
-                    d["Ges. Runden"] = "-"
-
-# handle laps_completed:
-                if "enter_data" in r:
-                    d["Abg. Runden"] = r["laps_completed"]
-                else:
-                    d["Abg. Runden"] = "-"
-
-                if joker_lap_code != None:
-                    d["Joker"] = int(r["joker_laps_counter"]) if "joker_laps_counter" in r else 0
-
-# handle best_lap:
-                if "best_lap" in r:
-                    d["Beste"] = showTime(r["best_lap"])
-                else:
-                    d["Beste"] = showTime(None)
-
-# handle last_lap:
-                if "last_lap" in r:
-                    d["Letzte"] = showTime(r["last_lap"])
-                else:
-                    d["Letzte"] = showTime(None)
-                        
-# handle total_time:
-                if "total_time" in r:
-                    d["Gesamtzeit"] = showTime(r["total_time"])
-                else:
-                    d["Gesamtzeit"] = showTime(None)  
-
-# handle total_driven_distance
-                if ( ( "end_data" in r ) and not ( r["end_data"] is None ) ):
-                    d["Gesamtdistanz"] = showDistance(r["end_data"]["total_driven_distance"])
-                else:
-                    d["Gesamtdistanz"] = ""               
+                        player_status = ""
+                        completed_sectors_cnt = 0
                     
-# changed to use emojis for status information
-                if ( ( "end_data" in r ) and not ( r["end_data"] is None ) ):
-                    if(r["end_data"]["false_start"]):
-                        d["Status"] = f"{st.session_state.false_start_emoji}" #"False Start!"
-                        total_time_list.append(showTime(86400)) # fake 24h time
-                        best_lap_list.append(showTime(86400)) # fake 24h time
-                        shortest_distance_list.append(showDistance(9999999)) # fake 9999999 m
-                    else:
-                        d["Status"] = f"{st.session_state.finish_emoji}" #"Finished"
-                        if(d["Ges. Runden"] == d["Abg. Runden"]):
-                            total_time_list.append(showTime(r["total_time"])) # real driven time
-                            best_lap_list.append(showTime(r["best_lap"])) # real best lap/target time
-                            shortest_distance_list.append(showDistance(r["end_data"]["total_driven_distance"])) # real total driven distance
-                        else:
-                            total_time_list.append(showTime(86400)) # fake 24h time
-                            best_lap_list.append(showTime(86400)) # fake 24h time
-                            shortest_distance_list.append(showDistance(9999999)) # fake 9999999 m
-                elif ( ( "start_data" in r ) and not ( r["start_data"] is None ) ):
-                    d["Status"] = f"{st.session_state.driving_emoji}" #"Driving"
-                elif "enter_data" in r:
-                    d["Status"] = f"{st.session_state.ready_emoji}" #"Ready"
+                    d["Spieler"] = r["user_name"]
+                    d[f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"] =  player_status
+#                    d[f""] = current_track_condition
                 else:
-                    d["Status"] = ""
-
-            elif ( game["game_mode"] == "GYMKHANA" ):
-# changed way of building up d slightly so that more readable strings will be displayed
-                display_text_speed = f"Bester Speed"
-                display_text_angle = f"Bester Angle"
-                display_text_360 = f"Bester 360"
-                display_text_180 = f"Bester 180"
-
-# handle bonus target set:
-                if ( "bonus_target" in game ) and (not game["bonus_target"] is None):
-                    if ( game["bonus_target"] == "SPEED" ):
-                        display_text_speed = display_text_speed + f" ({st.session_state.award_trophy_emoji})"
-                    elif ( game["bonus_target"] == "ANGLE" ):
-                        display_text_angle = display_text_angle + f" ({st.session_state.award_trophy_emoji})"
-                    elif ( game["bonus_target"] == "360" ):
-                        display_text_360 = display_text_360 + f" ({st.session_state.award_trophy_emoji})"
-                    elif ( game["bonus_target"] == "180" ):
-                        display_text_180 = display_text_180 + f" ({st.session_state.award_trophy_emoji})"
-                else:
-                    display_text_360 = display_text_360 + f" ({st.session_state.award_trophy_emoji})"
-
-                if ("best_speed_drift" in r) and (not (r["best_speed_drift"] is None)):
-                    d[display_text_speed] = int(r["best_speed_drift"])
-                else:
-                    d[display_text_speed] = 0
-
-                if ("best_angle_drift" in r) and (not (r["best_angle_drift"] is None)):
-                    d[display_text_angle] = int(r["best_angle_drift"])
-                else:
-                    d[display_text_angle] = 0
-
-                if ("best_360_angle" in r) and (not (r["best_360_angle"] is None)):
-                    d[display_text_360] = int(r["best_360_angle"])
-                else:
-                    d[display_text_360] = 0                   
+                    d["Spieler"] = ""
+#                    d[f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"] = ""
                     
-                if ("best_180_speed" in r) and (not (r["best_180_speed"] is None)):
-                    d[display_text_180] = int(r["best_180_speed"])
-                else:
-                    d[display_text_180] = 0  
+    # differentiate between RACE and GYMKHANA game mode:
+                if ( game["game_mode"] == "RACE" ):
 
-# handle total_score:
-                if ("total_score" in r) and (not (r["total_score"] is None)):
-                    d["Gesamtpunkte"] = int(r["total_score"])
-                else:
-                    d["Gesamtpunkte"] = 0
+    # handle laps:
+                    if "enter_data" in r:
+                        if ( ( "end_data" in r ) and not ( r["end_data"] is None ) ): # EndEvent
+                            if ( r["enter_data"]["lap_count"] == r["laps_completed"]): # finished Race (all laps completed)
+                                d["Runde"] = str(r["laps_completed"]) + "/" + str(r["enter_data"]["lap_count"])
+                            else: # not all laps completed
+                                d["Runde"] = str(r["laps_completed"]+1) + "/" + str(r["enter_data"]["lap_count"])
+                        elif ( ( "start_data" in r ) and not ( r["start_data"] is None ) ): # driving
+                            if( r["target_code_counter"]["0"] == 0 ): # player not driven over start/finish so far
+                                d["Runde"] = str(0) + "/" + str(r["enter_data"]["lap_count"])
+                            elif( r["enter_data"]["lap_count"] == r["laps_completed"]):
+                                d["Runde"] = str(r["laps_completed"]) + "/" + str(r["enter_data"]["lap_count"])
+                            else: # player driven over start/finish
+                                d["Runde"] = str(r["laps_completed"]+1) + "/" + str(r["enter_data"]["lap_count"])
+                        elif "enter_data" in r: #"Ready"
+                            d["Runde"] = str(0) + "/" + str(r["enter_data"]["lap_count"])
+                    else:       
+                        d["Runde"] = ""
 
-# changed to use emojis for status information
-                if ( ( "end_data" in r ) and not ( r["end_data"] is None ) ):
-                    if ( "bonus_target" in game ) and (not game["bonus_target"] is None):
-                        if ( game["bonus_target"] == "SPEED" ):
-                            if (not r["best_speed_drift"] is None):
-                                best_target_set = int(r["best_speed_drift"])
-                            else:
-                                best_target_set = 0
-                        elif ( game["bonus_target"] == "ANGLE" ):
-                            if (not r["best_angle_drift"] is None):
-                                best_target_set = int(r["best_angle_drift"])
-                            else:
-                                best_target_set = 0
-                        elif ( game["bonus_target"] == "360" ):
-                            if (not r["best_360_angle"] is None):
-                                best_target_set = int(r["best_360_angle"])
-                            else:
-                                best_target_set = 0
-                        elif ( game["bonus_target"] == "180" ):
-                            if (not r["best_180_speed"] is None):
-                                best_target_set = int(r["best_180_speed"])
-                            else:
-                                best_target_set = 0
-                    else:
-                        if (not r["best_360_angle"] is None):
-                            best_target_set = int(r["best_360_angle"]) # default
+                    if "enter_data" in r:
+                        if(toggle < 4):
+#                        if(toggle < 2):
+                            current_sector = f"{st.session_state.current_sector_emoji}"
                         else:
-                            best_target_set = 0
+                            current_sector = f"{st.session_state.noncompleted_sector_emoji}"
+
+                        if(completed_sectors_cnt == 0):
+                            if ( ( "end_data" in r ) and not ( r["end_data"] is None ) ):
+                                d["Sektor"] = f"{st.session_state.completed_sector_emoji}" * num_sectors
+                                if(r["end_data"]["false_start"] == True):
+                                    player_finished_list.append(None)
+                                elif(r["laps_completed"] != r["enter_data"]["lap_count"]):
+                                    player_finished_list.append(None)
+                                else:
+                                    player_finished_list.append(True)
+                            elif(r["laps_completed"] == r["enter_data"]["lap_count"]):
+                                d["Sektor"] = f"{st.session_state.completed_sector_emoji}" * num_sectors
+                                player_finished_list.append(False)
+                            else:
+                                d["Sektor"] = f"{st.session_state.noncompleted_sector_emoji}" * num_sectors
+                                player_finished_list.append(False)
+                        else:
+                            d["Sektor"] = f"{st.session_state.completed_sector_emoji}" * (completed_sectors_cnt-1) + current_sector + f"{st.session_state.noncompleted_sector_emoji}" * (num_sectors-completed_sectors_cnt)
+                            player_finished_list.append(False)
+                    else:
+                        d["Sektor"] = f"{st.session_state.noncompleted_sector_emoji}" * num_sectors
+                        player_finished_list.append(False)
+
+                    if ("last_target_timestamp" in r) and (not r["last_target_timestamp"] is None):
+                        if ( ( "end_data" in r ) and not ( r["end_data"] is None ) ): # EndEvent
+                            d["Sektor Zeit"] = "0:00:00.000000"
+                        else:
+                            if( r["enter_data"]["lap_count"] == r["laps_completed"]):
+                                d["Sektor Zeit"] = "0:00:00.000000"
+                            else:
+                                current_time = datetime.now()#.astimezone(timezone.utc) 
+                                sector_start_time = datetime.strptime(r["last_target_timestamp"],'%Y-%m-%dT%H:%M:%S.%f')
+                                sector_time = current_time - sector_start_time
+                                d["Sektor Zeit"] = str(sector_time)
+                    else:
+                        d["Sektor Zeit"] = "0:00:00.000000"
                         
-                    if(r["end_data"]["false_start"]):
-                        d["Status"] = f"{st.session_state.false_start_emoji}" #"False Start!"
-                        total_score_list.append(int(r["total_score"]))
-                        best_target_list.append(best_target_set) # best_target_set, default is 360
-                        shortest_distance_list.append(showDistance(r["end_data"]["total_driven_distance"])) # real total driven distance
+                    if ("second_last_target_timestamp" in r) and (not r["second_last_target_timestamp"] is None):
+                        d["Letzter Sektor Zeit"] = str(datetime.strptime(r["last_target_timestamp"],'%Y-%m-%dT%H:%M:%S.%f') - datetime.strptime(r["second_last_target_timestamp"],'%Y-%m-%dT%H:%M:%S.%f'))
                     else:
-                        d["Status"] = f"{st.session_state.finish_emoji}" #"Finished"
-                        total_score_list.append(int(r["total_score"]))
-                        best_target_list.append(best_target_set) # best_target_set, default is 360
-                        shortest_distance_list.append(showDistance(r["end_data"]["total_driven_distance"])) # real total driven distance
-                elif ( ( "start_data" in r ) and not ( r["start_data"] is None ) ):
-                    d["Status"] = f"{st.session_state.driving_emoji}" #"Driving"
-                elif "enter_data" in r:
-                    d["Status"] = f"{st.session_state.ready_emoji}" #"Ready"
-                else:
-                    d["Status"] = ""
+                        d["Letzter Sektor Zeit"] = "0:00:00.000000"
 
-            return (d)
+                elif ( game["game_mode"] == "GYMKHANA" ):
+                    pass
 
-# handle awards after the race (Race: 1st, 2nd, 3rd and bonus award for fastest lap)
-        total_time_list = []
-        best_lap_list = []
-        total_score_list = []
-        best_target_list = []
-        shortest_distance_list = []
-        (scoreboard_data) = [constructEntry(r) for r in scoreboard_data if (type(r) is dict)]
+                current_rounds_and_sectors_list[0].append(r["laps_completed"])
+                current_rounds_and_sectors_list[1].append(completed_sectors_cnt)
 
-#if there is no entry, just add an empty one by calling the construct Entry with an empty dict
-        while len(scoreboard_data)<1:
-            scoreboard_data.append(constructEntry({}))
-  
-        scoreboard_len = len(scoreboard_data)
+                return (d)
+                 
+            racedisplay_data = [{}] * scoreboard_data_len            
+            current_rounds_and_sectors_list = [[],[]]
+            player_finished_list = []
 
-        if(len(total_time_list) == scoreboard_len): # all players finished race    
-            min_total_time_indices_list = get_minvalue(total_time_list)
-            min_total_time_indices_list_len = len(min_total_time_indices_list)
-# handle normal case: one player on 1st place
-            for x in min_total_time_indices_list:
-                if( (total_time_list[x] != "1440:00.000") ):
-                    scoreboard_data[x]["Platz"] = f"{st.session_state.award_1st_emoji}"
-                    total_time_list[x] = showTime(172800)  # fake 48h time - meaning player has been handled
-                else:
-                    scoreboard_data[x]["Platz"] = "-"
-# cont. handle normal case: one player on 2nd place as well as special case more players on 2nd place
-            if min_total_time_indices_list_len == 1:
-                min_total_time_indices_list = get_minvalue(total_time_list)
-                min_total_time_indices_list_len = len(min_total_time_indices_list)
-                for x in min_total_time_indices_list:
-                    if( (total_time_list[x] != "2880:00.000") ):
-                        if( (total_time_list[x] == "1440:00.000") ):
-                            scoreboard_data[x]["Platz"] = "-"
+            for x in range(scoreboard_data_len): # number of players
+                (racedisplay_data[x]) = constructEntry(scoreboard_data[x])
+
+            if(scoreboard_data_len >= 1):
+
+                handled_players = 0
+                position = 1
+
+#first handle players disqualified due to false start
+                for player in range(scoreboard_data_len):
+                    if ( ( "end_data" in scoreboard_data[player] ) and not ( scoreboard_data[player]["end_data"] is None ) ):
+                        if(scoreboard_data[player]["end_data"]["false_start"] == True):
+                            racedisplay_data[player]["Platz"] = f"{st.session_state.false_start_emoji}"
+                            current_rounds_and_sectors_list[0][player] = -1 # fake -1 rounds - meaning player has been handled
+                            handled_players+=1
+
+                if(handled_players < scoreboard_data_len):
+
+                    handled_finished_players = 0
+
+# second handle players already finished here
+                    player_finished_indices_list = get_truevalue(player_finished_list)
+                    player_finished_indices_list_len = len(player_finished_indices_list)
+
+                    player_race_time_list = []
+
+                    for player in range(scoreboard_data_len):
+                        if (player in player_finished_indices_list):
+                            player_race_time_list.append(float(scoreboard_data[player]["total_time"]))
                         else:
-                            scoreboard_data[x]["Platz"] = f"{st.session_state.award_2nd_emoji}"
-                            total_time_list[x] = showTime(172800)  # fake 48h time - meaning player has been handled
-# cont. handle normal case: one player on 3rd place as well as special case more players on 3rd place
-            if min_total_time_indices_list_len == 1:
-                min_total_time_indices_list = get_minvalue(total_time_list)
-                min_total_time_indices_list_len = len(min_total_time_indices_list)
-                for x in min_total_time_indices_list:
-                    if( (total_time_list[x] != "2880:00.000") ):
-                        if( (total_time_list[x] == "1440:00.000") ):
-                            scoreboard_data[x]["Platz"] = "-"
-                        else:
-                            scoreboard_data[x]["Platz"] = f"{st.session_state.award_3rd_emoji}"
-                            total_time_list[x] = showTime(172800)  # fake 48h time
-# handle special case: two players on 1st place as well as special case more players on 3rd place                                   
-            elif min_total_time_indices_list_len == 2:
-                min_total_time_indices_list = get_minvalue(total_time_list)
-                min_total_time_indices_list_len = len(min_total_time_indices_list)
-                for x in min_total_time_indices_list:
-                    if( (total_time_list[x] != "2880:00.000") ):
-                        if( (total_time_list[x] == "1440:00.000") ):
-                            scoreboard_data[x]["Platz"] = "-"
-                        else:
-                            scoreboard_data[x]["Platz"] = f"{st.session_state.award_3rd_emoji}"
-                            total_time_list[x] = showTime(172800)  # fake 48h time
+                            player_race_time_list.append(float(9999.999))
 
-# award for best lap / best bonus target score                        
-        if(len(best_lap_list) == scoreboard_len): # all players finished race
-            min_best_lap_indices_list = get_minvalue(best_lap_list)
-            for x in range(len(best_lap_list)):
-                if x in min_best_lap_indices_list:
-                    if( (best_lap_list[x] != "1440:00.000") ):
-                        scoreboard_data[x]["Beste Runde"] = f"{st.session_state.award_bonus_emoji}"
-                    else:
-                        scoreboard_data[x]["Beste Runde"] = "-"
-                else:
-                    scoreboard_data[x]["Beste Runde"] = "-"
+                    while handled_finished_players < player_finished_indices_list_len:
+                        shortest_race_time_indices_list = get_minvalue(player_race_time_list)
+                        shortest_race_time_indices_list_len = len(shortest_race_time_indices_list)
 
-        if(len(total_score_list) == scoreboard_len): # all players finished race    
-            max_total_score_indices_list = get_maxvalue(total_score_list)
-            max_total_score_indices_list_len = len(max_total_score_indices_list)
-# handle normal case: one player on 1st place
-            for x in max_total_score_indices_list:
-                scoreboard_data[x]["Platz"] = f"{st.session_state.award_1st_emoji}"
-                total_score_list[x] = 0  # fake 0 score - meaning player has been handled
-# cont. handle normal case: one player on 2nd place as well as special case more players on 2nd place
-            if max_total_score_indices_list_len == 1:
-                max_total_score_indices_list = get_maxvalue(total_score_list)
-                max_total_score_indices_list_len = len(max_total_score_indices_list)
-                for x in max_total_score_indices_list:
-                    scoreboard_data[x]["Platz"] = f"{st.session_state.award_2nd_emoji}"
-                    total_score_list[x] = 0  # fake 0 score - meaning player has been handled
-# cont. handle normal case: one player on 3rd place as well as special case more players on 3rd place
-                if max_total_score_indices_list_len == 1:
-                    max_total_score_indices_list = get_maxvalue(total_score_list)
-                    max_total_score_indices_list_len = len(max_total_score_indices_list)
-                    for x in max_total_score_indices_list:
-                        scoreboard_data[x]["Platz"] = f"{st.session_state.award_3rd_emoji}"
-                        total_score_list[x] = 0  # fake 0 score - meaning player has been handled
-# handle special case: two players on 1st place as well as special case more players on 3rd place                                   
-            elif max_total_score_indices_list_len == 2:
-                max_total_score_indices_list = get_maxvalue(total_score_list)
-                max_total_score_indices_list_len = len(max_total_score_indices_list)
-                for x in max_total_score_indices_list:
-                    scoreboard_data[x]["Platz"] = f"{st.session_state.award_3rd_emoji}"
-                    total_score_list[x] = 0  # fake 0 score - meaning player has been handled
+                        for x in range(shortest_race_time_indices_list_len):
+                            racedisplay_data[shortest_race_time_indices_list[x]]["Platz"] = str(position)
+                            current_rounds_and_sectors_list[0][shortest_race_time_indices_list[x]] = -1 # fake -1 rounds - meaning player has been handled
+                            handled_finished_players+=1
+                            player_race_time_list[shortest_race_time_indices_list[x]] = float(9999.999) # fake time - meaning player has been handled
+                            
+                        position+=1
+                   
+                    handled_players+=player_finished_indices_list_len
 
-        if(len(best_target_list) == scoreboard_len): # all players finished race
-            max_best_target_indices_list = get_maxvalue(best_target_list)
-            for x in range(len(best_target_list)):
-                if x in max_best_target_indices_list:
-                    scoreboard_data[x]["Bonus Target"] = f"{st.session_state.award_bonus_emoji}"
-                else:
-                    scoreboard_data[x]["Bonus Target"] = "-"
+# third handle rest of players
+                    while handled_players < scoreboard_data_len:
+                        max_rounds_indices_list = get_maxvalue(current_rounds_and_sectors_list[0])
+                        max_rounds_indices_list_len = len(max_rounds_indices_list)
 
-# award for shortest distance                        
-        if(len(shortest_distance_list) == scoreboard_len): # all players finished race
-            min_shortest_distance_list_indices_list = get_minvalue(shortest_distance_list)
-            for x in range(len(shortest_distance_list)):
-                if x in min_shortest_distance_list_indices_list:
-                    if( (shortest_distance_list[x] != "9999km 999m") ):
-                        scoreboard_data[x]["Kürzeste Strecke"] = f"{st.session_state.award_bonus_emoji}"
-                    else:
-                        scoreboard_data[x]["Kürzeste Strecke"] = "-"
-                else:
-                    scoreboard_data[x]["Kürzeste Strecke"] = "-"
+                        max_round_sectors_list = []
+                        for x in max_rounds_indices_list:
+                            max_round_sectors_list.append(current_rounds_and_sectors_list[1][x])
+                            
+                        max_sectors_indices_list = get_maxvalue(max_round_sectors_list)
+                        max_sectors_indices_list_len = len(max_sectors_indices_list)         
 
+# last step: handle last_target_timestamp here for players in the same sector to find youngest time stamps
+                        time_list = []
+                        for x in max_sectors_indices_list:
+                            if ( ( "last_target_timestamp" in scoreboard_data[x] ) and not ( scoreboard_data[x]["last_target_timestamp"] is None ) ):
+                                time_list.append(datetime.strptime(scoreboard_data[x]["last_target_timestamp"],'%Y-%m-%dT%H:%M:%S.%f'))
+                            elif( ( "start_data" in scoreboard_data[x] ) and not ( scoreboard_data[x]["start_data"] is None ) ):
+                                time_list.append(datetime.strptime(scoreboard_data[x]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z'))
+                            else:
+                                time_list.append(datetime.now())
 
-        df = pd.DataFrame( scoreboard_data )
+                        youngest_time_indices_list = get_minvalue(time_list)
+                        youngest_time_indices_list_len = len(youngest_time_indices_list)
+                        
+                        for x in youngest_time_indices_list:
+                            racedisplay_data[max_rounds_indices_list[x]]["Platz"] = str(position)
+                            current_rounds_and_sectors_list[0][max_rounds_indices_list[x]] = -1 # fake -1 rounds - meaning player has been handled
+                            handled_players+=1
 
-        st.download_button(
-            f"Press to Download as csv {st.session_state.download_emoji}",
-            df.to_csv(index = False).encode('utf-8'),
-            "Game_" + str(lobby_id) + "_" + str(game_id) + "_" + str(stage_id)+".csv",
-            "text/csv",
-            key='download-csv'
-        )
-        '''
-        st.download_button(
-            f"Press to Download as html {st.session_state.download_emoji}",
-            df.to_html(),
-            "Game_" + str(lobby_id) + "_" + str(game_id) + "_" + str(stage_id)+".html",
-            "text/html",
-            key='download-html'
-        )
-        '''
+                        position+=1
 
-        st.download_button(
-            f"Press to Download as json {st.session_state.download_emoji}",
-            df.to_json(orient='records'),
-            "Game_" + str(lobby_id) + "_" + str(game_id) + "_" + str(stage_id)+".json",
-            "text/json",
-            key='download-json'
-        )
+                racedisplay_data = (sorted(racedisplay_data, key=operator.itemgetter('Platz')))
 
+            df = pd.DataFrame( racedisplay_data )
+            df = df.style.set_properties(**{
+                'font-size': '40pt',
+                'font-family': 'IBM Plex Mono',
+            })
 
-
-
+#            st.dataframe(df)
+            st.table(df)
+            
+            toggle=x_toggle[toggle]
+            time.sleep(0.1)

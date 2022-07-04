@@ -1,4 +1,6 @@
 import streamlit as st
+import time
+
 import pandas as pd 
 from  .session import fetch_post, fetch_put, fetch_get, fetch_delete
 from .singletons import settings
@@ -10,16 +12,16 @@ def app():
 # initialize emoji as a Session State variable
     if "lobby_emoji" not in st.session_state:
         st.session_state.lobby_emoji = "👪"
-    if "" not in st.session_state:
+    if "quit_emoji" not in st.session_state:
         st.session_state.quit_emoji = "🚪" 
-    if "emoji_ready" not in st.session_state:
-        st.session_state.emoji_ready = "🚦"
-    if "emoji_driving" not in st.session_state:
-        st.session_state.emoji_driving = "🏎️"
-    if "emoji_finish" not in st.session_state:
-        st.session_state.emoji_finish = "🏁"
-    if "emoji_round" not in st.session_state:
-        st.session_state.emoji_round = "🚩"           
+    if "ready_emoji" not in st.session_state:
+        st.session_state.ready_emoji = "🚦"
+    if "driving_emoji" not in st.session_state:
+        st.session_state.driving_emoji = "🏎️"
+    if "finish_emoji" not in st.session_state:
+        st.session_state.finish_emoji = "🏁"
+    if "round_emoji" not in st.session_state:
+        st.session_state.round_emoji = "🚩"           
     if "back_emoji" not in st.session_state:
         st.session_state.back_emoji = "◀️"
     if "delete_emoji" not in st.session_state:
@@ -80,6 +82,16 @@ def app():
         st.session_state.points_emoji = "💯"
     if "target_emoji" not in st.session_state:
         st.session_state.target_emoji = "🎯"
+    if "status_emoji" not in st.session_state:
+        st.session_state.status_emoji = "🎮"  
+    if "status_emoji" not in st.session_state:
+        st.session_state.status_emoji = "🎮"         
+    if "current_sector_emoji" not in st.session_state:
+        st.session_state.current_sector_emoji = "🔵"         
+    if "completed_sector_emoji" not in st.session_state:
+        st.session_state.completed_sector_emoji = "🟢" 
+    if "noncompleted_sector_emoji" not in st.session_state:
+        st.session_state.noncompleted_sector_emoji = "🟡"
 
     if 'lobby_id' in st.session_state:
         del st.session_state.lobby_id

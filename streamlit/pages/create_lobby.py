@@ -1,4 +1,6 @@
 import streamlit as st
+import time
+
 import hashlib
 
 from zoneinfo import ZoneInfo #to set the timezone to german time
@@ -26,29 +28,40 @@ def make_hashes(password):
     return hashlib.sha256(str.encode(password)).hexdigest()
 
 def app():
-        
-    with st.form("my_form", clear_on_submit=True):
-        lobbyOptions = {}
-        lobby_id = st.text_input("Create new Lobby ID:", value="Lobby1", max_chars=None, key=None, type="default", help=None, autocomplete=None, on_change=None, disabled=False)
-        password = st.text_input("Set Password for Lobby (or leave empty for empty password):", value="", max_chars=None, key=None, type="password", help=None, autocomplete=None, on_change=None, disabled=False)            
 
-        submitted = st.form_submit_button(f"Create {st.session_state.create_emoji}")
+    placeholder1 = st.empty()
+    placeholder2 = st.empty()
 
-        if submitted:
-        
-                pw_hash = make_hashes(password)
-        
-                body = {
-                    "lobby_id" : lobby_id,
-                    "password" : pw_hash,
-                }
+    with placeholder1.container():        
+        with st.form("my_form", clear_on_submit=True):
+            lobbyOptions = {}
+            lobby_id = st.text_input("Create new Lobby ID:", value="Lobby1", max_chars=None, key=None, type="default", help=None, autocomplete=None, on_change=None, disabled=False)
+            password = st.text_input("Set Password for Lobby (or leave empty for empty password):", value="", max_chars=None, key=None, type="password", help=None, autocomplete=None, on_change=None, disabled=False)            
 
-                result = fetch_post(f"{settings.driftapi_path}/driftapi/manage_lobby/create", body)
+            submitted = st.form_submit_button(f"Create {st.session_state.create_emoji}")
 
-                st.session_state.nextpage = "main_page"
-                st.session_state.lobby_id = lobby_id
-                st.experimental_rerun()
+            if submitted:
+            
+                    pw_hash = make_hashes(password)
+            
+                    body = {
+                        "lobby_id" : lobby_id,
+                        "password" : pw_hash,
+                    }
 
-    if st.button(f"Back {st.session_state.back_emoji}"):
-        st.session_state.nextpage = "pre_mainpage"
-        st.experimental_rerun()
+                    result = fetch_post(f"{settings.driftapi_path}/driftapi/manage_lobby/create", body)
+
+                    st.session_state.nextpage = "main_page"
+                    st.session_state.lobby_id = lobby_id
+                    placeholder1.empty()
+                    placeholder2.empty()
+                    time.sleep(0.1)
+                    st.experimental_rerun()
+
+    with placeholder2.container():
+        if st.button(f"Back {st.session_state.back_emoji}"):
+            st.session_state.nextpage = "pre_mainpage"
+            placeholder1.empty()
+            placeholder2.empty()
+            time.sleep(0.1)
+            st.experimental_rerun()

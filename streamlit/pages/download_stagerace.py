@@ -23,7 +23,7 @@ def showTime(s):
     s = floor(s)
     m = floor(s / 60)
     s = s -60*m
-    return f"{m:02d}:{s:02d}:{ms:03d}"
+    return f"{m:02d}:{s:02d}.{ms:03d}"
     #return round(float(s),2) if not((s is None) or s== '') else None
 
 def showDistance(s):
@@ -341,12 +341,17 @@ def app():
 
     st.header("Download Game Data of Event " + str(game_id) + " from Lobby " + str(lobby_id))
 
-    if st.button(f"Back to Event {st.session_state.back_emoji}"):
-        st.session_state.nextpage = "stage_racedisplay"
-        st.experimental_rerun()
+    placeholder1 = st.empty()
+    
+    with placeholder1.container():
+        if st.button(f"Back to Event {st.session_state.back_emoji}"):
+            st.session_state.nextpage = "stage_racedisplay"
+            placeholder1.empty()
+            time.sleep(0.1)
+            st.experimental_rerun()
 
     games = []
-    joker_lap_code = [None,None,None,None,None,None,None,None,None,None]
+    joker_lap_code = [None] * 20
     scoreboard_data = []
     scoreboard_len = []
     
@@ -365,7 +370,6 @@ def app():
     for x in range(num_stages):
 
         scoreboard_data.append(getScoreBoard(lobby_id, game_id, x+1))
-
 
         def constructEntry(r:dict):
             d = {
@@ -461,7 +465,7 @@ def app():
                         best_lap_list.append(showTime(86400)) # fake 24h time
                         shortest_distance_list.append(showDistance(9999999)) # fake 9999999 m
                     else:
-                        d["Status"] = f"{st.session_state.emoji_finish}" #"Finished"
+                        d["Status"] = f"{st.session_state.finish_emoji}" #"Finished"
                         if(d["Ges. Runden"] == d["Abg. Runden"]):
                             total_time_list.append(showTime(r["total_time"])) # real driven time
                             best_lap_list.append(showTime(r["best_lap"])) # real best lap/target time
@@ -471,9 +475,9 @@ def app():
                             best_lap_list.append(showTime(86400)) # fake 24h time
                             shortest_distance_list.append(showDistance(9999999)) # fake 9999999 m
                 elif ( ( "start_data" in r ) and not ( r["start_data"] is None ) ):
-                    d["Status"] = f"{st.session_state.emoji_driving}" #"Driving"
+                    d["Status"] = f"{st.session_state.driving_emoji}" #"Driving"
                 elif "enter_data" in r:
-                    d["Status"] = f"{st.session_state.emoji_ready}" #"Ready"
+                    d["Status"] = f"{st.session_state.ready_emoji}" #"Ready"
                 else:
                     d["Status"] = ""
 
@@ -553,14 +557,14 @@ def app():
                         best_target_list.append(best_target_set) # best_target_set, default is 360
                         shortest_distance_list.append(showDistance(r["end_data"]["total_driven_distance"])) # real total driven distance
                     else:
-                        d["Status"] = f"{st.session_state.emoji_finish}" #"Finished"
+                        d["Status"] = f"{st.session_state.finish_emoji}" #"Finished"
                         total_score_list.append(int(r["total_score"]))
                         best_target_list.append(best_target_set) # best_target_set, default is 360
                         shortest_distance_list.append(showDistance(r["end_data"]["total_driven_distance"])) # real total driven distance
                 elif ( ( "start_data" in r ) and not ( r["start_data"] is None ) ):
-                    d["Status"] = f"{st.session_state.emoji_driving}" #"Driving"
+                    d["Status"] = f"{st.session_state.driving_emoji}" #"Driving"
                 elif "enter_data" in r:
-                    d["Status"] = f"{st.session_state.emoji_ready}" #"Ready"
+                    d["Status"] = f"{st.session_state.ready_emoji}" #"Ready"
                 else:
                     d["Status"] = ""
             return (d)
@@ -585,7 +589,7 @@ def app():
             min_total_time_indices_list_len = len(min_total_time_indices_list)
 # handle normal case: one player on 1st place
             for y in min_total_time_indices_list:
-                if( (total_time_list[y] != "1440:00:000") ):
+                if( (total_time_list[y] != "1440:00.000") ):
                     scoreboard_data[x][y]["Platz"] = f"{st.session_state.award_1st_emoji}"
                     total_time_list[y] = showTime(172800)  # fake 48h time - meaning player has been handled
                 else:
@@ -595,8 +599,8 @@ def app():
                     min_total_time_indices_list = get_minvalue(total_time_list)
                     min_total_time_indices_list_len = len(min_total_time_indices_list)
                     for y in min_total_time_indices_list:
-                        if( (total_time_list[y] != "2880:00:000") ):
-                            if( (total_time_list[y] == "1440:00:000") ):
+                        if( (total_time_list[y] != "2880:00.000") ):
+                            if( (total_time_list[y] == "1440:00.000") ):
                                 scoreboard_data[x][y]["Platz"] = "-"
                             else:
                                 scoreboard_data[x][y]["Platz"] = f"{st.session_state.award_2nd_emoji}"
@@ -606,8 +610,8 @@ def app():
                     min_total_time_indices_list = get_minvalue(total_time_list)
                     min_total_time_indices_list_len = len(min_total_time_indices_list)
                     for y in min_total_time_indices_list:
-                        if( (total_time_list[y] != "2880:00:000") ):
-                            if( (total_time_list[y] == "1440:00:000") ):
+                        if( (total_time_list[y] != "2880:00.000") ):
+                            if( (total_time_list[y] == "1440:00.000") ):
                                 scoreboard_data[x][y]["Platz"] = "-"
                             else:
                                 scoreboard_data[x][y]["Platz"] = f"{st.session_state.award_3rd_emoji}"
@@ -617,8 +621,8 @@ def app():
                     min_total_time_indices_list = get_minvalue(total_time_list)
                     min_total_time_indices_list_len = len(min_total_time_indices_list)
                     for y in min_total_time_indices_list:
-                        if( (total_time_list[y] != "2880:00:000") ):
-                            if( (total_time_list[y] == "1440:00:000") ):
+                        if( (total_time_list[y] != "2880:00.000") ):
+                            if( (total_time_list[y] == "1440:00.000") ):
                                 scoreboard_data[x][y]["Platz"] = "-"
                             else:
                                 scoreboard_data[x][y]["Platz"] = f"{st.session_state.award_3rd_emoji}"
@@ -629,7 +633,7 @@ def app():
             min_best_lap_indices_list = get_minvalue(best_lap_list)
             for y in range(len(best_lap_list)):
                 if y in min_best_lap_indices_list:
-                    if( (best_lap_list[y] != "1440:00:000") ):
+                    if( (best_lap_list[y] != "1440:00.000") ):
                         scoreboard_data[x][y]["Beste Runde"] = f"{st.session_state.award_bonus_emoji}"
                     else:
                         scoreboard_data[x][y]["Beste Runde"] = "-"
