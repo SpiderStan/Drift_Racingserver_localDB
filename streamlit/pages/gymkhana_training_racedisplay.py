@@ -179,12 +179,14 @@ def app():
     placeholder4 = st.empty()
 
     with placeholder1.container():
-        col1, col2, col3, col4, col5 = st.columns(5)
+        col1, col2, col3, col4, col5, col6 = st.columns(6)
 
         with col1:
             if st.button(f"Back {st.session_state.back_emoji}"):
                 st.session_state.num_stages = 1
                 st.session_state.nextpage = "main_page"
+                st.session_state.game_track_images_set = False
+                st.session_state.game_track_images = None
                 placeholder1.empty()
                 placeholder2.empty()
                 targetboard.empty()
@@ -193,7 +195,21 @@ def app():
                 time.sleep(0.1)
                 st.experimental_rerun()
 
-        with col2:
+#        with col2:
+#            if st.button(f"Remove Player {st.session_state.remove_emoji}"):
+#                st.session_state.num_stages = 1
+#                st.session_state.nextpage = "remove_player_from_race"
+#                st.session_state.game_track_images_set = game_track_images_set
+#                st.session_state.game_track_images = game_track_images
+#                placeholder1.empty()
+#                placeholder2.empty()
+#                targetboard.empty()
+#                placeholder3.empty()
+#                placeholder4.empty()
+#                time.sleep(0.1)
+#                st.experimental_rerun()
+
+        with col3:
             if len(os.listdir(str(dir_name))) != 0:
                 with open(str(zip_path) + str(output_filename) + ".zip", 'rb') as fp:
                     btn = st.download_button(
@@ -203,7 +219,7 @@ def app():
                         mime="application/zip"
                     )
 
-        with col3:
+        with col4:
             if len(os.listdir(str(dir_name))) != 0:
                 if st.button(f"Delete Saved Runs {st.session_state.delete_emoji}"):
                     for f in os.listdir(dir_name):
@@ -218,7 +234,7 @@ def app():
                     time.sleep(0.1)
                     st.experimental_rerun()
 
-        with col4:
+        with col5:
             if st.button(f"Gymkhana High Scores {st.session_state.award_trophy_emoji}"):
                 st.session_state.nextpage = "highscore_list"
                 st.session_state.game_track_images_set = game_track_images_set
@@ -231,7 +247,7 @@ def app():
                 time.sleep(0.1)
                 st.experimental_rerun()
 
-        with col5:
+        with col6:
             if st.button(f"Delete Game {st.session_state.delete_emoji}"):
                 if len(os.listdir(str(dir_name))) != 0:
                     for f in os.listdir(dir_name):

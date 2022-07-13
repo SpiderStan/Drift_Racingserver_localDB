@@ -31,29 +31,87 @@ def app():
             if st.form_submit_button(f"Delete Selected {st.session_state.remove_emoji}"):
                 result = fetch_delete(f"{settings.driftapi_path}/driftapi/manage_game/reset_player/{lobby_id}/{game_id}/{user_name}")
                 game = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/get/{lobby_id}/{game_id}/{stage_id}/")
-                if(game["num_stages"] == 1):
-                    st.session_state.num_stages = 1
-                    st.session_state.nextpage = "racedisplay"
-                    st.session_state.show_awards = False
-                else:
-                    st.session_state.num_stages = game["num_stages"]
-                    st.session_state.nextpage = "stage_racedisplay"
-                    st.session_state.show_awards = False
+
+                if(game["game_mode"] == "RACE"):
+                    if(game["num_stages"] == 1):
+                        st.session_state.num_stages = 1
+                        st.session_state.nextpage = "racedisplay"
+                    else:
+                        st.session_state.num_stages = game["num_stages"]
+                        st.session_state.nextpage = "stage_racedisplay"
+                elif(game["game_mode"] == "LAP_RACE"):
+                    if(game["num_stages"] == 1):
+                        st.session_state.num_stages = 1
+                        st.session_state.nextpage = "lapracedisplay"
+                    else:
+                        st.session_state.num_stages = game["num_stages"]
+                        st.session_state.nextpage = "stage_racedisplay"
+                elif(game["game_mode"] == "TIME_RACE"):
+                    if(game["num_stages"] == 1):
+                        st.session_state.num_stages = 1
+                        st.session_state.nextpage = "timeracedisplay"
+                    else:
+                        st.session_state.num_stages = game["num_stages"]
+                        st.session_state.nextpage = "stage_racedisplay"
+                elif(game["game_mode"] == "GYMKHANA"):
+                    if(game["num_stages"] == 1):
+                        st.session_state.num_stages = 1
+                        st.session_state.nextpage = "racedisplay"
+                    else:
+                        st.session_state.num_stages = game["num_stages"]
+                        st.session_state.nextpage = "stage_racedisplay"
+                elif(game["game_mode"] == "GYMKHANA_TRAINING"):
+                    if(game["num_stages"] == 1):
+                        st.session_state.num_stages = 1
+                        st.session_state.nextpage = "gymkhana_training_racedisplay"
+                    else:
+                        st.session_state.num_stages = game["num_stages"]
+                        st.session_state.nextpage = "stage_racedisplay"
                 placeholder1.empty()
                 placeholder2.empty()
                 placeholder3.empty()
                 time.sleep(0.1)
+                st.session_state.show_awards = False
                 st.experimental_rerun()
 
     with placeholder3.container(): 
         if st.button(f"Back to Race {st.session_state.back_emoji}"):
             game = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/get/{lobby_id}/{game_id}/{stage_id}/")
-            if(game["num_stages"] == 1):
-                st.session_state.num_stages = 1
-                st.session_state.nextpage = "racedisplay"
-            else:
-                st.session_state.num_stages = game["num_stages"]
-                st.session_state.nextpage = "stage_racedisplay"
+            if(game["game_mode"] == "RACE"):
+                if(game["num_stages"] == 1):
+                    st.session_state.num_stages = 1
+                    st.session_state.nextpage = "racedisplay"
+                else:
+                    st.session_state.num_stages = game["num_stages"]
+                    st.session_state.nextpage = "stage_racedisplay"
+            elif(game["game_mode"] == "LAP_RACE"):
+                if(game["num_stages"] == 1):
+                    st.session_state.num_stages = 1
+                    st.session_state.nextpage = "lapracedisplay"
+                else:
+                    st.session_state.num_stages = game["num_stages"]
+                    st.session_state.nextpage = "stage_racedisplay"
+            elif(game["game_mode"] == "TIME_RACE"):
+                if(game["num_stages"] == 1):
+                    st.session_state.num_stages = 1
+                    st.session_state.nextpage = "timeracedisplay"
+                else:
+                    st.session_state.num_stages = game["num_stages"]
+                    st.session_state.nextpage = "stage_racedisplay"
+            elif(game["game_mode"] == "GYMKHANA"):
+                if(game["num_stages"] == 1):
+                    st.session_state.num_stages = 1
+                    st.session_state.nextpage = "racedisplay"
+                else:
+                    st.session_state.num_stages = game["num_stages"]
+                    st.session_state.nextpage = "stage_racedisplay"
+            elif(game["game_mode"] == "GYMKHANA_TRAINING"):
+                if(game["num_stages"] == 1):
+                    st.session_state.num_stages = 1
+                    st.session_state.nextpage = "gymkhana_training_racedisplay"
+                else:
+                    st.session_state.num_stages = game["num_stages"]
+                    st.session_state.nextpage = "stage_racedisplay"
             placeholder1.empty()
             placeholder2.empty()
             placeholder3.empty()

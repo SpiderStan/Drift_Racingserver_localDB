@@ -640,8 +640,8 @@ def app():
                         youngest_time_indices_list_len = len(youngest_time_indices_list)
                         
                         for x in youngest_time_indices_list:
-                            racedisplay_data[max_rounds_indices_list[x]]["Platz"] = str(position)
-                            current_rounds_and_sectors_list[0][max_rounds_indices_list[x]] = -1 # fake -1 rounds - meaning player has been handled
+                            racedisplay_data[max_rounds_indices_list[max_sectors_indices_list[x]]]["Platz"] = str(position)
+                            current_rounds_and_sectors_list[0][max_rounds_indices_list[max_sectors_indices_list[x]]] = -1 # fake -1 rounds - meaning player has been handled
                             handled_players+=1
 
                         position+=1

@@ -30,7 +30,7 @@ def app():
                         st.session_state.stage_id = 1
                         game = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/get/{lobby_id}/{game_id}/{stage_id}/")
                         st.session_state.num_stages = game["num_stages"]
-                        if(game["game_mode"] != "GYMKHANA_TRAINING"):
+                        if(game["game_mode"] == "RACE"):
                             if(game["num_stages"] == 1):
                                 st.session_state.game_track_images_set = False
                                 st.session_state.game_track_images = None
@@ -41,11 +41,50 @@ def app():
                                 st.session_state.game_track_images = [None] * 20
                                 st.session_state.show_awards = False
                                 st.session_state.nextpage = "stage_racedisplay"
-                        else:
-                            st.session_state.game_track_images_set = False
-                            st.session_state.game_track_images = None
-                            st.session_state.show_awards = False
-                            st.session_state.nextpage = "gymkhana_training_racedisplay" 
+                        elif(game["game_mode"] == "LAP_RACE"):
+                            if(game["num_stages"] == 1):
+                                st.session_state.game_track_images_set = False
+                                st.session_state.game_track_images = None
+                                st.session_state.show_awards = False
+                                st.session_state.nextpage = "lapracedisplay"
+                            else:
+                                st.session_state.game_track_images_set = [False] * 20
+                                st.session_state.game_track_images = [None] * 20
+                                st.session_state.show_awards = False
+                                st.session_state.nextpage = "stage_racedisplay"
+                        elif(game["game_mode"] == "TIME_RACE"):
+                            if(game["num_stages"] == 1):
+                                st.session_state.game_track_images_set = False
+                                st.session_state.game_track_images = None
+                                st.session_state.show_awards = False
+                                st.session_state.nextpage = "timeracedisplay"
+                            else:
+                                st.session_state.game_track_images_set = [False] * 20
+                                st.session_state.game_track_images = [None] * 20
+                                st.session_state.show_awards = False
+                                st.session_state.nextpage = "stage_racedisplay"
+                        elif(game["game_mode"] == "GYMKHANA"):
+                            if(game["num_stages"] == 1):
+                                st.session_state.game_track_images_set = False
+                                st.session_state.game_track_images = None
+                                st.session_state.show_awards = False
+                                st.session_state.nextpage = "racedisplay"
+                            else:
+                                st.session_state.game_track_images_set = [False] * 20
+                                st.session_state.game_track_images = [None] * 20
+                                st.session_state.show_awards = False
+                                st.session_state.nextpage = "stage_racedisplay"
+                        elif(game["game_mode"] == "GYMKHANA_TRAINING"):
+                            if(game["num_stages"] == 1):
+                                st.session_state.game_track_images_set = False
+                                st.session_state.game_track_images = None
+                                st.session_state.show_awards = False
+                                st.session_state.nextpage = "gymkhana_training_racedisplay"
+                            else:
+                                st.session_state.game_track_images_set = [False] * 20
+                                st.session_state.game_track_images = [None] * 20
+                                st.session_state.show_awards = False
+                                st.session_state.nextpage = "stage_racedisplay"
                         placeholder1.empty()
                         placeholder2.empty()
                         time.sleep(0.1)

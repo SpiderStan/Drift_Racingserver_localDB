@@ -11,8 +11,14 @@ from datetime import datetime
 
 from pydantic import BaseModel, ValidationError, Field
 
+class stage_game_mode(str, Enum):
+    RACE = "RACE"
+    GYMKHANA = "GYMKHANA"
+
 class game_mode(str, Enum):
     RACE = "RACE"
+    LAP_RACE = "LAP_RACE"
+    TIME_RACE = "TIME_RACE"
     GYMKHANA = "GYMKHANA"
     GYMKHANA_TRAINING = "GYMKHANA_TRAINING"
 
