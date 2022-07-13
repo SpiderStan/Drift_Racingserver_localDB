@@ -6,7 +6,7 @@ import configparser
 
 # Custom imports 
 from multipage import MultiPage
-from pages import pre_mainpage, mainpage, create_lobby, select_lobby, delete_lobby, create_race_game, create_gymkhana_game, create_gymkhana_training, create_stagerace_config, create_pre_stagerace_game, create_stagerace_game, select_race, delete_race, racedisplay, sectordisplay, stage_racedisplay, gymkhana_training_racedisplay, download_race, download_stagerace, remove_player_from_race, remove_player_from_stage_part1, remove_player_from_stage_part2, reset_stage, statistics, statistics_stage, download_statistics, highscore_list, remove_player_from_highscore_list, system_settings # import your pages here
+from pages import pre_mainpage, mainpage, create_lobby, select_lobby, delete_lobby, create_race_game, create_lap_race_game, create_time_race_game, create_gymkhana_game, create_gymkhana_training, create_stagerace_config, create_pre_stagerace_game, create_stagerace_game, select_race, delete_race, racedisplay, lapracedisplay, timeracedisplay, sectordisplay, stage_racedisplay, gymkhana_training_racedisplay, download_race, download_laprace, download_timerace, download_stagerace, remove_player_from_race, remove_player_from_stage_part1, remove_player_from_stage_part2, reset_stage, statistics, statistics_stage, download_statistics, highscore_list, remove_player_from_highscore_list, system_settings # import your pages here
 
 def _max_width_(prcnt_width:int = 75):
     max_width_str = f"max-width: {prcnt_width}%;"
@@ -134,6 +134,8 @@ if __name__ == '__main__':
     app.add_page("create_race_game", create_race_game.app)
     app.add_page("create_gymkhana_game", create_gymkhana_game.app)
     app.add_page("create_gymkhana_training", create_gymkhana_training.app)
+    app.add_page("create_lap_race_game", create_lap_race_game.app)
+    app.add_page("create_time_race_game", create_time_race_game.app)
     app.add_page("create_pre_stagerace_game", create_pre_stagerace_game.app)
     app.add_page("create_stagerace_config", create_stagerace_config.app)
     app.add_page("create_stagerace_game", create_stagerace_game.app)
@@ -143,8 +145,12 @@ if __name__ == '__main__':
     app.add_page("delete_race", delete_race.app)
     app.add_page("statistics", statistics.app)
     app.add_page("racedisplay", racedisplay.app)
+    app.add_page("lapracedisplay", lapracedisplay.app)
+    app.add_page("timeracedisplay", timeracedisplay.app)
     app.add_page("sectordisplay", sectordisplay.app)
     app.add_page("download_race", download_race.app)
+    app.add_page("download_laprace", download_laprace.app)
+    app.add_page("download_timerace", download_timerace.app)
     app.add_page("download_stagerace", download_stagerace.app)
     app.add_page("remove_player_from_race", remove_player_from_race.app)
     app.add_page("remove_player_from_stage_part1", remove_player_from_stage_part1.app)
