@@ -63,6 +63,17 @@ def app():
                                 st.session_state.game_track_images = [None] * 20
                                 st.session_state.show_awards = False
                                 st.session_state.nextpage = "stage_racedisplay"
+                        elif(game["game_mode"] == "ELIMINATION"):
+                            if(game["num_stages"] == 1):
+                                st.session_state.game_track_images_set = False
+                                st.session_state.game_track_images = None
+                                st.session_state.show_awards = False
+                                st.session_state.nextpage = "eliminationracedisplay"
+                            else:
+                                st.session_state.game_track_images_set = [False] * 20
+                                st.session_state.game_track_images = [None] * 20
+                                st.session_state.show_awards = False
+                                st.session_state.nextpage = "stage_racedisplay"
                         elif(game["game_mode"] == "GYMKHANA"):
                             if(game["num_stages"] == 1):
                                 st.session_state.game_track_images_set = False

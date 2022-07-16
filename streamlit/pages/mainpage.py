@@ -42,7 +42,7 @@ def app():
         colM11, colM12, colM13, colM14 = st.columns(4)
 
         with colM11:
-            if st.button(f"New Race Game {st.session_state.create_emoji}"):
+            if st.button(f"New Race Game {st.session_state.driving_emoji}"):
                 st.session_state.nextpage = "create_race_game"
                 placeholder1.empty()
                 placeholder2.empty()
@@ -53,7 +53,7 @@ def app():
                 st.experimental_rerun()
 
         with colM12:        
-            if st.button(f"New Gymkhana Game {st.session_state.create_emoji}"):
+            if st.button(f"New Gymkhana Game {st.session_state.points_emoji}"):
                 st.session_state.nextpage = "create_gymkhana_game"
                 placeholder1.empty()
                 placeholder2.empty()
@@ -64,7 +64,7 @@ def app():
                 st.experimental_rerun()
 
         with colM13:
-            if st.button(f"New Stage Race Game {st.session_state.create_emoji}"):
+            if st.button(f"New Stage Race Game {st.session_state.driving_emoji}{st.session_state.points_emoji}"):
                 st.session_state.nextpage = "create_pre_stagerace_game"
                 placeholder1.empty()
                 placeholder2.empty()
@@ -75,7 +75,7 @@ def app():
                 st.experimental_rerun()
 
         with colM14:
-            if st.button(f"New Gymkhana Training {st.session_state.create_emoji}"):
+            if st.button(f"New Gymkhana Training {st.session_state.training_emoji}"):
                 st.session_state.nextpage = "create_gymkhana_training"
                 placeholder1.empty()
                 placeholder2.empty()
@@ -90,7 +90,7 @@ def app():
         colM21, colM22, colM23, colM24 = st.columns(4)
 
         with colM21:
-            if st.button(f"New Lap Race Game {st.session_state.create_emoji}"):
+            if st.button(f"New Lap Race Game {st.session_state.round_emoji}"):
                 st.session_state.nextpage = "create_lap_race_game"
                 placeholder1.empty()
                 placeholder2.empty()
@@ -101,8 +101,19 @@ def app():
                 st.experimental_rerun()
 
         with colM22:
-            if st.button(f"New Time Race Game {st.session_state.create_emoji}"):
+            if st.button(f"New Time Race Game {st.session_state.time2_emoji}"):
                 st.session_state.nextpage = "create_time_race_game"
+                placeholder1.empty()
+                placeholder2.empty()
+                placeholder3.empty()
+                placeholder4.empty()
+                placeholder5.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
+
+        with colM23:
+            if st.button(f"New Elimination Game {st.session_state.skull_emoji}"):
+                st.session_state.nextpage = "create_elimination_game"
                 placeholder1.empty()
                 placeholder2.empty()
                 placeholder3.empty()

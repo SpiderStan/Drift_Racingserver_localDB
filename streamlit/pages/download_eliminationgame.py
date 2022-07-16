@@ -374,8 +374,8 @@ def app():
     placeholder2 = st.empty()
 
     with placeholder1.container(): 
-        if st.button(f"Back to Time Race {st.session_state.back_emoji}"):
-            st.session_state.nextpage = "timeracedisplay"
+        if st.button(f"Back to Elimination {st.session_state.back_emoji}"):
+            st.session_state.nextpage = "eliminationracedisplay"
             placeholder1.empty()
             placeholder2.empty()
             time.sleep(0.1)
@@ -393,15 +393,15 @@ def app():
         if "joker_lap_code" in game:
             joker_lap_code = game["joker_lap_code"]
 
-    with placeholder1.container(): 
+    with placeholder2.container(): 
 
         scoreboard_data = getScoreBoard(lobby_id, game_id, stage_id)
         scoreboard_data_len = len(scoreboard_data)
 
-        def constructEntry(r:dict):
+        def constructEntry(r:dict, scoreboard_data_len, player_index):
 
             d = {}
-            
+                            
             #default value
             player_false_start = False
 
@@ -413,7 +413,7 @@ def app():
                         player_status = f"{st.session_state.finish_emoji}" #"Finished"
                 elif ( ( "start_data" in r ) and not ( r["start_data"] is None ) ):
                     current_track_condition = handleCurrentTrackCondition(r)
-                    if(r["laps_completed"] == r["enter_data"]["lap_count"]):
+                    if(r["laps_completed"] == r["enter_data"]["lap_count"]): # this should not happen in elimination game
                         player_status = f"{st.session_state.finish_emoji}" #"Finished - Player completed all rounds"
                     else:
                         player_status = current_track_condition #Driving - show Track Condition here
@@ -426,53 +426,68 @@ def app():
             else:
                 d["Spieler"] = ""
                 d[f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"] =  "-"
-
+        
             if ( ( "start_data" in r ) and not ( r["start_data"] is None ) ):
                 current_time = datetime.now().astimezone(timezone.utc) 
                 start_time = datetime.strptime(r["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
                 race_time = current_time - start_time
             else:
                 race_time = timedelta(seconds=int(0)) # fake 0 seconds
-                    
-            if(race_time.total_seconds() >= (int(game["time_limit"])*60)):
+
+            if(race_time.total_seconds() >= (int(game["time_limit"])*60)): #check if at least one elimination due
+
+                race_time_minutes = race_time.total_seconds() / 60
+                num_eliminations = min(int(np.floor(race_time_minutes/game["time_limit"])),scoreboard_data_len-1) # this gives the total count of eliminations that must be done
+
                 targetboard_data = getDetailedTargetData(lobby_id, game_id, stage_id, r["user_name"]) # get all targets of the player 
                 targetboard_data = (sorted(targetboard_data, key=operator.itemgetter('target_ctr')))
                 targetboard_data_len = len(targetboard_data)
                 
                 round_cnt = 0
                 sector_cnt = 0
+                elim_cnt = 1
+                elim_round_cnt = 0
+                elim_sector_cnt = 0
+                
+                if( ( "last_target_timestamp" in r ) and not ( r["last_target_timestamp"] is None ) ):
+                    youngest_elim_timestamp = datetime.strptime(r["last_target_timestamp"],'%Y-%m-%dT%H:%M:%S.%f').astimezone(timezone.utc)
+                else:
+                    youngest_elim_timestamp = datetime.now().astimezone(timezone.utc)
+                
                 if(targetboard_data_len>0):
                     for x in range(targetboard_data_len):
                         
                         if(targetboard_data[x]["target_data"]["false_start"] == True):
                             player_false_start = True
-                    
-                        start_time = datetime.strptime(r["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
-                        start_time+=timedelta(minutes=game["time_limit"])
-                        if (targetboard_data[x]["target_data"]["crossing_time"] < start_time.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f%z')): 
-     
-                            current_time = datetime.now().astimezone(timezone.utc) 
-                            start_time = datetime.strptime(r["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
-                            player_race_time = current_time - start_time 
 
-                            if(targetboard_data[x]["target_data"]["target_code"] == 0):
-                                round_cnt+=1
-                                sector_cnt = 1
+                        start_time = datetime.strptime(r["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
+                        start_time+=timedelta(minutes=int(int(game["time_limit"])*elim_cnt))
+                        if(targetboard_data[x]["target_data"]["crossing_time"] > start_time.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f%z')):
+                        
+                            elim_cnt+=1         
+                            
+                            if(elim_round_cnt>0):
+                                elim_rounds_sectors_times_list[player_index][0].append(elim_round_cnt-1)  # rounds
                             else:
-                                sector_cnt+=1
-                        else:
-                            if(targetboard_data[x]["target_data"]["target_code"] == 0):
-                                round_cnt+=1
-                                sector_cnt = game["num_sectors"]
-                                player_race_time = datetime.strptime(r["last_lap_timestamp"], '%Y-%m-%dT%H:%M:%S.%f').astimezone(timezone.utc) - datetime.strptime(r["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
-                                d[f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"] = f"{st.session_state.finish_emoji}" #"Finished"
-                                break
-                            else:
-                                sector_cnt+=1
+                                elim_rounds_sectors_times_list[player_index][0].append(0)
                                 
-                                current_time = datetime.now().astimezone(timezone.utc) 
-                                start_time = datetime.strptime(r["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
-                                player_race_time = current_time - start_time
+                            elim_rounds_sectors_times_list[player_index][1].append(elim_sector_cnt)  # sectors
+                            elim_rounds_sectors_times_list[player_index][2].append(youngest_elim_timestamp)  # last sector timestamp
+
+                        youngest_elim_timestamp = datetime.strptime(targetboard_data[x]["target_data"]["crossing_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
+                        
+                        current_time = datetime.now().astimezone(timezone.utc) 
+                        start_time = datetime.strptime(r["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
+                        player_race_time = current_time - start_time 
+
+                        if(targetboard_data[x]["target_data"]["target_code"] == 0):
+                            round_cnt+=1
+                            elim_round_cnt+=1
+                            sector_cnt = 1
+                            elim_sector_cnt = 1
+                        else:
+                            sector_cnt+=1
+                            elim_sector_cnt+=1
                 elif ( ( "start_data" in r ) and not ( r["start_data"] is None ) ):
                     current_time = datetime.now().astimezone(timezone.utc)
                     start_time = datetime.strptime(r["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
@@ -485,14 +500,18 @@ def app():
                 else:
                     d["Abg. Runden"] = str(0)
                 d["Sektor"] = str(sector_cnt)
-                
-                if(round_cnt>0):
-                    current_rounds_and_sectors_list[0].append(round_cnt-1)
+
+                if(elim_round_cnt>0):
+                    elim_rounds_sectors_times_list[player_index][0].append(elim_round_cnt-1)  # rounds
                 else:
-                    current_rounds_and_sectors_list[0].append(0)
-                current_rounds_and_sectors_list[1].append(sector_cnt)
-                
-            else:
+                    elim_rounds_sectors_times_list[player_index][0].append(0)
+                elim_rounds_sectors_times_list[player_index][1].append(elim_sector_cnt)  # sectors
+                elim_rounds_sectors_times_list[player_index][2].append(youngest_elim_timestamp)  # last sector timestamp
+             
+            else:   # meaning that no elimination done so far
+            
+                num_eliminations = 0
+            
                 if "user_name" in r:
 
                     if ( ( "start_data" in r ) and not ( r["start_data"] is None ) ):
@@ -565,117 +584,409 @@ def app():
                     else:
                         d["Sektor"] = str(completed_sectors_cnt)
 
-                current_rounds_and_sectors_list[0].append(r["laps_completed"])
-                current_rounds_and_sectors_list[1].append(completed_sectors_cnt)
+                if ( ( "last_target_timestamp" in r ) and not ( r["last_target_timestamp"] is None ) ):
+                    youngest_timestamp = datetime.strptime(r["last_target_timestamp"],'%Y-%m-%dT%H:%M:%S.%f').astimezone(timezone.utc)
+                elif( ( "start_data" in r ) and not ( r["start_data"] is None ) ):
+                    youngest_timestamp = datetime.strptime(r["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
+                else:
+                    youngest_timestamp = datetime.now().astimezone(timezone.utc)
+                
+                elim_rounds_sectors_times_list[player_index][0].append(r["laps_completed"])  # rounds
+                elim_rounds_sectors_times_list[player_index][1].append(completed_sectors_cnt)  # sectors
+                elim_rounds_sectors_times_list[player_index][2].append(youngest_timestamp)  # last sector timestamp
+                
 
-            return (d,player_race_time,player_false_start)
+            return (d,player_race_time,player_false_start,num_eliminations)
 
         racedisplay_data = [{}] * scoreboard_data_len            
-        current_rounds_and_sectors_list = [[],[]]
-
+        elim_rounds_sectors_times_list = [[[] for x in range(3)] for i in range(scoreboard_data_len)]
+        
         player_race_time_list = [None] * scoreboard_data_len
-        player_false_start_list = [None] * scoreboard_data_len 
+        player_false_start_list = [None] * scoreboard_data_len
+        num_eliminations = 0
 
         # construct main part of racedisplay_data here
         for x in range(scoreboard_data_len): # number of players
-            (racedisplay_data[x], player_race_time_list[x], player_false_start_list[x]) = constructEntry(scoreboard_data[x])
+            (racedisplay_data[x], player_race_time_list[x], player_false_start_list[x], num_eliminations) = constructEntry(scoreboard_data[x], scoreboard_data_len, x)
 
         if(scoreboard_data_len >= 1):
 
-            player_finished_list = [None] * scoreboard_data_len
+    # add new way of determination here
 
-            for x in range(scoreboard_data_len): # number of players
-    # first signal players disqualified due to false start (even if engine is still running)
-                if(player_false_start_list[x] == True):
-                    racedisplay_data[x]["Spieler"] = scoreboard_data[x]["user_name"] + f"{st.session_state.false_start_emoji}"
-            
-                if(racedisplay_data[x][f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"] == f"{st.session_state.finish_emoji}"):
-                    player_finished_list[x] = True
-                elif(racedisplay_data[x][f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"] == f"{st.session_state.false_start_emoji}"):
-                    player_finished_list[x] = True
-                else:
-                    player_finished_list[x] = False
-            
-            player_finished_indices_list = get_truevalue(player_finished_list)
-            player_finished_indices_list_len = len(player_finished_indices_list)
-            
             handled_players = 0
-            handled_finished_players = 0
-            position = 1
+            elim_cnt = 0
+            position = scoreboard_data_len
+            
+    # this piece of code handles the eliminated players
+            if(num_eliminations>0):
+            
+                for elim in range(num_eliminations):
 
-            if(handled_players < scoreboard_data_len):
+                    player_rounds = []
+                    player_sectors = []
+                    player_time = []
 
-                best_player_handled = False
+                    sub_player_sectors = []
+                    sub_player_time = []
 
-    # second handle players already finished here
-                while handled_finished_players < player_finished_indices_list_len:
-                    shortest_race_time_indices_list = get_min_race_time_value(player_race_time_list)
-                    shortest_race_time_indices_list_len = len(shortest_race_time_indices_list)
+                    for x in range(len(elim_rounds_sectors_times_list)):
+                        player_rounds.append(elim_rounds_sectors_times_list[x][0][elim_cnt])
+                        player_sectors.append(elim_rounds_sectors_times_list[x][1][elim_cnt])
+                        player_time.append(elim_rounds_sectors_times_list[x][2][elim_cnt])
 
-                    for x in range(shortest_race_time_indices_list_len):
-                        racedisplay_data[shortest_race_time_indices_list[x]]["Platz"] = str(position)
-                        if(best_player_handled == False):
-                            racedisplay_data[shortest_race_time_indices_list[x]]["Zeit"] = showTime(player_race_time_list[shortest_race_time_indices_list[x]].total_seconds())
-                            best_time = player_race_time_list[shortest_race_time_indices_list[x]]
-                            best_player_handled = True
-                        else:
-                            racedisplay_data[shortest_race_time_indices_list[x]]["Zeit"] = showTime(best_time.total_seconds()) + " + " + showTime((player_race_time_list[shortest_race_time_indices_list[x]]-best_time).total_seconds()) #"+ " + str(datetime.strptime(scoreboard_data[shortest_race_time_indices_list[x]]["last_lap_timestamp"],'%Y-%m-%dT%H:%M:%S.%f') - datetime.strptime(player_finished_timestamp,'%Y-%m-%dT%H:%M:%S.%f'))
-                        current_rounds_and_sectors_list[0][shortest_race_time_indices_list[x]] = -1 # fake -1 rounds - meaning player has been handled
-                        handled_finished_players+=1
-                        player_race_time_list[shortest_race_time_indices_list[x]] = timedelta(seconds=int(0)) # fake 0 seconds
-                            
-                    position+=1
-                   
-                handled_players+=player_finished_indices_list_len
-
-    # third handle rest of players
-                while handled_players < scoreboard_data_len:
-                    max_rounds_indices_list = get_maxvalue(current_rounds_and_sectors_list[0])
-                    max_rounds_indices_list_len = len(max_rounds_indices_list)
-
-                    max_round_sectors_list = []
-                    for x in max_rounds_indices_list:
-                        max_round_sectors_list.append(current_rounds_and_sectors_list[1][x])
-                        
-                    max_sectors_indices_list = get_maxvalue(max_round_sectors_list)
-                    max_sectors_indices_list_len = len(max_sectors_indices_list)         
-
-    # last step: handle last_target_timestamp here for players in the same sector to find youngest time stamps
-                    time_list = []
-                    for x in max_sectors_indices_list:
-                        if ( ( "last_target_timestamp" in scoreboard_data[x] ) and not ( scoreboard_data[x]["last_target_timestamp"] is None ) ):
-                            time_list.append(datetime.strptime(scoreboard_data[x]["last_target_timestamp"],'%Y-%m-%dT%H:%M:%S.%f').astimezone(timezone.utc))
-                        elif( ( "start_data" in scoreboard_data[x] ) and not ( scoreboard_data[x]["start_data"] is None ) ):
-                            time_list.append(datetime.strptime(scoreboard_data[x]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z'))
-                        else:
-                            time_list.append(datetime.now().astimezone(timezone.utc))
-
-                    youngest_time_indices_list = get_minvalue(time_list)
-                    youngest_time_indices_list_len = len(youngest_time_indices_list)
-                        
-                    for x in youngest_time_indices_list:
-                        racedisplay_data[max_rounds_indices_list[max_sectors_indices_list[x]]]["Platz"] = str(position)
-                        if( ( "start_data" in scoreboard_data[max_rounds_indices_list[max_sectors_indices_list[x]]] ) and not ( scoreboard_data[max_rounds_indices_list[max_sectors_indices_list[x]]]["start_data"] is None ) ):
-                            current_time = datetime.now().astimezone(timezone.utc) 
-                            start_time = datetime.strptime(scoreboard_data[max_rounds_indices_list[max_sectors_indices_list[x]]]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
-                            race_time = current_time - start_time                            
-                            racedisplay_data[max_rounds_indices_list[max_sectors_indices_list[x]]]["Zeit"] = showTime(race_time.total_seconds())
-                        else:
-                            racedisplay_data[max_rounds_indices_list[max_sectors_indices_list[x]]]["Zeit"] = showTime(timedelta(seconds=int(0)).total_seconds())
-                        current_rounds_and_sectors_list[0][max_rounds_indices_list[max_sectors_indices_list[x]]] = -1 # fake -1 rounds - meaning player has been handled
-                        handled_players+=1
-
-                    position+=1
+                    min_rounds_indices_list = get_minvalue(player_rounds)   # rounds
+                    min_rounds_indices_list_len = len(min_rounds_indices_list)
                     
+                    if(min_rounds_indices_list_len>1): # more players share same amount of rounds
+
+                        for index in min_rounds_indices_list:
+                            sub_player_sectors.append(player_sectors[index])
+
+                        min_sectors_indices_list = get_minvalue(sub_player_sectors)   # sectors
+                        min_sectors_indices_list_len = len(min_sectors_indices_list)
+                        
+                        if(min_sectors_indices_list_len>1): # more players share same amount of sectors
+                        
+                            for index in min_sectors_indices_list:
+                                sub_player_time.append(player_time[index])
+                        
+                            max_time_indices_list = get_maxvalue(sub_player_time)   # timestamp
+                            max_time_indices_list_len = len(max_time_indices_list)
+                            
+                            if(max_time_indices_list_len>1): # more players share same last sector timestamp (should not be the case)
+                            
+                                # well also here we will only eliminate one player
+                                for y in  range(len(elim_rounds_sectors_times_list[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]][0])):
+                                    elim_rounds_sectors_times_list[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]][0][y] = 9999 # fake 9999 rounds - indicating player has been handled
+                                
+                                racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]][f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"] = f"{st.session_state.skull_emoji}"
+                                racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["Platz"] = str(position)
+                                if( ( "start_data" in scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]] ) and not ( scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]] is None ) ):
+                                    racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["Zeit"] = showTime(int(elim_cnt+1)*int(game["time_limit"])*int(60))
+                                else:
+                                    racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["Zeit"] = showTime(timedelta(seconds=int(0)).total_seconds())
+
+                                racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["Abg. Runden"] = str(player_rounds[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]])
+                                racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["Sektor"] = str(player_sectors[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]])
+                                
+                                handled_players+=1
+                                position-=1
+                            
+                            else: # only one player has the youngest sector timestamp - so eliminate him...
+                            
+                                for y in  range(len(elim_rounds_sectors_times_list[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]][0])):
+                                    elim_rounds_sectors_times_list[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]][0][y] = 9999 # fake 9999 rounds - indicating player has been handled
+                                
+                                racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]][f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"] = f"{st.session_state.skull_emoji}"
+                                racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["Platz"] = str(position)
+                                if( ( "start_data" in scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]] ) and not ( scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]] is None ) ):
+                                    racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["Zeit"] = showTime(int(elim_cnt+1)*int(game["time_limit"])*int(60))
+                                else:
+                                    racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["Zeit"] = showTime(timedelta(seconds=int(0)).total_seconds())
+
+                                racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["Abg. Runden"] = str(player_rounds[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]])
+                                racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["Sektor"] = str(player_sectors[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]])
+
+                                handled_players+=1
+                                position-=1
+                                
+                        else: # only one player has the least amount of sectors - so eliminate him...
+                            
+                            for y in  range(len(elim_rounds_sectors_times_list[min_rounds_indices_list[min_sectors_indices_list[0]]][0])):
+                                elim_rounds_sectors_times_list[min_rounds_indices_list[min_sectors_indices_list[0]]][0][y] = 9999 # fake 9999 rounds - indicating player has been handled
+                            
+                            racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[0]]][f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"] = f"{st.session_state.skull_emoji}"
+                            racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[0]]]["Platz"] = str(position)
+                            if( ( "start_data" in scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[0]]] ) and not ( scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[0]]] is None ) ):
+                                racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[0]]]["Zeit"] = showTime(int(elim_cnt+1)*int(game["time_limit"])*int(60))
+                            else:
+                                racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[0]]]["Zeit"] = showTime(timedelta(seconds=int(0)).total_seconds())
+
+                            racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[0]]]["Abg. Runden"] = str(player_rounds[min_rounds_indices_list[min_sectors_indices_list[0]]])
+                            racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[0]]]["Sektor"] = str(player_sectors[min_rounds_indices_list[min_sectors_indices_list[0]]])
+
+                            handled_players+=1
+                            position-=1
+                            
+                    else: # only one player has the least amount of rounds - so eliminate him...
+
+                        for y in  range(len(elim_rounds_sectors_times_list[min_rounds_indices_list[0]][0])):
+                            elim_rounds_sectors_times_list[min_rounds_indices_list[0]][0][y] = 9999 # fake 9999 rounds - indicating player has been handled
+                        
+                        racedisplay_data[min_rounds_indices_list[0]][f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"] = f"{st.session_state.skull_emoji}"
+                        racedisplay_data[min_rounds_indices_list[0]]["Platz"] = str(position)
+                        if( ( "start_data" in scoreboard_data[min_rounds_indices_list[0]] ) and not ( scoreboard_data[min_rounds_indices_list[0]] is None ) ):
+                            racedisplay_data[min_rounds_indices_list[0]]["Zeit"] = showTime(int(elim_cnt+1)*int(game["time_limit"])*int(60))
+                        else:
+                            racedisplay_data[min_rounds_indices_list[0]]["Zeit"] = showTime(timedelta(seconds=int(0)).total_seconds())
+                        
+                        racedisplay_data[min_rounds_indices_list[0]]["Abg. Runden"] = str(player_rounds[min_rounds_indices_list[0]])
+                        racedisplay_data[min_rounds_indices_list[0]]["Sektor"] = str(player_sectors[min_rounds_indices_list[0]])
+
+                        handled_players+=1
+                        position-=1
+
+                    elim_cnt+=1
+                
+        # now we will have to handle the rest of the players
+
+                player_eliminated_list = [None] * scoreboard_data_len
+
+                for x in range(scoreboard_data_len): # number of players
+        # first signal players disqualified due to false start (even if engine is still running)
+                    if(player_false_start_list[x] == True):
+                        racedisplay_data[x]["Spieler"] = scoreboard_data[x]["user_name"] + f"{st.session_state.false_start_emoji}"
+                
+                    if(racedisplay_data[x][f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"] == f"{st.session_state.skull_emoji}"):
+                        player_eliminated_list[x] = True
+                    elif(racedisplay_data[x][f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"] == f"{st.session_state.finish_emoji}"):
+                        player_eliminated_list[x] = False
+                    elif(racedisplay_data[x][f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"] == f"{st.session_state.false_start_emoji}"):
+                        player_eliminated_list[x] = True
+                    else:
+                        player_eliminated_list[x] = False
+                
+                player_elinimated_indices_list = get_truevalue(player_eliminated_list)
+                player_elinimated_indices_list_len = len(player_elinimated_indices_list)
+                
+                rem_players_indices_list = [x for x in range(scoreboard_data_len) if x not in player_elinimated_indices_list]
+                rem_players_indices_list_len = len(rem_players_indices_list)
+                
+                if(rem_players_indices_list_len == 1): # only one last player - game over
+                
+                    racedisplay_data[rem_players_indices_list[0]][f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"] = f"{st.session_state.finish_emoji}"
+                    racedisplay_data[rem_players_indices_list[0]]["Platz"] = str(position)
+                    if( ( "start_data" in scoreboard_data[rem_players_indices_list[0]] ) and not ( scoreboard_data[rem_players_indices_list[0]] is None ) ):
+                        racedisplay_data[rem_players_indices_list[0]]["Zeit"] = showTime(int(num_eliminations)*int(game["time_limit"])*int(60))
+                    else:
+                        racedisplay_data[rem_players_indices_list[0]]["Zeit"] = showTime(timedelta(seconds=int(0)).total_seconds())
+
+                    player_eliminated_list[rem_players_indices_list[0]] = True
+                            
+                    handled_players+=1
+                    position-=1
+                
+                elif(rem_players_indices_list_len > 1): # more players left - handle
+                
+                    elim_cnt-=1
+                
+                    while(handled_players<scoreboard_data_len):
+                        
+                        player_rounds = []
+                        player_sectors = []
+                        player_time = []
+
+                        sub_player_sectors = []
+                        sub_player_time = []
+
+                        for x in range(len(elim_rounds_sectors_times_list)):
+                            player_rounds.append(elim_rounds_sectors_times_list[x][0][elim_cnt])
+                            player_sectors.append(elim_rounds_sectors_times_list[x][1][elim_cnt])
+                            player_time.append(elim_rounds_sectors_times_list[x][2][elim_cnt])
+
+                        min_rounds_indices_list = get_minvalue(player_rounds)   # rounds
+                        min_rounds_indices_list_len = len(min_rounds_indices_list)
+                        
+                        if(min_rounds_indices_list_len>1): # more players share same amount of rounds
+
+                            for index in min_rounds_indices_list:
+                                sub_player_sectors.append(player_sectors[index])
+
+                            min_sectors_indices_list = get_minvalue(sub_player_sectors)   # sectors
+                            min_sectors_indices_list_len = len(min_sectors_indices_list)
+                            
+                            if(min_sectors_indices_list_len>1): # more players share same amount of sectors
+                            
+                                for index in min_sectors_indices_list:
+                                    sub_player_time.append(player_time[index])
+                            
+                                max_time_indices_list = get_minvalue(sub_player_time)   # timestamp
+                                max_time_indices_list_len = len(max_time_indices_list)
+                                
+                                if(max_time_indices_list_len>1): # more players share same last sector timestamp (should not be the case)
+                                
+                                    for y in  range(len(elim_rounds_sectors_times_list[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]][0])):
+                                        elim_rounds_sectors_times_list[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]][0][y] = 9999 # fake 9999 rounds - indicating player has been handled
+                                    
+                                    racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["Platz"] = str(position)
+                                    if( ( "start_data" in scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]] ) and not ( scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]] is None ) ):
+                                        current_time = datetime.now().astimezone(timezone.utc) 
+                                        start_time = datetime.strptime(scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
+                                        race_time = current_time - start_time                            
+                                        racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["Zeit"] = showTime(race_time.total_seconds())
+                                    else:
+                                        racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["Zeit"] = showTime(timedelta(seconds=int(0)).total_seconds())
+
+                                    handled_players+=1
+                                    position-=1
+                                
+                                else:
+                                
+                                    for y in  range(len(elim_rounds_sectors_times_list[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]][0])):
+                                        elim_rounds_sectors_times_list[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]][0][y] = 9999 # fake 9999 rounds - indicating player has been handled
+                                    
+                                    racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["Platz"] = str(position)
+                                    if( ( "start_data" in scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]] ) and not ( scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]] is None ) ):
+                                        current_time = datetime.now().astimezone(timezone.utc) 
+                                        start_time = datetime.strptime(scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
+                                        race_time = current_time - start_time                            
+                                        racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["Zeit"] = showTime(race_time.total_seconds())
+                                    else:
+                                        racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["Zeit"] = showTime(timedelta(seconds=int(0)).total_seconds())
+
+                                    handled_players+=1
+                                    position-=1
+                                    
+                            else:
+                                
+                                for y in  range(len(elim_rounds_sectors_times_list[min_rounds_indices_list[min_sectors_indices_list[0]]][0])):
+                                    elim_rounds_sectors_times_list[min_rounds_indices_list[min_sectors_indices_list[0]]][0][y] = 9999 # fake 9999 rounds - indicating player has been handled
+                                
+                                racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[0]]]["Platz"] = str(position)
+                                if( ( "start_data" in scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[0]]] ) and not ( scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[0]]] is None ) ):
+                                    current_time = datetime.now().astimezone(timezone.utc) 
+                                    start_time = datetime.strptime(scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[0]]]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
+                                    race_time = current_time - start_time                            
+                                    racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[0]]]["Zeit"] = showTime(race_time.total_seconds())
+                                else:
+                                    racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[0]]]["Zeit"] = showTime(timedelta(seconds=int(0)).total_seconds())
+
+                                handled_players+=1
+                                position-=1
+                                
+                        else:
+
+                            for y in  range(len(elim_rounds_sectors_times_list[min_rounds_indices_list[0]][0])):
+                                elim_rounds_sectors_times_list[min_rounds_indices_list[0]][0][y] = 9999 # fake 9999 rounds - indicating player has been handled
+                            
+                            racedisplay_data[min_rounds_indices_list[0]]["Platz"] = str(position)
+                            if( ( "start_data" in scoreboard_data[min_rounds_indices_list[0]] ) and not ( scoreboard_data[min_rounds_indices_list[0]] is None ) ):
+                                current_time = datetime.now().astimezone(timezone.utc) 
+                                start_time = datetime.strptime(scoreboard_data[min_rounds_indices_list[0]]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
+                                race_time = current_time - start_time                            
+                                racedisplay_data[min_rounds_indices_list[0]]["Zeit"] = showTime(race_time.total_seconds())
+                            else:
+                                racedisplay_data[min_rounds_indices_list[0]]["Zeit"] = showTime(timedelta(seconds=int(0)).total_seconds())
+
+                            handled_players+=1
+                            position-=1
+                
+    # here we have to handle the case in which no elimination has been carried out so far...
+            else:
+
+                player_elinimated_indices_list_len = 0
+
+                while(handled_players<scoreboard_data_len):
+                        
+                    player_rounds = []
+                    player_sectors = []
+                    player_time = []
+
+                    sub_player_sectors = []
+                    sub_player_time = []
+
+                    for x in range(len(elim_rounds_sectors_times_list)):
+                        player_rounds.append(elim_rounds_sectors_times_list[x][0][0])
+                        player_sectors.append(elim_rounds_sectors_times_list[x][1][0])
+                        player_time.append(elim_rounds_sectors_times_list[x][2][0])
+
+                    min_rounds_indices_list = get_minvalue(player_rounds)   # rounds
+                    min_rounds_indices_list_len = len(min_rounds_indices_list)
+                        
+                    if(min_rounds_indices_list_len>1): # more players share same amount of rounds
+
+                        for index in min_rounds_indices_list:
+                            sub_player_sectors.append(player_sectors[index])
+
+                        min_sectors_indices_list = get_minvalue(sub_player_sectors)   # sectors
+                        min_sectors_indices_list_len = len(min_sectors_indices_list)
+                            
+                        if(min_sectors_indices_list_len>1): # more players share same amount of sectors
+                            
+                            for index in min_sectors_indices_list:
+                                sub_player_time.append(player_time[index])
+                            
+                            max_time_indices_list = get_maxvalue(sub_player_time)   # timestamp
+                            max_time_indices_list_len = len(max_time_indices_list)
+                                
+                            if(max_time_indices_list_len>1): # more players share same last sector timestamp (should not be the case)
+                                
+                                for y in  range(len(elim_rounds_sectors_times_list[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]][0])):
+                                    elim_rounds_sectors_times_list[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]][0][y] = 9999 # fake 9999 rounds - indicating player has been handled
+                                    
+                                racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["Platz"] = str(position)
+                                if( ( "start_data" in scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]] ) and not ( scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["start_data"] is None ) ):
+                                    current_time = datetime.now().astimezone(timezone.utc) 
+                                    start_time = datetime.strptime(scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
+                                    race_time = current_time - start_time                            
+                                    racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["Zeit"] = showTime(race_time.total_seconds())
+                                else:
+                                    racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["Zeit"] = showTime(timedelta(seconds=int(0)).total_seconds())
+
+                                handled_players+=1
+                                position-=1
+                                
+                            else:
+                                
+                                for y in  range(len(elim_rounds_sectors_times_list[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]][0])):
+                                    elim_rounds_sectors_times_list[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]][0][y] = 9999 # fake 9999 rounds - indicating player has been handled
+                                    
+                                racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["Platz"] = str(position)
+                                if( ( "start_data" in scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]] ) and not ( scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["start_data"] is None ) ):
+                                    current_time = datetime.now().astimezone(timezone.utc) 
+                                    start_time = datetime.strptime(scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
+                                    race_time = current_time - start_time                            
+                                    racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["Zeit"] = showTime(race_time.total_seconds())
+                                else:
+                                    racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[max_time_indices_list[0]]]]["Zeit"] = showTime(timedelta(seconds=int(0)).total_seconds())
+
+                                handled_players+=1
+                                position-=1
+                                    
+                        else:
+                              
+                            for y in  range(len(elim_rounds_sectors_times_list[min_rounds_indices_list[min_sectors_indices_list[0]]][0])):
+                                elim_rounds_sectors_times_list[min_rounds_indices_list[min_sectors_indices_list[0]]][0][y] = 9999 # fake 9999 rounds - indicating player has been handled
+                                
+                            racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[0]]]["Platz"] = str(position)
+                            if( ( "start_data" in scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[0]]] ) and not ( scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[0]]]["start_data"] is None ) ):
+                                current_time = datetime.now().astimezone(timezone.utc) 
+                                start_time = datetime.strptime(scoreboard_data[min_rounds_indices_list[min_sectors_indices_list[0]]]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
+                                race_time = current_time - start_time                            
+                                racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[0]]]["Zeit"] = showTime(race_time.total_seconds())
+                            else:
+                                racedisplay_data[min_rounds_indices_list[min_sectors_indices_list[0]]]["Zeit"] = showTime(timedelta(seconds=int(0)).total_seconds())
+                                
+                            handled_players+=1
+                            position-=1
+                                
+                    else:
+
+                        for y in  range(len(elim_rounds_sectors_times_list[min_rounds_indices_list[0]][0])):
+                            elim_rounds_sectors_times_list[min_rounds_indices_list[0]][0][y] = 9999 # fake 9999 rounds - indicating player has been handled
+                            
+                        racedisplay_data[min_rounds_indices_list[0]]["Platz"] = str(position)
+                        if( ( "start_data" in scoreboard_data[min_rounds_indices_list[0]] ) and not ( scoreboard_data[min_rounds_indices_list[0]]["start_data"] is None ) ):
+                            current_time = datetime.now().astimezone(timezone.utc) 
+                            start_time = datetime.strptime(scoreboard_data[min_rounds_indices_list[0]]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
+                            race_time = current_time - start_time                            
+                            racedisplay_data[min_rounds_indices_list[0]]["Zeit"] = showTime(race_time.total_seconds())
+                        else:
+                            racedisplay_data[min_rounds_indices_list[0]]["Zeit"] = showTime(timedelta(seconds=int(0)).total_seconds())
+
+                        handled_players+=1
+                        position-=1
+                
             racedisplay_data = (sorted(racedisplay_data, key=operator.itemgetter('Platz')))
             
-            if(player_finished_indices_list_len == scoreboard_data_len): # all players finished race - award ceremony can take place now
-                if(scoreboard_data_len >= 1):
-                    racedisplay_data[0]["Auszeichnung"] = f"{st.session_state.award_1st_emoji}"
-                if(scoreboard_data_len >= 2):
-                    racedisplay_data[1]["Auszeichnung"] = f"{st.session_state.award_2nd_emoji}"
-                if(scoreboard_data_len >= 3):
-                    racedisplay_data[2]["Auszeichnung"] = f"{st.session_state.award_3rd_emoji}"
+            if(player_elinimated_indices_list_len != 0):
+                if(player_elinimated_indices_list_len+1 == scoreboard_data_len): # game over - award ceremony can take place now
+                    if(scoreboard_data_len >= 1):
+                        racedisplay_data[0]["Auszeichnung"] = f"{st.session_state.award_1st_emoji}"
+                    if(scoreboard_data_len >= 2):
+                        racedisplay_data[1]["Auszeichnung"] = f"{st.session_state.award_2nd_emoji}"
+                    if(scoreboard_data_len >= 3):
+                        racedisplay_data[2]["Auszeichnung"] = f"{st.session_state.award_3rd_emoji}" 
             
         else:
             racedisplay_data = [{"Spieler": "-", f"{st.session_state.status_emoji} / {st.session_state.track_emoji}": "-", "Abg. Runden": "-", "Sektor": "-", "Platz": "-", "Zeit":"-"}]
@@ -804,10 +1115,15 @@ def app():
 
             return (d_detailed,last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,next_section_condition)
 
+        player_elinimated_indices_list = get_truevalue(player_eliminated_list)
+        player_elinimated_indices_list_len = len(player_elinimated_indices_list)
+
         for player in range(scoreboard_data_len):
             targetboard_data = getDetailedTargetData(lobby_id, game_id, stage_id, scoreboard_data[player]["user_name"])
-    #                targetboard_data = (sorted(targetboard_data, key=operator.itemgetter('target_ctr')))
+        #                targetboard_data = (sorted(targetboard_data, key=operator.itemgetter('target_ctr')))
             targetboard_data_len = len(targetboard_data)            
+           
+            detailed_targetboard_data = []
            
             last_driven_distance = float(0)
             last_driven_time = float(0)
@@ -825,72 +1141,57 @@ def app():
                     section_condition = f" {st.session_state.track_snow_emoji}"
             else:
                 section_condition = f" {st.session_state.track_unknown_emoji}"
-            for x in range(targetboard_data_len):
-
-                if ( ( "start_data" in scoreboard_data[player] ) and not ( scoreboard_data[player]["start_data"] is None ) ):
-                    current_time = datetime.now().astimezone(timezone.utc) 
-                    start_time = datetime.strptime(scoreboard_data[player]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
-                    race_time = current_time - start_time
+                
+            player_position = next(item for item in racedisplay_data if item["Spieler"] == scoreboard_data[player]["user_name"])["Platz"]
+            player_status = next(item for item in racedisplay_data if item["Spieler"] == scoreboard_data[player]["user_name"])[f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"]
+                
+            if(int(player_position) == 1):
+                if(player_status == f"{st.session_state.finish_emoji}"): # Finished
+                    num_elim = int(int(scoreboard_data_len) - int(player_position))
                 else:
-                    race_time = timedelta(seconds=int(0)) # fake 0 seconds
+                    num_elim = 0
+            else:
+                if(player_status == f"{st.session_state.skull_emoji}"): # Eliminated
+                    num_elim = int(int(scoreboard_data_len+1) - int(player_position))
+                else:
+                    num_elim = 0
+
+            if ( ( "start_data" in scoreboard_data[player] ) and not ( scoreboard_data[player]["start_data"] is None ) ):
+                start_time = datetime.strptime(scoreboard_data[player]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
+                start_time+=timedelta(minutes=(game["time_limit"]*num_elim))
+            else:
+                start_time = timedelta(seconds=int(0)) # fake 0 seconds
                     
-                if(race_time.total_seconds() >= (int(game["time_limit"])*60)):
+            for x in range(targetboard_data_len):                  
 
-                    start_time = datetime.strptime(scoreboard_data[player]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
-                    start_time+=timedelta(minutes=game["time_limit"])
-                    if (targetboard_data[x]["target_data"]["crossing_time"] < start_time.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f%z')): # use all those targets
-
-                        (targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition) = constructDetailedEntry(targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])
-                        if ( game["game_mode"] == "TIME_RACE" ) and (x == 0):
-                            last_driven_distance = float(0)
-                            last_driven_time = float(0)
-                            last_round_driven_distance = float(0)
-                            last_round_driven_time = float(0)
-
-                    else:
-                        if(targetboard_data[x]["target_data"]["target_code"] == 0):
-                            player_total_driven_distance = targetboard_data[x]["target_data"]["driven_distance"]
-                            player_total_time = targetboard_data[x]["target_data"]["driven_time"]
-                            (targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition) = constructDetailedEntry(targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])
-                            break
-                        else:
-                            (targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition) = constructDetailedEntry(targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])
-                else:
+                if(num_elim == 0): # evaluate all targets
                     (targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition) = constructDetailedEntry(targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])
-                    if ( game["game_mode"] == "TIME_RACE" ) and (x == 0):
+                    if ( game["game_mode"] == "ELIMINATION" ) and (x == 0):
                         last_driven_distance = float(0)
                         last_driven_time = float(0)
                         last_round_driven_distance = float(0)
-                        last_round_driven_time = float(0)    
+                        last_round_driven_time = float(0)
+                        
+                    detailed_targetboard_data.append(targetboard_data[x])
                     
-    #                    if ( ( "end_data" in scoreboard_data[player] ) and not ( scoreboard_data[player]["end_data"] is None ) ):
-    # use new determination if player finished here:
-            if (player_finished_list[player] == True):
-                if( game["game_mode"] == "TIME_RACE" ):
-                    d_detailed = {}
-    #                            d_detailed[str(scoreboard_data[player]["user_name"]) + f" Sektor - {st.session_state.distance_emoji}"] = f"∑ {st.session_state.distance2_emoji} " + showDistance(scoreboard_data[player]["end_data"]["total_driven_distance"])
-    #                            d_detailed[f"Sektor - {st.session_state.time_emoji}"] = f"∑ {st.session_state.time2_emoji} " + showTime(scoreboard_data[player]["total_time"])
-    #                            d_detailed[f"Sektor - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.average_speed_emoji} " + showMeanSpeed(scoreboard_data[player]["end_data"]["total_driven_distance"],scoreboard_data[player]["total_time"])
-                    d_detailed[str(scoreboard_data[player]["user_name"]) + f" Sektor - {st.session_state.distance_emoji}"] = f"∑ {st.session_state.distance2_emoji} " + showDistance(player_total_driven_distance)
-                    d_detailed[f"Sektor - {st.session_state.time_emoji}"] = f"∑ {st.session_state.time2_emoji} " + showTime(player_total_time)
-                    d_detailed[f"Sektor - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.average_speed_emoji} " + showMeanSpeed(player_total_driven_distance,player_total_time)
-                    d_detailed[f"Sektor - {st.session_state.track_emoji}"] = ""
-                    if(scoreboard_data[player]["laps_completed"] != 0):
-    #                                d_detailed[f" ∑ Sektoren - {st.session_state.distance2_emoji}"] = f"Ø {st.session_state.distance2_emoji} / {st.session_state.round_emoji} " + showDistance(float(float(scoreboard_data[player]["end_data"]["total_driven_distance"])/float(scoreboard_data[player]["laps_completed"]))) 
-    #                                d_detailed[f" ∑ Sektoren - {st.session_state.time2_emoji}"] = f"Ø {st.session_state.time2_emoji} / {st.session_state.round_emoji} " + showTime(float(float(scoreboard_data[player]["total_time"])/float(scoreboard_data[player]["laps_completed"])))
-                        d_detailed[f" ∑ Sektoren - {st.session_state.distance2_emoji}"] = f"Ø {st.session_state.distance2_emoji} / {st.session_state.round_emoji} " + showDistance(float(float(player_total_driven_distance)/float(scoreboard_data[player]["laps_completed"]))) 
-                        d_detailed[f" ∑ Sektoren - {st.session_state.time2_emoji}"] = f"Ø {st.session_state.time2_emoji} / {st.session_state.round_emoji} " + showTime(float(float(player_total_time)/float(scoreboard_data[player]["laps_completed"])))
-                    else:
-                        d_detailed[f" ∑ Sektoren - {st.session_state.distance2_emoji}"] = ""
-                        d_detailed[f" ∑ Sektoren - {st.session_state.time2_emoji}"] = ""
-                    d_detailed[f"Cum. Sektoren - Ø {st.session_state.average_speed_emoji}"] = ""
-                    targetboard_data.append(d_detailed)
+                else: # evaluate a subset of targets 
                     
+                    if(targetboard_data[x]["target_data"]["crossing_time"] < start_time.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f%z')):
+              
+                        (targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition) = constructDetailedEntry(targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])
+                        if ( game["game_mode"] == "ELIMINATION" ) and (x == 0):
+                            last_driven_distance = float(0)
+                            last_driven_time = float(0)
+                            last_round_driven_distance = float(0)
+                            last_round_driven_time = float(0) 
+
+                        detailed_targetboard_data.append(targetboard_data[x])
+
             #if there is no entry, just add an empty one by calling the construct Entry with an empty dict
             while len(targetboard_data)<1:
-                targetboard_data.append(constructDetailedEntry({},last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])[0])
+                detailed_targetboard_data.append(constructDetailedEntry({},last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])[0])
 
-            df_detailed = pd.DataFrame( targetboard_data ) 
+            df_detailed = pd.DataFrame( detailed_targetboard_data )
 
             st.download_button(
                 f"Press to Download Stats of " + str(scoreboard_data[player]["user_name"]) + f" as csv {st.session_state.download_emoji}",

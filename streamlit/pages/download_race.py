@@ -342,11 +342,13 @@ def app():
     st.header("Download Game Data of Game " + str(game_id) + " from Lobby " + str(lobby_id))
 
     placeholder1 = st.empty()
+    placeholder2 = st.empty()
 
     with placeholder1.container(): 
         if st.button(f"Back to Race {st.session_state.back_emoji}"):
             st.session_state.nextpage = "racedisplay"
             placeholder1.empty()
+            placeholder2.empty()
             time.sleep(0.1)
             st.experimental_rerun()
 
@@ -361,6 +363,8 @@ def app():
     if game:
         if "joker_lap_code" in game:
             joker_lap_code = game["joker_lap_code"]
+            
+    with placeholder2.container(): 
 
         scoreboard_data = getScoreBoard(lobby_id, game_id, stage_id)
 

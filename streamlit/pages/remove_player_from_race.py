@@ -53,6 +53,13 @@ def app():
                     else:
                         st.session_state.num_stages = game["num_stages"]
                         st.session_state.nextpage = "stage_racedisplay"
+                elif(game["game_mode"] == "ELIMINATION"):
+                    if(game["num_stages"] == 1):
+                        st.session_state.num_stages = 1
+                        st.session_state.nextpage = "eliminationracedisplay"
+                    else:
+                        st.session_state.num_stages = game["num_stages"]
+                        st.session_state.nextpage = "stage_racedisplay"   
                 elif(game["game_mode"] == "GYMKHANA"):
                     if(game["num_stages"] == 1):
                         st.session_state.num_stages = 1
@@ -98,6 +105,13 @@ def app():
                 else:
                     st.session_state.num_stages = game["num_stages"]
                     st.session_state.nextpage = "stage_racedisplay"
+            elif(game["game_mode"] == "ELIMINATION"):
+                if(game["num_stages"] == 1):
+                    st.session_state.num_stages = 1
+                    st.session_state.nextpage = "eliminationracedisplay"
+                else:
+                    st.session_state.num_stages = game["num_stages"]
+                    st.session_state.nextpage = "stage_racedisplay"             
             elif(game["game_mode"] == "GYMKHANA"):
                 if(game["num_stages"] == 1):
                     st.session_state.num_stages = 1

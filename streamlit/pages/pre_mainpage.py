@@ -83,15 +83,17 @@ def app():
     if "target_emoji" not in st.session_state:
         st.session_state.target_emoji = "🎯"
     if "status_emoji" not in st.session_state:
-        st.session_state.status_emoji = "🎮"  
-    if "status_emoji" not in st.session_state:
-        st.session_state.status_emoji = "🎮"         
+        st.session_state.status_emoji = "🎮"           
     if "current_sector_emoji" not in st.session_state:
         st.session_state.current_sector_emoji = "🔵"         
     if "completed_sector_emoji" not in st.session_state:
         st.session_state.completed_sector_emoji = "🟢" 
     if "noncompleted_sector_emoji" not in st.session_state:
         st.session_state.noncompleted_sector_emoji = "🟡"
+    if "skull_emoji" not in st.session_state:
+        st.session_state.skull_emoji = "💀"
+    if "training_emoji" not in st.session_state:
+        st.session_state.training_emoji = "💪"
 
     if 'lobby_id' in st.session_state:
         del st.session_state.lobby_id

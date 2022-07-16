@@ -400,7 +400,7 @@ def app():
         st.session_state.nextpage = "main_page"
         st.experimental_rerun()
  
-    st.header("Time Race " + str(game_id) + " in Lobby " + str(lobby_id) + " over " + str(game["time_limit"]) + " minutes")
+    st.header("Time Race " + str(game_id) + " in Lobby " + str(lobby_id) + " over " + str(int(game["time_limit"])) + " minute(s)")
 
     next_race = st.empty()
 
