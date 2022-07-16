@@ -389,6 +389,25 @@ def get_nonevalue(inputlist):
 
 def app():   
 
+    m = st.markdown("""
+    <style>
+    div.stButton > button:first-child {
+        color: white;
+        height: 2em;
+        width: 13em;
+        border-radius:10px;
+        font-size:15px;
+        font-weight: bold;
+        margin: auto;
+    }
+
+    div.stButton > button:active {
+        position:relative;
+        top:3px;
+    }
+
+    </style>""", unsafe_allow_html=True)
+
     lobby_id = st.session_state.lobby_id        
     game_id = st.session_state.game_id
     stage_id = st.session_state.stage_id
@@ -419,14 +438,102 @@ def app():
     placeholder1 = st.empty()
     placeholder2 = st.empty()
     placeholder3 = st.empty()
-    placeholder4 = st.empty()
 
-    with placeholder0.container():
+    with placeholder0.container():  
+        
+        col1, col2, col3, col4, col5, col6, col7, col8 = st.columns(8)
+
+        with col1:
+            if st.button(f"Back {st.session_state.back_emoji}"):
+                st.session_state.nextpage = "main_page"
+                st.session_state.game_track_images_set = False
+                st.session_state.game_track_images = None
+                next_race.empty()
+                placeholder0.empty()
+                scoreboard.empty()
+                placeholder1.empty()
+                placeholder2.empty()
+                placeholder3.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
+
+        with col2:
+            if st.button(f"Start in 1 Min. {st.session_state.driving_emoji}"):
+                result = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/start_stage/{lobby_id}/{game_id}/{stage_id}")
+                st.session_state.new_game = False
+                next_race.empty()
+                placeholder0.empty()
+                scoreboard.empty()
+                placeholder1.empty()
+                placeholder2.empty()
+                placeholder3.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
+                        
+        with col3:
+            if st.button(f"Remove Player {st.session_state.remove_emoji}"):
+                st.session_state.nextpage = "remove_player_from_race"
+                st.session_state.game_track_images_set = game_track_images_set
+                st.session_state.game_track_images = game_track_images
+                next_race.empty()
+                placeholder0.empty()
+                scoreboard.empty()
+                placeholder1.empty()
+                placeholder2.empty()
+                placeholder3.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
+
+        with col4:
+            if st.button(f"Reset Game {st.session_state.reset_emoji}"):
+                result = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/reset/{lobby_id}/{game_id}/{stage_id}")
+                st.session_state.new_game = False
+                next_race.empty()
+                placeholder0.empty()
+                scoreboard.empty()
+                placeholder1.empty()
+                placeholder2.empty()
+                placeholder3.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
+
+        with col5:
+            if st.button(f"Download Data {st.session_state.download_emoji}"):
+                st.session_state.nextpage = "download_laprace"
+                st.session_state.game_track_images_set = game_track_images_set
+                st.session_state.game_track_images = game_track_images
+                next_race.empty()
+                placeholder0.empty()
+                scoreboard.empty()
+                placeholder1.empty()
+                placeholder2.empty()
+                placeholder3.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
+
+        with col6:
+            if st.button(f"Delete Game {st.session_state.delete_emoji}"):
+                result = fetch_delete(f"{settings.driftapi_path}/driftapi/manage_game/delete/{lobby_id}/{game_id}")
+                st.session_state.game_id = None
+                st.session_state.stage_id = 1
+                st.session_state.num_stages = 1
+                st.session_state.game_track_images_set = False
+                st.session_state.game_track_images = None
+                st.session_state.nextpage = "main_page"
+                next_race.empty()
+                placeholder0.empty()
+                scoreboard.empty()
+                placeholder1.empty()
+                placeholder2.empty()
+                placeholder3.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
+
+    with placeholder1.container():
         show_detailed_stats = st.checkbox("Show detailed Statistics", value=False, key=None, help="if set, detailed lap race statistics will be shown", on_change=None)
 
-    with placeholder1.container():  
-        with st.expander(f"Game Settings {st.session_state.show_game_emoji}", expanded = False):
-            st.write(game)
+    with placeholder2.container():  
+        with st.expander(f"Game Settings {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+" and GAME ID: "+str(game_id), expanded=False):
             
             track_image = st.empty()
 
@@ -448,108 +555,12 @@ def app():
                 track_image.empty()
                 game_track_images_set = False
 
-    with placeholder2.container():  
-        with st.expander(f"Connection info {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+" and GAME ID: "+str(game_id), expanded=False):
             submitUri:str = "http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)
             st.image(getqrcode(submitUri), clamp=True)
             st.write("URL: "+submitUri)
             st.write("GAME ID: "+game_id)
 
-    with placeholder3.container():  
-        
-        col1, col2, col3, col4, col5, col6, col7, col8, col9 = st.columns(9)
-
-        with col1:
-            if st.button(f"Back {st.session_state.back_emoji}"):
-                st.session_state.nextpage = "main_page"
-                st.session_state.game_track_images_set = False
-                st.session_state.game_track_images = None
-                next_race.empty()
-                placeholder0.empty()
-                scoreboard.empty()
-                placeholder1.empty()
-                placeholder2.empty()
-                placeholder3.empty()
-                placeholder4.empty()
-                time.sleep(0.1)
-                st.experimental_rerun()
-
-        with col2:
-            if st.button(f"Start in 1 Min. {st.session_state.driving_emoji}"):
-                result = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/start_stage/{lobby_id}/{game_id}/{stage_id}")
-                st.session_state.new_game = False
-                next_race.empty()
-                placeholder0.empty()
-                scoreboard.empty()
-                placeholder1.empty()
-                placeholder2.empty()
-                placeholder3.empty()
-                placeholder4.empty()
-                time.sleep(0.1)
-                st.experimental_rerun()
-                        
-        with col3:
-            if st.button(f"Remove Player {st.session_state.remove_emoji}"):
-                st.session_state.nextpage = "remove_player_from_race"
-                st.session_state.game_track_images_set = game_track_images_set
-                st.session_state.game_track_images = game_track_images
-                next_race.empty()
-                placeholder0.empty()
-                scoreboard.empty()
-                placeholder1.empty()
-                placeholder2.empty()
-                placeholder3.empty()
-                placeholder4.empty()
-                time.sleep(0.1)
-                st.experimental_rerun()
-
-        with col4:
-            if st.button(f"Reset Game {st.session_state.reset_emoji}"):
-                result = fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/reset/{lobby_id}/{game_id}/{stage_id}")
-                st.session_state.new_game = False
-                next_race.empty()
-                placeholder0.empty()
-                scoreboard.empty()
-                placeholder1.empty()
-                placeholder2.empty()
-                placeholder3.empty()
-                placeholder4.empty()
-                time.sleep(0.1)
-                st.experimental_rerun()
-
-        with col5:
-            if st.button(f"Download Data {st.session_state.download_emoji}"):
-                st.session_state.nextpage = "download_laprace"
-                st.session_state.game_track_images_set = game_track_images_set
-                st.session_state.game_track_images = game_track_images
-                next_race.empty()
-                placeholder0.empty()
-                scoreboard.empty()
-                placeholder1.empty()
-                placeholder2.empty()
-                placeholder3.empty()
-                placeholder4.empty()
-                time.sleep(0.1)
-                st.experimental_rerun()
-
-        with col6:
-            if st.button(f"Delete Game {st.session_state.delete_emoji}"):
-                result = fetch_delete(f"{settings.driftapi_path}/driftapi/manage_game/delete/{lobby_id}/{game_id}")
-                st.session_state.game_id = None
-                st.session_state.stage_id = 1
-                st.session_state.num_stages = 1
-                st.session_state.game_track_images_set = False
-                st.session_state.game_track_images = None
-                st.session_state.nextpage = "main_page"
-                next_race.empty()
-                placeholder0.empty()
-                scoreboard.empty()
-                placeholder1.empty()
-                placeholder2.empty()
-                placeholder3.empty()
-                placeholder4.empty()
-                time.sleep(0.1)
-                st.experimental_rerun()
+            st.write(game)
 
     while True:
 
@@ -894,7 +905,7 @@ def app():
 
             st.table(df)
 
-        with placeholder4.container():
+        with placeholder3.container():
         
             if (show_detailed_stats == True):
             

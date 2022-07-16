@@ -357,6 +357,25 @@ def get_maxvalue(inputlist):
 
 def app():   
 
+    m = st.markdown("""
+    <style>
+    div.stButton > button:first-child {
+        color: white;
+        height: 2em;
+        width: 13em;
+        border-radius:10px;
+        font-size:15px;
+        font-weight: bold;
+        margin: auto;
+    }
+
+    div.stButton > button:active {
+        position:relative;
+        top:3px;
+    }
+
+    </style>""", unsafe_allow_html=True)
+
     lobby_id = st.session_state.lobby_id        
     game_id = st.session_state.game_id
     stage_id = st.session_state.stage_id
@@ -381,49 +400,6 @@ def app():
     placeholder2 = st.empty()
 
     with placeholder1.container():
-        for x in range(num_stages):
-            game = getGameInfo(lobby_id, game_id, x+1)
-            if not game:
-                st.error("No Game with that id exists, going back to main menu...")
-                time.sleep(1)
-                st.session_state.nextpage = "main_page"
-                st.experimental_rerun()
-            if game:
-                with st.expander(f"Game Statistics of Sage " + str(x+1) + " - " + str(game["game_mode"]) + " - Join the game via URL: http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(x+1)+" and GAME ID: "+str(game_id) + "   " + str(game["track_id"]) +  f"{st.session_state.show_game_emoji}", expanded = False):
-                    st.write(game)
-
-                    track_image.append(st.empty())
-
-                    track_image_upload.append(st.file_uploader("Here you can upload the track layout", type=['png', 'jpg'], accept_multiple_files=False, key="The track layout upload of " + str(x+1), help=None, on_change=None, args=None, kwargs=None, disabled=False))
-
-                    if(game_track_images_set[x] == False): # no track image upload so far
-                        if(track_image_upload[x] != None): # user has supplied a track image
-                            game_track_images_set[x] = True
-                            track_image[x] = st.image(track_image_upload[x], caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
-                            game_track_images[x] = track_image_upload[x] # store in session state
-                    elif(game_track_images_set[x] == True): # track image existing
-                        if(track_image_upload[x] != None): # user has supplied a new track image
-                            game_track_images_set[x] = True
-                            track_image[x] = st.image(track_image_upload[x], caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
-                            game_track_images[x] = track_image_upload[x] # store in session state
-                        else:
-                            track_image[x] = st.image(game_track_images[x], caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Prev. Uploaded Track Image
-                    if st.button(f"Remove Image {st.session_state.remove_emoji}", key="Remove Image "+str(x+1)):
-                        track_image[x].empty()
-                        game_track_images_set[x] = False
-
-                with st.expander(f"Connection info {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+"/ and GAME ID: "+str(game_id), expanded=False):
-                    submitUri:str = "http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+"/"
-                    st.image(getqrcode(submitUri), clamp=True)
-                    st.write("URL: "+submitUri)
-                    st.write("GAME ID: "+game_id)
-
-                scoreboard.append(st.empty())
-                if "joker_lap_code" in game:
-                    joker_lap_code[x] = game["joker_lap_code"]   
-            games.append(game)
-
-    with placeholder2.container():
         col1, col2, col3, col4, col5, col6, col7, col8, col9 = st.columns(9)
 
         with col1:
@@ -448,7 +424,7 @@ def app():
                 st.experimental_rerun()
 
         with col3:
-            if st.button(f"Remove Player (Stage) {st.session_state.remove_emoji}"):
+            if st.button(f"Rem. Player (Stage) {st.session_state.remove_emoji}"):
                 st.session_state.nextpage = "remove_player_from_stage_part1"
                 next_race.empty()
                 placeholder1.empty()
@@ -466,7 +442,7 @@ def app():
                 st.experimental_rerun()
 
         with col5:
-            if st.button(f"Remove Player (Event) {st.session_state.remove_emoji}"):
+            if st.button(f"Rem. Player (Event) {st.session_state.remove_emoji}"):
                 st.session_state.nextpage = "remove_player_from_race"
                 next_race.empty()
                 placeholder1.empty()
@@ -518,6 +494,49 @@ def app():
                 placeholder2.empty()
                 time.sleep(0.1)
                 st.experimental_rerun()
+
+    with placeholder2.container():
+        for x in range(num_stages):
+            game = getGameInfo(lobby_id, game_id, x+1)
+            if not game:
+                st.error("No Game with that id exists, going back to main menu...")
+                time.sleep(1)
+                st.session_state.nextpage = "main_page"
+                st.experimental_rerun()
+            if game:
+                with st.expander(f"Game Statistics of Sage " + str(x+1) + " - " + str(game["game_mode"]) + " - Join the game via URL: http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(x+1)+" and GAME ID: "+str(game_id) + "   " + str(game["track_id"]) +  f"{st.session_state.show_game_emoji}", expanded = False):
+
+                    track_image.append(st.empty())
+
+                    track_image_upload.append(st.file_uploader("Here you can upload the track layout", type=['png', 'jpg'], accept_multiple_files=False, key="The track layout upload of " + str(x+1), help=None, on_change=None, args=None, kwargs=None, disabled=False))
+
+                    if(game_track_images_set[x] == False): # no track image upload so far
+                        if(track_image_upload[x] != None): # user has supplied a track image
+                            game_track_images_set[x] = True
+                            track_image[x] = st.image(track_image_upload[x], caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
+                            game_track_images[x] = track_image_upload[x] # store in session state
+                    elif(game_track_images_set[x] == True): # track image existing
+                        if(track_image_upload[x] != None): # user has supplied a new track image
+                            game_track_images_set[x] = True
+                            track_image[x] = st.image(track_image_upload[x], caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
+                            game_track_images[x] = track_image_upload[x] # store in session state
+                        else:
+                            track_image[x] = st.image(game_track_images[x], caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Prev. Uploaded Track Image
+                    if st.button(f"Remove Image {st.session_state.remove_emoji}", key="Remove Image "+str(x+1)):
+                        track_image[x].empty()
+                        game_track_images_set[x] = False
+
+                    submitUri:str = "http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+"/"
+                    st.image(getqrcode(submitUri), clamp=True)
+                    st.write("URL: "+submitUri)
+                    st.write("GAME ID: "+game_id)
+
+                    st.write(game)
+
+                scoreboard.append(st.empty())
+                if "joker_lap_code" in game:
+                    joker_lap_code[x] = game["joker_lap_code"]   
+            games.append(game)
  
     while True:
 
@@ -527,7 +546,10 @@ def app():
         if (st.session_state.new_stage_event == True):
             start_time = datetime.strptime(game["start_time"],'%Y-%m-%dT%H:%M:%S%z')
         else:
-            start_time = datetime.strptime(game["start_time"],'%Y-%m-%d %H:%M:%S.%f%z')
+            try:
+                start_time = datetime.strptime(game["start_time"],'%Y-%m-%d %H:%M:%S.%f%z')
+            except:
+                start_time = datetime.strptime(game["start_time"],'%Y-%m-%dT%H:%M:%S%z')
         time_delay = start_time - current_time
         if(current_time <= start_time):
             next_race.text("Stage starts in approx. " + str(time_delay))
@@ -880,7 +902,9 @@ def app():
                             scoreboard_data[x][y]["Kürzeste Strecke"] = "-"
 
                 df = pd.DataFrame( scoreboard_data[x] )
-                st.dataframe(df)
+                
+#                st.dataframe(df)
+                st.table(df)
                 #st.dataframe(df, width=1600, height = 20*len(scoreboard_data))
 
         time.sleep(0.5)

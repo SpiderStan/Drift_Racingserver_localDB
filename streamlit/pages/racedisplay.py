@@ -357,6 +357,25 @@ def get_maxvalue(inputlist):
 
 def app():   
 
+    m = st.markdown("""
+    <style>
+    div.stButton > button:first-child {
+        color: white;
+        height: 2em;
+        width: 13em;
+        border-radius:10px;
+        font-size:15px;
+        font-weight: bold;
+        margin: auto;
+    }
+
+    div.stButton > button:active {
+        position:relative;
+        top:3px;
+    }
+
+    </style>""", unsafe_allow_html=True)
+
     lobby_id = st.session_state.lobby_id        
     game_id = st.session_state.game_id
     stage_id = st.session_state.stage_id
@@ -388,11 +407,9 @@ def app():
     scoreboard = st.empty()
     placeholder1 = st.empty()
     placeholder2 = st.empty()
-    placeholder3 = st.empty()
 
     with placeholder1.container():  
-        with st.expander(f"Game Settings {st.session_state.show_game_emoji}", expanded = False):
-            st.write(game)
+        with st.expander(f"Game Settings {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+" and GAME ID: "+str(game_id), expanded=False):
             
             track_image = st.empty()
 
@@ -413,15 +430,15 @@ def app():
             if st.button(f"Remove Image {st.session_state.remove_emoji}", key=None):
                 track_image.empty()
                 game_track_images_set = False
-
-    with placeholder2.container():  
-        with st.expander(f"Connection info {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+" and GAME ID: "+str(game_id), expanded=False):
+                
             submitUri:str = "http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)
             st.image(getqrcode(submitUri), clamp=True)
             st.write("URL: "+submitUri)
             st.write("GAME ID: "+game_id)
 
-    with placeholder3.container():  
+            st.write(game)
+
+    with placeholder2.container():  
         if( game["game_mode"] == "GYMKHANA" ):
             
             col1, col2, col3, col4, col5, col6, col7, col8 = st.columns(8)
@@ -435,7 +452,6 @@ def app():
                     scoreboard.empty()
                     placeholder1.empty()
                     placeholder2.empty()
-                    placeholder3.empty()
                     time.sleep(0.1)
                     st.experimental_rerun()
 
@@ -448,7 +464,6 @@ def app():
                     scoreboard.empty()
                     placeholder1.empty()
                     placeholder2.empty()
-                    placeholder3.empty()
                     time.sleep(0.1)
                     st.experimental_rerun()
 
@@ -460,7 +475,6 @@ def app():
                     scoreboard.empty()
                     placeholder1.empty()
                     placeholder2.empty()
-                    placeholder3.empty()
                     time.sleep(0.1)
                     st.experimental_rerun()
 
@@ -473,12 +487,11 @@ def app():
                     scoreboard.empty()
                     placeholder1.empty()
                     placeholder2.empty()
-                    placeholder3.empty()
                     time.sleep(0.1)
                     st.experimental_rerun()
 
             with col5:
-                if st.button(f"Gymkhana High Scores {st.session_state.award_trophy_emoji}"):
+                if st.button(f"High Scores {st.session_state.award_trophy_emoji}"):
                     st.session_state.nextpage = "highscore_list"
                     st.session_state.game_track_images_set = game_track_images_set
                     st.session_state.game_track_images = game_track_images
@@ -486,7 +499,6 @@ def app():
                     scoreboard.empty()
                     placeholder1.empty()
                     placeholder2.empty()
-                    placeholder3.empty()
                     time.sleep(0.1)
                     st.experimental_rerun()
 
@@ -499,7 +511,6 @@ def app():
                     scoreboard.empty()
                     placeholder1.empty()
                     placeholder2.empty()
-                    placeholder3.empty()
                     time.sleep(0.1)
                     st.experimental_rerun()
 
@@ -511,7 +522,6 @@ def app():
                         scoreboard.empty()
                         placeholder1.empty()
                         placeholder2.empty()
-                        placeholder3.empty()
                         time.sleep(0.1)
                         st.experimental_rerun()
 
@@ -528,7 +538,6 @@ def app():
                     scoreboard.empty()
                     placeholder1.empty()
                     placeholder2.empty()
-                    placeholder3.empty()
                     time.sleep(0.1)
                     st.experimental_rerun()
 
@@ -545,7 +554,6 @@ def app():
                     scoreboard.empty()
                     placeholder1.empty()
                     placeholder2.empty()
-                    placeholder3.empty()
                     time.sleep(0.1)
                     st.experimental_rerun()
 
@@ -559,7 +567,6 @@ def app():
                         scoreboard.empty()
                         placeholder1.empty()
                         placeholder2.empty()
-                        placeholder3.empty()
                         time.sleep(0.1)
                         st.experimental_rerun()
                         
@@ -572,7 +579,6 @@ def app():
                     scoreboard.empty()
                     placeholder1.empty()
                     placeholder2.empty()
-                    placeholder3.empty()
                     time.sleep(0.1)
                     st.experimental_rerun()
 
@@ -584,7 +590,6 @@ def app():
                     scoreboard.empty()
                     placeholder1.empty()
                     placeholder2.empty()
-                    placeholder3.empty()
                     time.sleep(0.1)
                     st.experimental_rerun()
 
@@ -597,7 +602,6 @@ def app():
                     scoreboard.empty()
                     placeholder1.empty()
                     placeholder2.empty()
-                    placeholder3.empty()
                     time.sleep(0.1)
                     st.experimental_rerun()
 
@@ -610,7 +614,6 @@ def app():
                     scoreboard.empty()
                     placeholder1.empty()
                     placeholder2.empty()
-                    placeholder3.empty()
                     time.sleep(0.1)
                     st.experimental_rerun()
 
@@ -632,7 +635,6 @@ def app():
                     scoreboard.empty()
                     placeholder1.empty()
                     placeholder2.empty()
-                    placeholder3.empty()
                     time.sleep(0.1)
                     st.experimental_rerun()
 

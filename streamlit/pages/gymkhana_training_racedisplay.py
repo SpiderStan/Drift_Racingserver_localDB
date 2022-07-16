@@ -149,6 +149,25 @@ def get_maxvalue(inputlist):
 
 def app():   
 
+    m = st.markdown("""
+    <style>
+    div.stButton > button:first-child {
+        color: white;
+        height: 2em;
+        width: 13em;
+        border-radius:10px;
+        font-size:15px;
+        font-weight: bold;
+        margin: auto;
+    }
+
+    div.stButton > button:active {
+        position:relative;
+        top:3px;
+    }
+
+    </style>""", unsafe_allow_html=True)
+
     lobby_id = st.session_state.lobby_id        
     game_id = st.session_state.game_id
     stage_id = st.session_state.stage_id
@@ -176,7 +195,6 @@ def app():
     placeholder2 = st.empty()
     targetboard = st.empty()
     placeholder3 = st.empty()
-    placeholder4 = st.empty()
 
     with placeholder1.container():
         col1, col2, col3, col4, col5, col6 = st.columns(6)
@@ -191,7 +209,6 @@ def app():
                 placeholder2.empty()
                 targetboard.empty()
                 placeholder3.empty()
-                placeholder4.empty()
                 time.sleep(0.1)
                 st.experimental_rerun()
 
@@ -205,7 +222,6 @@ def app():
 #                placeholder2.empty()
 #                targetboard.empty()
 #                placeholder3.empty()
-#                placeholder4.empty()
 #                time.sleep(0.1)
 #                st.experimental_rerun()
 
@@ -230,12 +246,11 @@ def app():
                     placeholder2.empty()
                     targetboard.empty()
                     placeholder3.empty()
-                    placeholder4.empty()
                     time.sleep(0.1)
                     st.experimental_rerun()
 
         with col5:
-            if st.button(f"Gymkhana High Scores {st.session_state.award_trophy_emoji}"):
+            if st.button(f"High Scores {st.session_state.award_trophy_emoji}"):
                 st.session_state.nextpage = "highscore_list"
                 st.session_state.game_track_images_set = game_track_images_set
                 st.session_state.game_track_images = game_track_images
@@ -243,7 +258,6 @@ def app():
                 placeholder2.empty()
                 targetboard.empty()
                 placeholder3.empty()
-                placeholder4.empty()
                 time.sleep(0.1)
                 st.experimental_rerun()
 
@@ -265,7 +279,6 @@ def app():
                 placeholder2.empty()
                 targetboard.empty()
                 placeholder3.empty()
-                placeholder4.empty()
                 time.sleep(0.1)
                 st.experimental_rerun()
 
@@ -275,8 +288,7 @@ def app():
     t_list = decode_targets(game["gymkhana_training_targets"])
 
     with placeholder3.container():
-        with st.expander(f"Game Settings {st.session_state.show_game_emoji}", expanded = False):
-            st.write(game)
+        with st.expander(f"Game Settings {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+" and GAME ID: "+str(game_id), expanded=False):
             
             track_image = st.empty()
             track_image_upload = st.file_uploader("Here you can upload the track layout", type=['png', 'jpg'], accept_multiple_files=False, key=None, help=None, on_change=None, args=None, kwargs=None, disabled=False)
@@ -297,12 +309,12 @@ def app():
                 track_image.empty()
                 game_track_images_set = False
 
-    with placeholder4.container():
-        with st.expander(f"Connection info {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+" and GAME ID: "+str(game_id), expanded=False):
             submitUri:str = "http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)
             st.image(getqrcode(submitUri), clamp=True)
             st.write("URL: "+submitUri)
             st.write("GAME ID: "+game_id)
+
+            st.write(game)
 
     while True:
 

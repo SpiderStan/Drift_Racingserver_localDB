@@ -24,12 +24,12 @@ def app():
     
     st.header("Gymkhana High Score List of Lobby " + str(lobby_id))
 
-    highscoreboard = st.empty()
     placeholder1 = st.empty()
-
+    highscoreboard = st.empty()
+    
     with placeholder1.container():
 
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3, col4, col5, col6, col7, col8 = st.columns(8)
 
         with col1:
             if st.button(f"Back {st.session_state.back_emoji}"):
@@ -71,6 +71,16 @@ def app():
 
         with highscoreboard.container():
 
+            # CSS to inject contained in a string
+            hide_dataframe_row_index = """
+                        <style>
+                        .row_heading.level0 {display:none}
+                        .blank {display:none}
+                        </style>
+            """
+            # Inject CSS with Markdown
+            st.markdown(hide_dataframe_row_index, unsafe_allow_html=True)
+
             highscoreboard_data = getHighScoreBoard(lobby_id)
 
             def constructEntry(r:dict):
@@ -80,7 +90,7 @@ def app():
                     "Punkte":r["high_score"] if "high_score" in r else "-",
                     "Motor":r["engine_type"] if "engine_type" in r else "-",
                     "Tuning":r["tuning_type"] if "tuning_type" in r else "-",
-                    "LW":r["steering_angle"] if "steering_angle" in r else "-",
+                    "LW":int(r["steering_angle"]) if "steering_angle" in r else "-",
                     "DA":r["driftassist"] if "driftassist" in r else "-",
                     "ST":r["softsteering"] if "softsteering" in r else "-",
                     "Setup":r["setup_mode"] if "setup_mode" in r else "-",
@@ -130,6 +140,12 @@ def app():
 
             highscoreboard_data = (sorted(highscoreboard_data, key=operator.itemgetter('Punkte'), reverse=True))
             df = pd.DataFrame( highscoreboard_data ) 
-            st.dataframe(df)
+            df = df.style.set_properties(**{
+                'font-size': '25pt',
+                'font-family': 'IBM Plex Mono',
+            })
 
+#            st.dataframe(df)
+            st.table(df)
+            
             time.sleep(2)

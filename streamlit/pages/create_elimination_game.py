@@ -36,7 +36,7 @@ def app():
             gameOptions = {}
             game_id = st.text_input("Game ID", value="Elim1", max_chars=None, key=None, type="default", help=None, autocomplete=None, on_change=None, disabled=False)
             
-            time_limit = st.number_input("elimination time [m]", min_value=1, max_value=10000, value=10, step=1, format=None, key=None, help="eliminate each x minutes", on_change=None, disabled = False)
+            time_limit = st.number_input("elimination time [m]", min_value=1, max_value=10000, value=3, step=1, format=None, key=None, help="eliminate each x minutes", on_change=None, disabled = False)
 
 # change start time widget in order to be able to select start time in minute intervalls
             start = "00:00"

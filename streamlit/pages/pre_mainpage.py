@@ -97,22 +97,71 @@ def app():
 
     if 'lobby_id' in st.session_state:
         del st.session_state.lobby_id
-        
-    if st.button(f"Create New Lobby {st.session_state.create_emoji}"):
-        st.session_state.nextpage = "create_lobby"
-        st.experimental_rerun()
 
-    if st.button(f"Join Lobby {st.session_state.lobby_emoji}"):
-        st.session_state.nextpage = "select_lobby"
-        st.experimental_rerun()
+    m = st.markdown("""
+    <style>
+    div.stButton > button:first-child {
+        color: white;
+        height: 3em;
+        width: 15em;
+        border-radius:10px;
+        border:3px solid #696969;
+        font-size:20px;
+        font-weight: bold;
+        margin: auto;
+        display: block;
+    }
 
-    if st.button(f"Delete Lobby {st.session_state.delete_emoji}"):
-        st.session_state.nextpage = "delete_lobby"
-        st.experimental_rerun()
+    div.stButton > button:active {
+        position:relative;
+        top:3px;
+    }
 
-    if st.button(f"System Settings {st.session_state.tweak_game_emoji}"):
-        st.session_state.nextpage = "system_settings"
-        st.experimental_rerun()
+    </style>""", unsafe_allow_html=True)
+
+    placeholder1 = st.empty()
+    placeholder2 = st.empty()
+    placeholder3 = st.empty()
+    
+    with placeholder1.container():
+
+        colM11, colM12, colM13, colM14 = st.columns(4)
+
+        with colM11:
+            if st.button(f"Create New Lobby {st.session_state.create_emoji}"):
+                st.session_state.nextpage = "create_lobby"
+                placeholder1.empty()
+                placeholder2.empty()
+                placeholder3.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
+
+        with colM12:
+            if st.button(f"Join Lobby {st.session_state.lobby_emoji}"):
+                st.session_state.nextpage = "select_lobby"
+                placeholder1.empty()
+                placeholder2.empty()
+                placeholder3.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
+
+        with colM13:
+            if st.button(f"Delete Lobby {st.session_state.delete_emoji}"):
+                st.session_state.nextpage = "delete_lobby"
+                placeholder1.empty()
+                placeholder2.empty()
+                placeholder3.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
+
+        with colM14:
+            if st.button(f"System Settings {st.session_state.tweak_game_emoji}"):
+                st.session_state.nextpage = "system_settings"
+                placeholder1.empty()
+                placeholder2.empty()
+                placeholder3.empty()
+                time.sleep(0.1)
+                st.experimental_rerun()
 
     # CSS to inject contained in a string
     hide_dataframe_row_index = """
@@ -124,8 +173,14 @@ def app():
     # Inject CSS with Markdown
     st.markdown(hide_dataframe_row_index, unsafe_allow_html=True)
 
-    st.write("Available Lobbies:")
-    result = fetch_post(f"{settings.driftapi_path}/driftapi/manage_lobby/find/", {})
-    if result:
-        result = pd.DataFrame( [{"lobby_id":r["lobby_id"]} for r in result if ("lobby_id" in r)] )
-        st.write(result)
+    with placeholder2.container():
+        st.subheader("Available Lobbies:")
+    
+    with placeholder3.container():
+        result = fetch_post(f"{settings.driftapi_path}/driftapi/manage_lobby/find/", {})
+        if result:
+            result = pd.DataFrame( [{"Lobby:":r["lobby_id"]} for r in result if ("lobby_id" in r)] )
+            result = result.style.set_properties(**{
+                'font-size': '20pt',
+            })
+            st.table(result)

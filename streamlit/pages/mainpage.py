@@ -31,6 +31,34 @@ def app():
     if 'show_awards' in  st.session_state:
         del st.session_state.show_awards
 
+# #ce1126       red
+
+#    div.stButton > button:hover {
+#        background:linear-gradient(to bottom, #ce1126 5%, #ff5a5a 100%);
+#        background-color:#ce1126;
+
+    m = st.markdown("""
+    <style>
+    div.stButton > button:first-child {
+        color: white;
+        height: 3em;
+        width: 15em;
+        border-radius:10px;
+        border:3px solid #696969;
+        font-size:20px;
+        font-weight: bold;
+        margin: auto;
+        display: block;
+    }
+
+    div.stButton > button:active {
+        position:relative;
+        top:3px;
+    }
+
+    </style>""", unsafe_allow_html=True)
+
+
     placeholder1 = st.empty()
     placeholder2 = st.empty()
     placeholder3 = st.empty()
@@ -181,11 +209,21 @@ def app():
     st.markdown(hide_dataframe_row_index, unsafe_allow_html=True)
 
     with placeholder4.container():
-        st.write("Available Games in Lobby " + str(lobby_id))
+        st.subheader("Available Games in Lobby " + str(lobby_id))
        
     with placeholder5.container():
         result = fetch_post(f"{settings.driftapi_path}/driftapi/manage_game/find/{lobby_id}/", {})
         if result:
-            result = pd.DataFrame( [{"game_id":r["game_id"], "game_mode":r["game_mode"]} for r in result if ("game_id" in r)] )
-            st.write(result)
-        
+            game_data = [{"Game:":r["game_id"], "Game Mode:":r["game_mode"]} for r in result if ("game_id" in r)]
+            
+            for x in range(len(game_data)):
+                if(result[x]["num_stages"]>1):
+                    game_data[x]["Game Mode:"] = "MULTIPLE"
+            
+            game_data = pd.DataFrame( game_data )
+#            result = pd.DataFrame( [{"Game:":r["game_id"], "Game Mode:":r["game_mode"]} for r in result if ("game_id" in r)] )
+            
+            game_data = game_data.style.set_properties(**{
+                'font-size': '20pt',
+            })
+            st.table(game_data)
