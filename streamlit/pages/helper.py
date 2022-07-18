@@ -237,23 +237,23 @@ def get_model(engine_type, tuning_type):
     #    "bmw_v8 PERFORMANCE-KIT 620 PS":"BMW E30 Mahle V8",
     #    "bmw_v8 SUPERCHARGER 780 PS":"BMW E30 Mahle V8",
 
-        "porsche_992_carrera CLUBSPORT SETUP":"Porsche 911 (992) 911 Carrera",
+        "porsche_992_carrera CLUB SPORT":"Porsche 911 (992) 911 Carrera",
         "porsche_992_carrera BASIC":"Porsche 911 (992) 911 Carrera",
         "porsche_992_carrera SPORT CHRONO-PAKET":"Porsche 911 (992) 911 Carrera",
 
-        "porsche_992_carrera_s CLUBSPORT SETUP":"Porsche 911 (992) 911 Carrera S",
+        "porsche_992_carrera_s CLUB SPORT":"Porsche 911 (992) 911 Carrera S",
         "porsche_992_carrera_s BASIC":"Porsche 911 (992) 911 Carrera S",
         "porsche_992_carrera_s SPORT CHRONO-PAKET":"Porsche 911 (992) 911 Carrera S",   
 
-        "porsche_992_carrera_4 CLUBSPORT SETUP":"Porsche 911 (992) 911 Carrera 4",
+        "porsche_992_carrera_4 CLUB SPORT":"Porsche 911 (992) 911 Carrera 4",
         "porsche_992_carrera_4 BASIC":"Porsche 911 (992) 911 Carrera 4",
         "porsche_992_carrera_4 SPORT CHRONO-PAKET":"Porsche 911 (992) 911 Carrera 4", 
         
-        "porsche_992_carrera_4s CLUBSPORT SETUP":"Porsche 911 (992) 911 Carrera 4S",
+        "porsche_992_carrera_4s CLUB SPORT":"Porsche 911 (992) 911 Carrera 4S",
         "porsche_992_carrera_4s BASIC":"Porsche 911 (992) 911 Carrera 4S",
         "porsche_992_carrera_4s SPORT CHRONO-PAKET":"Porsche 911 (992) 911 Carrera 4S", 
 
-        "nissan_gtr_rwd CLUBSPORT SETUP":"Nissan GT-R (35) GT-R RWD",
+        "nissan_gtr_rwd CLUB SPORT":"Nissan GT-R (35) GT-R RWD",
         "nissan_gtr_rwd BASIC 550 PS":"Nissan GT-R (35) GT-R RWD",
         "nissan_gtr_rwd NISMO TUNED 600 PS":"Nissan GT-R (35) GT-R RWD",
         "nissan_gtr_rwd TURBO UPGRADE 700 PS":"Nissan GT-R (35) GT-R RWD",
