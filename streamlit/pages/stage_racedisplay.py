@@ -197,7 +197,7 @@ def app():
             if game:
                 with st.expander(f"Game Statistics of Sage " + str(x+1) + " - " + str(game["game_mode"]) + " - Join the game via URL: http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(x+1)+" and GAME ID: "+str(game_id) + "   " + str(game["track_id"]) +  f"{st.session_state.show_game_emoji}", expanded = False):
 
-                    game_mode = get_app_game_mode(game["game_mode"])
+                    game_mode = get_game_mode(game["game_mode"])
                     starttime = get_starttime(game["start_time"])
                     if ( ("laps_app" in game) and not ( game["laps_app"] is None) ):
                         laps_app = int(game["lap_count"])

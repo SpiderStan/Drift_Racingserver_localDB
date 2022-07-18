@@ -211,7 +211,7 @@ def app():
     with placeholder1.container():  
         with st.expander(f"Game Settings {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+" and GAME ID: "+str(game_id), expanded=False):
 
-            game_mode = get_app_game_mode(game["game_mode"])
+            game_mode = get_game_mode(game["game_mode"])
             starttime = get_starttime(game["start_time"])
             time_limit = int(game["time_limit"])
             track_cond = get_track_cond(game["track_condition"])
