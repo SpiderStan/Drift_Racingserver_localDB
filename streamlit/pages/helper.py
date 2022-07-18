@@ -282,6 +282,7 @@ def get_tuning(tuning_type):
 
     tuning_type_dict = {
         "CLUBSPORT SETUP":"Clubsport",
+        "CLUB SPORT":"Clubsport",
         "BASIC SETUP 550 PS":"Basic Setup 550 PS",
         "PERFORMANCE-KIT 700 PS":"Performance-Kit 700 PS",
         "SUPERCHARGER 920 PS":"Supercharger 920 PS",
