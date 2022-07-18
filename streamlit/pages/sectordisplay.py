@@ -16,7 +16,7 @@ from math import floor
 
 from  .session import fetch_post, fetch_put, fetch_get, fetch_delete
 from .singletons import settings, logger
-
+from .helper import handleCurrentTrackCondition, getGameInfo, getScoreBoard, showTime, showDistance
 
 @st.cache
 def getqrcode(content):
@@ -35,312 +35,6 @@ def getqrcode(content):
     logger.info(str(img))
     img.save('./qrcode_test.png')
     return Image.open('./qrcode_test.png')
-
-
-def getGameInfo(lobby_id, game_id, stage_id):
-    return fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/get/{lobby_id}/{game_id}/{stage_id}/")
-
-def getScoreBoard(lobby_id, game_id, stage_id):
-    return fetch_get(f"{settings.driftapi_path}/driftapi/game/{lobby_id}/{game_id}/{stage_id}/playerstatus")
-
-def showTime(s):
-    if ((s is None) or s==''):
-        return ''
-    s = float(s)
-    ms = floor((s % 1)*1000)
-    s = floor(s)
-    m = floor(s / 60)
-    s = s -60*m
-    return f"{m:02d}:{s:02d}.{ms:03d}"
-    #return round(float(s),2) if not((s is None) or s== '') else None
-
-def showDistance(s):
-    if ((s is None) or s==''):
-        return ''
-    s = float(s)
-    cm = floor((s % 1)*100)
-    m = floor(s)
-    km = floor(s / 1000)
-    m = m - 1000*km
-    return f"{km:01d}km {m:03d}m" #{cm:02d}"
-
-# added function for track condition tracking (quite quick and dirty)
-def handleCurrentTrackCondition(r:dict):
-    if ( ( "enter_data" in r ) and not ( r["enter_data"] is None ) ):
-        if ( ("last_recognized_target" in r ) and not ( r["last_recognized_target"] is None ) ):
-# handle rally-cross here
-            if( r["enter_data"]["track_bundle"] == "rally_cross" ):
-                if( r["last_recognized_target"] == 4 ):
-                    current_track_condition = f"{st.session_state.track_dry_emoji}"
-                elif( r["last_recognized_target"] == 5 ):
-                    current_track_condition = f"{st.session_state.track_wet_emoji}"
-                elif( r["last_recognized_target"] == 6 ):
-                    current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                elif( r["last_recognized_target"] == 7 ):
-                    delay = datetime.now() - datetime.strptime(r["last_target_timestamp"],'%Y-%m-%dT%H:%M:%S.%f')
-                    if(delay.total_seconds() <= 3):
-                        current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-                    else:
-                        if( r["second_last_recognized_target"] == 4 ):
-                            current_track_condition = f"{st.session_state.track_dry_emoji}"
-                        elif( r["second_last_recognized_target"] == 5 ):
-                            current_track_condition = f"{st.session_state.track_wet_emoji}"
-                        elif( r["second_last_recognized_target"] == 6 ):
-                            current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                        else:
-                            if( r["third_last_recognized_target"] == 4 ):
-                                current_track_condition = f"{st.session_state.track_dry_emoji}"
-                            elif( r["third_last_recognized_target"] == 5 ):
-                                current_track_condition = f"{st.session_state.track_wet_emoji}"
-                            elif( r["third_last_recognized_target"] == 6 ):
-                                current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                            else:
-                                if( r["forth_last_recognized_target"] == 4 ):
-                                    current_track_condition = f"{st.session_state.track_dry_emoji}"
-                                elif( r["forth_last_recognized_target"] == 5 ):
-                                    current_track_condition = f"{st.session_state.track_wet_emoji}"
-                                elif( r["forth_last_recognized_target"] == 6 ):
-                                    current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                                else:
-                                    if( r["fith_last_recognized_target"] == 4 ):
-                                        current_track_condition = f"{st.session_state.track_dry_emoji}"
-                                    elif( r["fith_last_recognized_target"] == 5 ):
-                                        current_track_condition = f"{st.session_state.track_wet_emoji}"
-                                    elif( r["fith_last_recognized_target"] == 6 ):
-                                        current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                                    else: # be aware this might be wrong
-                                        if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                                            current_track_condition = f"{st.session_state.track_dry_emoji}"
-                                        elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                                            current_track_condition = f"{st.session_state.track_wet_emoji}"
-                                        elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                                            current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                                        elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                                            current_track_condition = f"{st.session_state.track_snow_emoji}"
-                                        else:
-                                            current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-# handle rally-cross here when last target has been start/finish
-                else:
-                    if( r["second_last_recognized_target"] == None):
-                        if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                            current_track_condition = f"{st.session_state.track_dry_emoji}"
-                        elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                            current_track_condition = f"{st.session_state.track_wet_emoji}"
-                        elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                            current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                        elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                            current_track_condition = f"{st.session_state.track_snow_emoji}"
-                        else:
-                            current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-                    elif( r["second_last_recognized_target"] == 4 ):
-                        current_track_condition = f"{st.session_state.track_dry_emoji}"
-                    elif( r["second_last_recognized_target"] == 5 ):
-                        current_track_condition = f"{st.session_state.track_wet_emoji}"
-                    elif( r["second_last_recognized_target"] == 6 ):
-                        current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                    else:
-# handle rally-cross here when last two target have been start/finish
-                        if( r["third_last_recognized_target"] == None):
-                            if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                                current_track_condition = f"{st.session_state.track_dry_emoji}"
-                            elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                                current_track_condition = f"{st.session_state.track_wet_emoji}"
-                            elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                                current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                            elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                                current_track_condition = f"{st.session_state.track_snow_emoji}"
-                            else:
-                                current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-                        elif( r["third_last_recognized_target"] == 4 ):
-                            current_track_condition = f"{st.session_state.track_dry_emoji}"
-                        elif( r["third_last_recognized_target"] == 5 ):
-                            current_track_condition = f"{st.session_state.track_wet_emoji}"
-                        elif( r["third_last_recognized_target"] == 6 ):
-                            current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                        else:
-# handle rally-cross here when last three target have been start/finish
-                            if( r["forth_last_recognized_target"] == None):
-                                if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                                    current_track_condition = f"{st.session_state.track_dry_emoji}"
-                                elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                                    current_track_condition = f"{st.session_state.track_wet_emoji}"
-                                elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                                    current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                                elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                                    current_track_condition = f"{st.session_state.track_snow_emoji}"
-                                else:
-                                    current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-                            elif( r["forth_last_recognized_target"] == 4 ):
-                                current_track_condition = f"{st.session_state.track_dry_emoji}"
-                            elif( r["forth_last_recognized_target"] == 5 ):
-                                current_track_condition = f"{st.session_state.track_wet_emoji}"
-                            elif( r["forth_last_recognized_target"] == 6 ):
-                                current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                            else:
-# handle rally-cross here when last four target have been start/finish
-                                if( r["fith_last_recognized_target"] == None):
-                                    if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                                        current_track_condition = f"{st.session_state.track_dry_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                                        current_track_condition = f"{st.session_state.track_wet_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                                        current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                                        current_track_condition = f"{st.session_state.track_snow_emoji}"
-                                    else:
-                                        current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-                                elif( r["fith_last_recognized_target"] == 4 ):
-                                    current_track_condition = f"{st.session_state.track_dry_emoji}"
-                                elif( r["fith_last_recognized_target"] == 5 ):
-                                    current_track_condition = f"{st.session_state.track_wet_emoji}"
-                                elif( r["fith_last_recognized_target"] == 6 ):
-                                    current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                                else:
-# finaly give up... nobody should come to this point...
-                                    if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                                        current_track_condition = f"{st.session_state.track_dry_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                                        current_track_condition = f"{st.session_state.track_wet_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                                        current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                                        current_track_condition = f"{st.session_state.track_snow_emoji}"
-                                    else:
-                                        current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-# handle rally here
-            elif( r["enter_data"]["track_bundle"] == "rally" ):
-                if( r["last_recognized_target"] == 4 ):
-                    current_track_condition = f"{st.session_state.track_dry_emoji}"
-                elif( r["last_recognized_target"] == 5 ):
-                    current_track_condition = f"{st.session_state.track_wet_emoji}"
-                elif( r["last_recognized_target"] == 6 ):
-                    current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                elif( r["last_recognized_target"] == 7 ):
-                    current_track_condition = f"{st.session_state.track_snow_emoji}"
-# handle rally here when last target has been start/finish
-                else:
-                    if( r["second_last_recognized_target"] == None):
-                        if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                            current_track_condition = f"{st.session_state.track_dry_emoji}"
-                        elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                            current_track_condition = f"{st.session_state.track_wet_emoji}"
-                        elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                            current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                        elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                            current_track_condition = f"{st.session_state.track_snow_emoji}"
-                        else:
-                            current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-                    elif( r["second_last_recognized_target"] == 4 ):
-                        current_track_condition = f"{st.session_state.track_dry_emoji}"
-                    elif( r["second_last_recognized_target"] == 5 ):
-                        current_track_condition = f"{st.session_state.track_wet_emoji}"
-                    elif( r["second_last_recognized_target"] == 6 ):
-                        current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                    elif( r["second_last_recognized_target"] == 7 ):
-                        current_track_condition = f"{st.session_state.track_snow_emoji}"
-                    else:
-# handle rally here when last two target have been start/finish
-                        if( r["third_last_recognized_target"] == None):
-                            if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                                current_track_condition = f"{st.session_state.track_dry_emoji}"
-                            elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                                current_track_condition = f"{st.session_state.track_wet_emoji}"
-                            elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                                current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                            elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                                current_track_condition = f"{st.session_state.track_snow_emoji}"
-                            else:
-                                current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-                        elif( r["third_last_recognized_target"] == 4 ):
-                            current_track_condition = f"{st.session_state.track_dry_emoji}"
-                        elif( r["third_last_recognized_target"] == 5 ):
-                            current_track_condition = f"{st.session_state.track_wet_emoji}"
-                        elif( r["third_last_recognized_target"] == 6 ):
-                            current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                        elif( r["third_last_recognized_target"] == 7 ):
-                            current_track_condition = f"{st.session_state.track_snow_emoji}"
-                        else:
-# handle rally here when last three target have been start/finish
-                            if( r["forth_last_recognized_target"] == None):
-                                if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                                    current_track_condition = f"{st.session_state.track_dry_emoji}"
-                                elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                                    current_track_condition = f"{st.session_state.track_wet_emoji}"
-                                elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                                    current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                                elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                                    current_track_condition = f"{st.session_state.track_snow_emoji}"
-                                else:
-                                    current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-                            elif( r["forth_last_recognized_target"] == 4 ):
-                                current_track_condition = f"{st.session_state.track_dry_emoji}"
-                            elif( r["forth_last_recognized_target"] == 5 ):
-                                current_track_condition = f"{st.session_state.track_wet_emoji}"
-                            elif( r["forth_last_recognized_target"] == 6 ):
-                                current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                            elif( r["forth_last_recognized_target"] == 7 ):
-                                current_track_condition = f"{st.session_state.track_snow_emoji}"
-                            else:
-# handle rally here when last four target have been start/finish
-                                if( r["fith_last_recognized_target"] == None):
-                                    if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                                        current_track_condition = f"{st.session_state.track_dry_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                                        current_track_condition = f"{st.session_state.track_wet_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                                        current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                                        current_track_condition = f"{st.session_state.track_snow_emoji}"
-                                    else:
-                                        current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-                                elif( r["fith_last_recognized_target"] == 4 ):
-                                    current_track_condition = f"{st.session_state.track_dry_emoji}"
-                                elif( r["fith_last_recognized_target"] == 5 ):
-                                    current_track_condition = f"{st.session_state.track_wet_emoji}"
-                                elif( r["fith_last_recognized_target"] == 6 ):
-                                    current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                                elif( r["fith_last_recognized_target"] == 7 ):
-                                    current_track_condition = f"{st.session_state.track_snow_emoji}"
-                                else:
-# finaly give up... nobody should come to this point...
-                                    if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                                        current_track_condition = f"{st.session_state.track_dry_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                                        current_track_condition = f"{st.session_state.track_wet_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                                        current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                                        current_track_condition = f"{st.session_state.track_snow_emoji}"
-                                    else:
-                                        current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-# handle none here
-            else:
-                if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                    current_track_condition = f"{st.session_state.track_dry_emoji}"
-                elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                    current_track_condition = f"{st.session_state.track_wet_emoji}"
-                elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                    current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                    current_track_condition = f"{st.session_state.track_snow_emoji}"
-                else:
-                    current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-# handle car in starting position here                                
-        else:
-            if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                current_track_condition = f"{st.session_state.track_dry_emoji}"
-            elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                current_track_condition = f"{st.session_state.track_wet_emoji}"
-            elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                current_track_condition = f"{st.session_state.track_gravel_emoji}"
-            elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                current_track_condition = f"{st.session_state.track_snow_emoji}"
-            else:
-                current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-    else: 
-        current_track_condition = "-"
-    return current_track_condition
-
 
 # added function to handle awards after the race (Race: 1st, 2nd, 3rd and bonus award for fastest lap)
 def get_minvalue(inputlist):
@@ -368,6 +62,25 @@ def get_nonevalue(inputlist):
  
 def app():   
 
+    m = st.markdown("""
+    <style>
+    div.stButton > button:first-child {
+        color: white;
+        height: 2em;
+        width: 13em;
+        border-radius:10px;
+        font-size:15px;
+        font-weight: bold;
+        margin: auto;
+    }
+
+    div.stButton > button:active {
+        position:relative;
+        top:3px;
+    }
+
+    </style>""", unsafe_allow_html=True)
+
     lobby_id = st.session_state.lobby_id        
     game_id = st.session_state.game_id
     stage_id = st.session_state.stage_id
@@ -376,7 +89,7 @@ def app():
     game_track_images_set = st.session_state.game_track_images_set
     game_track_images = st.session_state.game_track_images
 
-    st.header("Sector Display of Game " + str(game_id) + " from Lobby " + str(lobby_id))
+    st.subheader("Sector Display of Game " + str(game_id) + " from Lobby " + str(lobby_id))
 
     game = getGameInfo(lobby_id, game_id, stage_id)
 
@@ -393,9 +106,9 @@ def app():
 
     num_sectors = game["num_sectors"]
 
-    scoreboard = st.empty()
     placeholder1 = st.empty()
-
+    scoreboard = st.empty()
+    
     with placeholder1.container():
         col1, col2, col3, col4, col5, col6, col7, col8 = st.columns(8)
         
@@ -479,11 +192,11 @@ def app():
                         player_status = ""
                         completed_sectors_cnt = 0
                     
-                    d["Spieler"] = r["user_name"]
+                    d["DRIVER"] = r["user_name"]
                     d[f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"] =  player_status
 #                    d[f""] = current_track_condition
                 else:
-                    d["Spieler"] = ""
+                    d["DRIVER"] = ""
 #                    d[f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"] = ""
                     
     # differentiate between RACE and GYMKHANA game mode:
@@ -493,20 +206,20 @@ def app():
                     if "enter_data" in r:
                         if ( ( "end_data" in r ) and not ( r["end_data"] is None ) ): # EndEvent
                             if ( r["enter_data"]["lap_count"] == r["laps_completed"]): # finished Race (all laps completed)
-                                d["Runde"] = str(r["laps_completed"]) + "/" + str(r["enter_data"]["lap_count"])
+                                d["LAP"] = str(r["laps_completed"]) + "/" + str(r["enter_data"]["lap_count"])
                             else: # not all laps completed
-                                d["Runde"] = str(r["laps_completed"]+1) + "/" + str(r["enter_data"]["lap_count"])
+                                d["LAP"] = str(r["laps_completed"]+1) + "/" + str(r["enter_data"]["lap_count"])
                         elif ( ( "start_data" in r ) and not ( r["start_data"] is None ) ): # driving
                             if( r["target_code_counter"]["0"] == 0 ): # player not driven over start/finish so far
-                                d["Runde"] = str(0) + "/" + str(r["enter_data"]["lap_count"])
+                                d["LAP"] = str(0) + "/" + str(r["enter_data"]["lap_count"])
                             elif( r["enter_data"]["lap_count"] == r["laps_completed"]):
-                                d["Runde"] = str(r["laps_completed"]) + "/" + str(r["enter_data"]["lap_count"])
+                                d["LAP"] = str(r["laps_completed"]) + "/" + str(r["enter_data"]["lap_count"])
                             else: # player driven over start/finish
-                                d["Runde"] = str(r["laps_completed"]+1) + "/" + str(r["enter_data"]["lap_count"])
+                                d["LAP"] = str(r["laps_completed"]+1) + "/" + str(r["enter_data"]["lap_count"])
                         elif "enter_data" in r: #"Ready"
-                            d["Runde"] = str(0) + "/" + str(r["enter_data"]["lap_count"])
+                            d["LAP"] = str(0) + "/" + str(r["enter_data"]["lap_count"])
                     else:       
-                        d["Runde"] = ""
+                        d["LAP"] = ""
 
                     if "enter_data" in r:
                         if(toggle < 4):
@@ -517,7 +230,7 @@ def app():
 
                         if(completed_sectors_cnt == 0):
                             if ( ( "end_data" in r ) and not ( r["end_data"] is None ) ):
-                                d["Sektor"] = f"{st.session_state.completed_sector_emoji}" * num_sectors
+                                d["SECTOR"] = f"{st.session_state.completed_sector_emoji}" * num_sectors
                                 if(r["end_data"]["false_start"] == True):
                                     player_finished_list.append(None)
                                 elif(r["laps_completed"] != r["enter_data"]["lap_count"]):
@@ -525,36 +238,36 @@ def app():
                                 else:
                                     player_finished_list.append(True)
                             elif(r["laps_completed"] == r["enter_data"]["lap_count"]):
-                                d["Sektor"] = f"{st.session_state.completed_sector_emoji}" * num_sectors
+                                d["SECTOR"] = f"{st.session_state.completed_sector_emoji}" * num_sectors
                                 player_finished_list.append(False)
                             else:
-                                d["Sektor"] = f"{st.session_state.noncompleted_sector_emoji}" * num_sectors
+                                d["SECTOR"] = f"{st.session_state.noncompleted_sector_emoji}" * num_sectors
                                 player_finished_list.append(False)
                         else:
-                            d["Sektor"] = f"{st.session_state.completed_sector_emoji}" * (completed_sectors_cnt-1) + current_sector + f"{st.session_state.noncompleted_sector_emoji}" * (num_sectors-completed_sectors_cnt)
+                            d["SECTOR"] = f"{st.session_state.completed_sector_emoji}" * (completed_sectors_cnt-1) + current_sector + f"{st.session_state.noncompleted_sector_emoji}" * (num_sectors-completed_sectors_cnt)
                             player_finished_list.append(False)
                     else:
-                        d["Sektor"] = f"{st.session_state.noncompleted_sector_emoji}" * num_sectors
+                        d["SECTOR"] = f"{st.session_state.noncompleted_sector_emoji}" * num_sectors
                         player_finished_list.append(False)
 
                     if ("last_target_timestamp" in r) and (not r["last_target_timestamp"] is None):
                         if ( ( "end_data" in r ) and not ( r["end_data"] is None ) ): # EndEvent
-                            d["Sektor Zeit"] = "0:00:00.000000"
+                            d["SECTOR TIME"] = "0:00:00.000000"
                         else:
                             if( r["enter_data"]["lap_count"] == r["laps_completed"]):
-                                d["Sektor Zeit"] = "0:00:00.000000"
+                                d["SECTOR TIME"] = "0:00:00.000000"
                             else:
                                 current_time = datetime.now()#.astimezone(timezone.utc) 
                                 sector_start_time = datetime.strptime(r["last_target_timestamp"],'%Y-%m-%dT%H:%M:%S.%f')
                                 sector_time = current_time - sector_start_time
-                                d["Sektor Zeit"] = str(sector_time)
+                                d["SECTOR TIME"] = str(sector_time)
                     else:
-                        d["Sektor Zeit"] = "0:00:00.000000"
+                        d["SECTOR TIME"] = "0:00:00.000000"
                         
                     if ("second_last_target_timestamp" in r) and (not r["second_last_target_timestamp"] is None):
-                        d["Letzter Sektor Zeit"] = str(datetime.strptime(r["last_target_timestamp"],'%Y-%m-%dT%H:%M:%S.%f') - datetime.strptime(r["second_last_target_timestamp"],'%Y-%m-%dT%H:%M:%S.%f'))
+                        d["LAST SECTOR TIME"] = str(datetime.strptime(r["last_target_timestamp"],'%Y-%m-%dT%H:%M:%S.%f') - datetime.strptime(r["second_last_target_timestamp"],'%Y-%m-%dT%H:%M:%S.%f'))
                     else:
-                        d["Letzter Sektor Zeit"] = "0:00:00.000000"
+                        d["LAST SECTOR TIME"] = "0:00:00.000000"
 
                 elif ( game["game_mode"] == "GYMKHANA" ):
                     pass
@@ -580,7 +293,7 @@ def app():
                 for player in range(scoreboard_data_len):
                     if ( ( "end_data" in scoreboard_data[player] ) and not ( scoreboard_data[player]["end_data"] is None ) ):
                         if(scoreboard_data[player]["end_data"]["false_start"] == True):
-                            racedisplay_data[player]["Platz"] = f"{st.session_state.false_start_emoji}"
+                            racedisplay_data[player]["POS"] = f"{st.session_state.false_start_emoji}"
                             current_rounds_and_sectors_list[0][player] = -1 # fake -1 rounds - meaning player has been handled
                             handled_players+=1
 
@@ -605,7 +318,7 @@ def app():
                         shortest_race_time_indices_list_len = len(shortest_race_time_indices_list)
 
                         for x in range(shortest_race_time_indices_list_len):
-                            racedisplay_data[shortest_race_time_indices_list[x]]["Platz"] = str(position)
+                            racedisplay_data[shortest_race_time_indices_list[x]]["POS"] = str(position)
                             current_rounds_and_sectors_list[0][shortest_race_time_indices_list[x]] = -1 # fake -1 rounds - meaning player has been handled
                             handled_finished_players+=1
                             player_race_time_list[shortest_race_time_indices_list[x]] = float(9999.999) # fake time - meaning player has been handled
@@ -640,17 +353,17 @@ def app():
                         youngest_time_indices_list_len = len(youngest_time_indices_list)
                         
                         for x in youngest_time_indices_list:
-                            racedisplay_data[max_rounds_indices_list[max_sectors_indices_list[x]]]["Platz"] = str(position)
+                            racedisplay_data[max_rounds_indices_list[max_sectors_indices_list[x]]]["POS"] = str(position)
                             current_rounds_and_sectors_list[0][max_rounds_indices_list[max_sectors_indices_list[x]]] = -1 # fake -1 rounds - meaning player has been handled
                             handled_players+=1
 
                         position+=1
 
-                racedisplay_data = (sorted(racedisplay_data, key=operator.itemgetter('Platz')))
+                racedisplay_data = (sorted(racedisplay_data, key=operator.itemgetter('POS')))
 
             df = pd.DataFrame( racedisplay_data )
             df = df.style.set_properties(**{
-                'font-size': '40pt',
+                'font-size': '25pt',
                 'font-family': 'IBM Plex Mono',
             })
 

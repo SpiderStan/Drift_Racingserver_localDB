@@ -15,6 +15,7 @@ from math import floor
 
 from .session import fetch_post, fetch_put, fetch_get, fetch_delete
 from .singletons import settings, logger
+from .helper import get_model, get_tuning, get_app_game_mode, get_starttime, get_track_cond, get_track_bundle, get_wheels, get_setup, getGameInfo, getScoreBoard, getDetailedTargetData, showTime, showDistance, showMeanSpeed, decode_targets
 
 import base64
 import shutil
@@ -37,97 +38,6 @@ def getqrcode(content):
     img.save('./qrcode_test.png')
     return Image.open('./qrcode_test.png')
 
-def getGameInfo(lobby_id, game_id, stage_id):
-    return fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/get/{lobby_id}/{game_id}/{stage_id}/")
-
-def getScoreBoard(lobby_id, game_id, stage_id):
-    return fetch_get(f"{settings.driftapi_path}/driftapi/game/{lobby_id}/{game_id}/{stage_id}/playerstatus")
-
-def getDetailedTargetData(lobby_id, game_id, stage_id, user_name):
-    return fetch_get(f"{settings.driftapi_path}/driftapi/game/{lobby_id}/{game_id}/{stage_id}/{user_name}/targetstatus")
-
-def showTime(s):
-    if ((s is None) or s==''):
-        return ''
-    s = float(s)
-    ms = floor((s % 1)*1000)
-    s = floor(s)
-    m = floor(s / 60)
-    s = s -60*m
-    return f"{m:02d}:{s:02d}.{ms:03d}"
-    #return round(float(s),2) if not((s is None) or s== '') else None
-
-def showDistance(s):
-    if ((s is None) or s==''):
-        return ''
-    s = float(s)
-    cm = floor((s % 1)*100)
-    m = floor(s)
-    km = floor(s / 1000)
-    m = m - 1000*km
-    return f"{km:01d}km {m:03d}m {cm:02d}cm"
-    
-def showMeanSpeed(d,t):
-    if ((d is None) or d==''):
-        return ''
-    if ((t is None) or t==''):
-        return ''
-    d = float(d)
-    t = float(t)
-    kmh = d/t*3.6
-    return f"{kmh:03.2f}km/h"
-
-def decode_targets(gymkhana_training_targets):
-    if (gymkhana_training_targets == "ANGLE -> 180° -> SPEED -> 360°"):
-        t_list = [5,6,4,7]
-    elif (gymkhana_training_targets == "ANGLE -> 180° -> 360° -> SPEED"):
-        t_list = [5,6,7,4]
-    elif (gymkhana_training_targets == "ANGLE -> SPEED -> 180° -> 360°"):
-        t_list = [5,4,6,7]
-    elif (gymkhana_training_targets == "ANGLE -> SPEED -> 360° -> 180°"):
-        t_list = [5,4,7,6]
-    elif (gymkhana_training_targets == "ANGLE -> 360° -> SPEED -> 180°"):
-        t_list = [5,7,4,6]
-    elif (gymkhana_training_targets == "ANGLE -> 360° -> 180° -> SPEED"):
-        t_list = [5,7,6,4]
-    elif (gymkhana_training_targets == "SPEED -> 180° -> ANGLE -> 360°"):
-        t_list = [4,6,5,7]
-    elif (gymkhana_training_targets == "SPEED -> 180° -> 360° -> ANGLE"):
-        t_list = [4,6,7,5]
-    elif (gymkhana_training_targets == "SPEED -> ANGLE -> 180° -> 360°"):
-        t_list = [4,5,6,7]
-    elif (gymkhana_training_targets == "SPEED -> ANGLE -> 360° -> 180°"):
-        t_list = [4,5,7,6]
-    elif (gymkhana_training_targets == "SPEED -> 360° -> ANGLE -> 180°"):
-        t_list = [4,7,5,6]
-    elif (gymkhana_training_targets == "SPEED -> 360° -> 180° -> ANGLE"):
-        t_list = [4,7,6,5]
-    elif (gymkhana_training_targets == "180° -> ANGLE -> 360° -> SPEED"):
-        t_list = [6,5,7,4]
-    elif (gymkhana_training_targets == "180° -> ANGLE -> SPEED -> 360°"):
-        t_list = [6,5,4,7]
-    elif (gymkhana_training_targets == "180° -> 360° -> ANGLE -> SPEED"):
-        t_list = [6,7,5,4]
-    elif (gymkhana_training_targets == "180° -> 360° -> SPEED -> ANGLE"):
-        t_list = [6,7,4,5]
-    elif (gymkhana_training_targets == "180° -> SPEED -> ANGLE -> 360°"):
-        t_list = [6,4,5,7]
-    elif (gymkhana_training_targets == "180° -> SPEED -> 360° -> ANGLE"):
-        t_list = [6,4,7,5]
-    elif (gymkhana_training_targets == "360° -> ANGLE -> 180° -> SPEED"):
-        t_list = [7,5,6,4]
-    elif (gymkhana_training_targets == "360° -> ANGLE -> SPEED -> 180°"):
-        t_list = [7,5,4,6]
-    elif (gymkhana_training_targets == "360° -> 180° -> ANGLE -> SPEED"):
-        t_list = [7,6,5,4]
-    elif (gymkhana_training_targets == "360° -> 180° -> SPEED -> ANGLE"):
-        t_list = [7,6,4,5]
-    elif (gymkhana_training_targets == "360° -> SPEED -> 180° -> ANGLE"):
-        t_list = [7,4,6,5]
-    elif (gymkhana_training_targets == "360° -> SPEED -> ANGLE -> 180°"):
-        t_list = [7,4,5,6]
-    return t_list
-
 # added function to handle awards after the race (Race: 1st, 2nd, 3rd and bonus award for fastest lap)
 def get_minvalue(inputlist):
     #get the minimum value in the list
@@ -147,26 +57,7 @@ def get_maxvalue(inputlist):
     res = [i for i,val in enumerate(inputlist) if val==max_value]
     return res
 
-def app():   
-
-    m = st.markdown("""
-    <style>
-    div.stButton > button:first-child {
-        color: white;
-        height: 2em;
-        width: 13em;
-        border-radius:10px;
-        font-size:15px;
-        font-weight: bold;
-        margin: auto;
-    }
-
-    div.stButton > button:active {
-        position:relative;
-        top:3px;
-    }
-
-    </style>""", unsafe_allow_html=True)
+def app():
 
     lobby_id = st.session_state.lobby_id        
     game_id = st.session_state.game_id
@@ -184,7 +75,7 @@ def app():
         st.session_state.nextpage = "main_page"
         st.experimental_rerun()
 
-    st.header("Statistics of Gymkhana Training (" + str(game["gymkhana_training_targets"]) + ") " + str(game_id) + " from Lobby " + str(lobby_id))
+    st.subheader("Statistics of Gymkhana Training (" + str(game["gymkhana_training_targets"]) + ") " + str(game_id) + " from Lobby " + str(lobby_id))
     
     os.makedirs("gymkhana_training/" + str(lobby_id) + "/" + str(game_id) + "/runs/", exist_ok=True)
     dir_name = "gymkhana_training/" + str(lobby_id) + "/" + str(game_id) + "/runs/"
@@ -195,6 +86,7 @@ def app():
     placeholder2 = st.empty()
     targetboard = st.empty()
     placeholder3 = st.empty()
+    placeholder4 = st.empty()
 
     with placeholder1.container():
         col1, col2, col3, col4, col5, col6 = st.columns(6)
@@ -209,6 +101,7 @@ def app():
                 placeholder2.empty()
                 targetboard.empty()
                 placeholder3.empty()
+                placeholder4.empty()
                 time.sleep(0.1)
                 st.experimental_rerun()
 
@@ -222,6 +115,7 @@ def app():
 #                placeholder2.empty()
 #                targetboard.empty()
 #                placeholder3.empty()
+#                placeholder4.empty()
 #                time.sleep(0.1)
 #                st.experimental_rerun()
 
@@ -246,6 +140,7 @@ def app():
                     placeholder2.empty()
                     targetboard.empty()
                     placeholder3.empty()
+                    placeholder4.empty()
                     time.sleep(0.1)
                     st.experimental_rerun()
 
@@ -258,6 +153,7 @@ def app():
                 placeholder2.empty()
                 targetboard.empty()
                 placeholder3.empty()
+                placeholder4.empty()
                 time.sleep(0.1)
                 st.experimental_rerun()
 
@@ -279,6 +175,7 @@ def app():
                 placeholder2.empty()
                 targetboard.empty()
                 placeholder3.empty()
+                placeholder4.empty()
                 time.sleep(0.1)
                 st.experimental_rerun()
 
@@ -289,6 +186,78 @@ def app():
 
     with placeholder3.container():
         with st.expander(f"Game Settings {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+" and GAME ID: "+str(game_id), expanded=False):
+
+            game_mode = get_app_game_mode(game["game_mode"])
+            starttime = get_starttime(game["start_time"])
+            if ( ("laps_app" in game) and not ( game["laps_app"] is None) ):
+                laps_app = int(game["lap_count"])
+            track_cond = get_track_cond(game["track_condition"])
+            track_bundle = get_track_bundle(game["track_bundle"])
+            wheels = get_wheels(game["wheels"])
+            setup = get_setup(game["setup_mode"])
+
+            col11, col12, col13, col14 = st.columns(4)
+            with col11:
+                st.markdown("**GAME MODE:**")
+            with col12:
+                st.markdown(str(game_mode))
+
+            col21, col22, col23, col24 = st.columns(4)
+            with col21:
+                st.markdown("**STARTTIME:**")
+            with col22:
+                st.markdown(str(starttime))
+                 
+            if ( ("laps_app" in game) and not ( game["laps_app"] is None) ):
+                col31, col32, col33, col34 = st.columns(4)
+                with col31:
+                    st.markdown("**LAPS:**")
+                with col32:
+                    st.markdown(str(laps_app))
+
+            col41, col42, col43, col44 = st.columns(4)
+            with col41:
+                st.markdown("**TRACK CONDITION:**")
+            with col42:
+                st.markdown(str(track_cond))
+
+            col51, col52, col53, col54 = st.columns(4)
+            with col51:
+                st.markdown("**TRACK MODE:**")
+            with col52:
+                st.markdown(str(track_bundle))
+                        
+            col61, col62, col63, col64 = st.columns(4)
+            with col61:
+                st.markdown("**WHEELS:**")
+            with col62:
+                st.markdown(str(wheels))                       
+
+            col71, col72, col73, col74 = st.columns(4)
+            with col71:
+                st.markdown("**SETUP:**")
+            with col72:
+                st.markdown(str(setup))  
+
+#            col81, col82, col83, col84 = st.columns(4)
+#            with col81:
+#                st.markdown("**MODEL:**")
+#            with col82:
+#                st.markdown(str(model)) 
+
+#            col91, col92, col93, col94 = st.columns(4)
+#            with col91:
+#                st.markdown("**TUNING:**")
+#            with col92:
+#                st.markdown(str(tuning)) 
+            
+            submitUri:str = "http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)
+            st.image(getqrcode(submitUri), clamp=True)
+            st.write("URL: "+submitUri)
+            st.write("GAME ID: "+game_id)
+
+    with placeholder4.container():  
+        with st.expander(f"Track Layout {st.session_state.show_game_emoji}", expanded=False):
             
             track_image = st.empty()
             track_image_upload = st.file_uploader("Here you can upload the track layout", type=['png', 'jpg'], accept_multiple_files=False, key=None, help=None, on_change=None, args=None, kwargs=None, disabled=False)
@@ -296,25 +265,15 @@ def app():
             if(game_track_images_set == False): # no track image upload so far
                 if(track_image_upload != None): # user has supplied a track image
                     game_track_images_set = True
-                    track_image = st.image(track_image_upload, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
+                    track_image.image(track_image_upload, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
                     game_track_images = track_image_upload # store in session state
             elif(game_track_images_set == True): # track image existing
                 if(track_image_upload != None): # user has supplied a new track image
                     game_track_images_set = True
-                    track_image = st.image(track_image_upload, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
+                    track_image.image(track_image_upload, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
                     game_track_images = track_image_upload # store in session state
                 else:
-                    track_image = st.image(game_track_images, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Prev. Uploaded Track Image
-            if st.button(f"Remove Image {st.session_state.remove_emoji}", key=None):
-                track_image.empty()
-                game_track_images_set = False
-
-            submitUri:str = "http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)
-            st.image(getqrcode(submitUri), clamp=True)
-            st.write("URL: "+submitUri)
-            st.write("GAME ID: "+game_id)
-
-            st.write(game)
+                    track_image.image(game_track_images, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Prev. Uploaded Track Image
 
     while True:
 
@@ -361,19 +320,19 @@ def app():
                                 d[f"{st.session_state.points_emoji}"] = f"{st.session_state.remove_emoji}"
                                 d[f"∑ {st.session_state.points_emoji}"] = f"{st.session_state.remove_emoji}"
 
-                                d[f"Sektor - {st.session_state.distance_emoji}"] = f"{st.session_state.remove_emoji}"
-                                d[f"Sektor - {st.session_state.time_emoji}"] = f"{st.session_state.remove_emoji}"
-                                d[f"Sektor - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.remove_emoji}"
+                                d[f"SECTOR - {st.session_state.distance_emoji}"] = f"{st.session_state.remove_emoji}"
+                                d[f"SECTOR - {st.session_state.time_emoji}"] = f"{st.session_state.remove_emoji}"
+                                d[f"SECTOR - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.remove_emoji}"
 
                                 if(t_cnt == 3): #the fourth (last) target
-                                    d[f"∑ Sektoren - {st.session_state.distance2_emoji}"] = f"{st.session_state.remove_emoji} {st.session_state.round_emoji}"
-                                    d[f"∑ Sektoren - {st.session_state.time2_emoji}"] = f"{st.session_state.remove_emoji} {st.session_state.round_emoji}"
-                                    d[f"Cum. Sektoren - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.remove_emoji} {st.session_state.round_emoji}"
+                                    d[f"∑ SECTORS - {st.session_state.distance2_emoji}"] = f"{st.session_state.remove_emoji} {st.session_state.round_emoji}"
+                                    d[f"∑ SECTORS - {st.session_state.time2_emoji}"] = f"{st.session_state.remove_emoji} {st.session_state.round_emoji}"
+                                    d[f"CUM. SECTORS - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.remove_emoji} {st.session_state.round_emoji}"
                                     d[f"{st.session_state.round_emoji} {st.session_state.points_emoji}"] = f"- {st.session_state.round_emoji}"
                                 else:
-                                    d[f"∑ Sektoren - {st.session_state.distance2_emoji}"] = f"{st.session_state.remove_emoji}"
-                                    d[f"∑ Sektoren - {st.session_state.time2_emoji}"] = f"{st.session_state.remove_emoji}"
-                                    d[f"Cum. Sektoren - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.remove_emoji}"
+                                    d[f"∑ SECTORS - {st.session_state.distance2_emoji}"] = f"{st.session_state.remove_emoji}"
+                                    d[f"∑ SECTORS - {st.session_state.time2_emoji}"] = f"{st.session_state.remove_emoji}"
+                                    d[f"CUM. SECTORS - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.remove_emoji}"
                                     d[f"{st.session_state.round_emoji} {st.session_state.points_emoji}"] = ""
                                 
                                 targetboard_data.append(d)
@@ -393,9 +352,9 @@ def app():
                             d[f"∑ {st.session_state.points_emoji}"] = str(sum_score)
                             
                             # show distance, time and average speed from target to target
-                            d[f"Sektor - {st.session_state.distance_emoji}"] = showDistance(section_distance)
-                            d[f"Sektor - {st.session_state.time_emoji}"] = showTime(section_time)
-                            d[f"Sektor - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(section_distance,section_time)
+                            d[f"SECTOR - {st.session_state.distance_emoji}"] = showDistance(section_distance)
+                            d[f"SECTOR - {st.session_state.time_emoji}"] = showTime(section_time)
+                            d[f"SECTOR - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(section_distance,section_time)
                             
                             last_driven_distance = targets_data[x]["target_data"]["driven_distance"]
                             last_driven_time = targets_data[x]["target_data"]["driven_time"]                 
@@ -405,17 +364,17 @@ def app():
                                 round_distance = targets_data[x]["target_data"]["driven_distance"] - last_round_driven_distance
                                 round_time = targets_data[x]["target_data"]["driven_time"] - last_round_driven_time
                                 round_score = sum_score - last_round_score
-                                d[f"∑ Sektoren - {st.session_state.distance2_emoji}"] = showDistance(round_distance) + f" {st.session_state.round_emoji}"
-                                d[f"∑ Sektoren - {st.session_state.time2_emoji}"] = showTime(round_time) + f" {st.session_state.round_emoji}"
-                                d[f"Cum. Sektoren - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(round_distance,round_time) + f" {st.session_state.round_emoji}"
+                                d[f"∑ SECTORS - {st.session_state.distance2_emoji}"] = showDistance(round_distance) + f" {st.session_state.round_emoji}"
+                                d[f"∑ SECTORS - {st.session_state.time2_emoji}"] = showTime(round_time) + f" {st.session_state.round_emoji}"
+                                d[f"CUM. SECTORS - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(round_distance,round_time) + f" {st.session_state.round_emoji}"
                                 d[f"{st.session_state.round_emoji} {st.session_state.points_emoji}"] = str(round_score) + f" {st.session_state.round_emoji}"
                                 last_round_driven_distance = targets_data[x]["target_data"]["driven_distance"]
                                 last_round_driven_time = targets_data[x]["target_data"]["driven_time"]
                                 last_round_score = last_round_score + round_score
                             else:
-                                d[f"∑ Sektoren - {st.session_state.distance2_emoji}"] = showDistance(targets_data[x]["target_data"]["driven_distance"] - last_round_driven_distance)
-                                d[f"∑ Sektoren - {st.session_state.time2_emoji}"] = showTime(targets_data[x]["target_data"]["driven_time"] - last_round_driven_time)
-                                d[f"Cum. Sektoren - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(targets_data[x]["target_data"]["driven_distance"] - last_round_driven_distance,targets_data[x]["target_data"]["driven_time"] - last_round_driven_time)
+                                d[f"∑ SECTORS - {st.session_state.distance2_emoji}"] = showDistance(targets_data[x]["target_data"]["driven_distance"] - last_round_driven_distance)
+                                d[f"∑ SECTORS - {st.session_state.time2_emoji}"] = showTime(targets_data[x]["target_data"]["driven_time"] - last_round_driven_time)
+                                d[f"CUM. SECTORS - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(targets_data[x]["target_data"]["driven_distance"] - last_round_driven_distance,targets_data[x]["target_data"]["driven_time"] - last_round_driven_time)
                                 d[f"{st.session_state.round_emoji} {st.session_state.points_emoji}"] = ""
                                 
                             targetboard_data.append(d)
@@ -437,14 +396,14 @@ def app():
                             d[f"∑ {st.session_state.points_emoji}"] = str(sum_score)
                             
                             # show distance, time and average speed from target to target
-                            d[f"Sektor - {st.session_state.distance_emoji}"] = showDistance(round_distance)
-                            d[f"Sektor - {st.session_state.time_emoji}"] = showTime(round_time)
-                            d[f"Sektor - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(round_distance,round_time)
+                            d[f"SECTOR - {st.session_state.distance_emoji}"] = showDistance(round_distance)
+                            d[f"SECTOR - {st.session_state.time_emoji}"] = showTime(round_time)
+                            d[f"SECTOR - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(round_distance,round_time)
                             
                             # show overall distance, time and cum. average speed
-                            d[f"∑ Sektoren - {st.session_state.distance2_emoji}"] = showDistance(targets_data[x]["target_data"]["driven_distance"])
-                            d[f"∑ Sektoren - {st.session_state.time2_emoji}"] = showTime(targets_data[x]["target_data"]["driven_time"])
-                            d[f"Cum. Sektoren - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(targets_data[x]["target_data"]["driven_distance"],targets_data[x]["target_data"]["driven_time"])
+                            d[f"∑ SECTORS - {st.session_state.distance2_emoji}"] = showDistance(targets_data[x]["target_data"]["driven_distance"])
+                            d[f"∑ SECTORS - {st.session_state.time2_emoji}"] = showTime(targets_data[x]["target_data"]["driven_time"])
+                            d[f"CUM. SECTORS - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(targets_data[x]["target_data"]["driven_distance"],targets_data[x]["target_data"]["driven_time"])
                             d[f"{st.session_state.round_emoji} {st.session_state.points_emoji}"] = str(round_score) + f" {st.session_state.finish_emoji}"
                             
                             last_driven_distance = targets_data[x]["target_data"]["driven_distance"]
@@ -484,7 +443,10 @@ def app():
                 else:
                     player_status = ""
 
-                st.text("Detailed Statistics of " + str(scoreboard_data[player]["user_name"]) + " (Status: " + str(player_status) + ")")
-                st.dataframe(df)
+                model = get_model(scoreboard_data[player]["enter_data"]["engine_type"],scoreboard_data[player]["enter_data"]["tuning_type"])
+                tuning = get_tuning(scoreboard_data[player]["enter_data"]["tuning_type"])
+               
+                with st.expander("Detailed Statistics of " + str(scoreboard_data[player]["user_name"]) + "  " + str(player_status) + " (" + str(model) + " | " + str(tuning) + f") {st.session_state.show_game_emoji}", expanded=False):
+                    st.table(df)
 
             time.sleep(0.5)

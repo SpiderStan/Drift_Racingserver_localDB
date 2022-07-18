@@ -9,8 +9,9 @@ import operator
 from PIL import Image
 from math import floor
 
-from  .session import fetch_post, fetch_put, fetch_get, fetch_delete
+from .session import fetch_post, fetch_put, fetch_get, fetch_delete
 from .singletons import settings, logger
+from .helper import get_game_mode, get_starttime, get_track_cond, get_track_bundle, get_wheels, get_setup, get_bool, get_model, get_tuning, handleCurrentTrackCondition
 
 def getGameInfo(lobby_id, game_id, stage_id):
     return fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/get/{lobby_id}/{game_id}/{stage_id}/")
@@ -20,9 +21,28 @@ def getHighScoreBoard(lobby_id):
 
 def app():   
 
+    m = st.markdown("""
+    <style>
+    div.stButton > button:first-child {
+        color: white;
+        height: 2em;
+        width: 13em;
+        border-radius:10px;
+        font-size:15px;
+        font-weight: bold;
+        margin: auto;
+    }
+
+    div.stButton > button:active {
+        position:relative;
+        top:3px;
+    }
+
+    </style>""", unsafe_allow_html=True)
+
     lobby_id = st.session_state.lobby_id        
     
-    st.header("Gymkhana High Score List of Lobby " + str(lobby_id))
+    st.subheader("Gymkhana High Score List of Lobby " + str(lobby_id))
 
     placeholder1 = st.empty()
     highscoreboard = st.empty()
@@ -84,51 +104,50 @@ def app():
             highscoreboard_data = getHighScoreBoard(lobby_id)
 
             def constructEntry(r:dict):
-            
+
+                model = get_model(r["engine_type"],r["tuning_type"])
+                tuning = get_tuning(r["tuning_type"])
+                setup = get_setup(r["setup_mode"])
+                soft_s = get_bool(r["softsteering"])
+                drift_a = get_bool(r["driftassist"])
+                wheels = get_wheels(r["wheels"])
+
+
+
                 d = {
-                    "Fahrer":r["user_name"] if "user_name" in r else "",
-                    "Punkte":r["high_score"] if "high_score" in r else "-",
-                    "Motor":r["engine_type"] if "engine_type" in r else "-",
-                    "Tuning":r["tuning_type"] if "tuning_type" in r else "-",
-                    "LW":int(r["steering_angle"]) if "steering_angle" in r else "-",
-                    "DA":r["driftassist"] if "driftassist" in r else "-",
-                    "ST":r["softsteering"] if "softsteering" in r else "-",
-                    "Setup":r["setup_mode"] if "setup_mode" in r else "-",
+                    "DRIVER":r["user_name"] if "user_name" in r else "",
+                    "POINTS":r["high_score"] if "high_score" in r else "-",
+                    "MODEL":str(model),
+                    "TUNING":str(tuning),
+                    "SETUP":str(setup),
+                    "S.-ANGLE":int(r["steering_angle"]) if "steering_angle" in r else "-",
+                    "SOFT-S.":str(soft_s),
+                    "DRIFT-A.":str(drift_a),
+                    "WHEELS":str(wheels),
+                    
                 }
-                
-                if "wheels" in r:
-                    if( (r["wheels"] == "normal" ) ):
-                        d["Reifen"] = "Straße"
-                    elif( (r["wheels"] == "spikes" ) ):
-                        d["Reifen"] = "Spikes"
-                    elif( (r["wheels"] == "gravel_tires" ) ):
-                        d["Reifen"] = "Rally"
-                    else:
-                        d["Reifen"] = "-"
-                else:
-                    d["Reifen"] = "-"
 
                 if "track_condition" in r:
                     if( (r["track_condition"] == "drift_asphalt" ) ):
-                        d["Strecke"] = f"{st.session_state.track_dry_emoji}"
+                        d["TRACK"] = f"{st.session_state.track_dry_emoji}"
                     elif( (r["track_condition"] == "drift_asphalt_wet" ) ):
-                        d["Strecke"] = f"{st.session_state.track_wet_emoji}"
+                        d["TRACK"] = f"{st.session_state.track_wet_emoji}"
                     elif( (r["track_condition"] ==  "drift_dirt") ):
-                        d["Strecke"] = f"{st.session_state.track_gravel_emoji}"
+                        d["TRACK"] = f"{st.session_state.track_gravel_emoji}"
                     elif( (r["track_condition"] == "drift_ice" ) ):
-                        d["Strecke"] = f"{st.session_state.track_snow_emoji}"
+                        d["TRACK"] = f"{st.session_state.track_snow_emoji}"
                     else:
-                        d["Strecke"] = f"{st.session_state.track_unknown_emoji}"
+                        d["TRACK"] = f"{st.session_state.track_unknown_emoji}"
                 else:
-                    d["Strecke"] = "-"
+                    d["TRACK"] = "-"
 
                 if "high_score_timestamp" in r:
                     time1 = datetime.now(tz=ZoneInfo("Europe/Berlin"))
                     timedelta_1 = time1.utcoffset()
                     correct_time = datetime.strptime(r["high_score_timestamp"], '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(timezone.utc)+timedelta_1
-                    d["Datum"] = correct_time.strftime("%d/%m/%Y, %H:%M:%S")
+                    d["DATE"] = correct_time.strftime("%d.%m.%Y, %H:%M:%S")
                 else:
-                    d["Datum"] = "-"
+                    d["DATE"] = "-"
 
                 return (d)
 
@@ -138,7 +157,7 @@ def app():
             while len(highscoreboard_data)<1:
                 highscoreboard_data.append(constructEntry({}))
 
-            highscoreboard_data = (sorted(highscoreboard_data, key=operator.itemgetter('Punkte'), reverse=True))
+            highscoreboard_data = (sorted(highscoreboard_data, key=operator.itemgetter('POINTS'), reverse=True))
             df = pd.DataFrame( highscoreboard_data ) 
             df = df.style.set_properties(**{
                 'font-size': '25pt',

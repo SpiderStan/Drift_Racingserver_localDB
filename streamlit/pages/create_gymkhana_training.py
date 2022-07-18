@@ -26,7 +26,7 @@ def app():
 
     lobby_id = st.session_state.lobby_id        
 
-    st.header("Create new Gymkhana Training in Lobby " + str(lobby_id))
+    st.subheader("Create new Gymkhana Training in Lobby " + str(lobby_id))
         
     placeholder1 = st.empty()
     placeholder2 = st.empty()

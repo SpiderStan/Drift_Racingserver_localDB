@@ -12,7 +12,7 @@ def app():
     lobby_id = st.session_state.lobby_id        
     game_id = None
 
-    st.header("Select Game from Lobby " + str(lobby_id))
+    st.subheader("Select Game from Lobby " + str(lobby_id))
 
     placeholder1 = st.empty()
     placeholder2 = st.empty()

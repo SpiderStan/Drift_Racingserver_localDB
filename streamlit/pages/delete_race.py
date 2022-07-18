@@ -13,7 +13,7 @@ def app():
     game_id = None
     stage_id = 1
 
-    st.header("Delete Game from Lobby " + str(lobby_id))
+    st.subheader("Delete Game from Lobby " + str(lobby_id))
 
     placeholder1 = st.empty()
     placeholder2 = st.empty()

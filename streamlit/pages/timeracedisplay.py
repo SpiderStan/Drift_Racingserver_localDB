@@ -11,6 +11,7 @@ from math import floor
 
 from  .session import fetch_post, fetch_put, fetch_get, fetch_delete
 from .singletons import settings, logger
+from .helper import get_model, get_tuning, get_app_game_mode, get_starttime, get_track_cond, get_track_bundle, get_wheels, get_setup, get_joker_lap_code, get_bool, handleCurrentTrackCondition, getGameInfo, getScoreBoard, getDetailedTargetData, showTime, showDistance, showMeanSpeed
 
 @st.cache
 def getqrcode(content):
@@ -29,323 +30,6 @@ def getqrcode(content):
     logger.info(str(img))
     img.save('./qrcode_test.png')
     return Image.open('./qrcode_test.png')
-
-def getGameInfo(lobby_id, game_id, stage_id):
-    return fetch_get(f"{settings.driftapi_path}/driftapi/manage_game/get/{lobby_id}/{game_id}/{stage_id}/")
-
-def getScoreBoard(lobby_id, game_id, stage_id):
-    return fetch_get(f"{settings.driftapi_path}/driftapi/game/{lobby_id}/{game_id}/{stage_id}/playerstatus")
-
-def getDetailedTargetData(lobby_id, game_id, stage_id, user_name):
-    return fetch_get(f"{settings.driftapi_path}/driftapi/game/{lobby_id}/{game_id}/{stage_id}/{user_name}/targetstatus")
-
-def showTime(s):
-    if ((s is None) or s==''):
-        return ''
-    s = float(s)
-    ms = floor((s % 1)*1000)
-    s = floor(s)
-    m = floor(s / 60)
-    s = s -60*m
-    return f"{m:02d}:{s:02d}.{ms:03d}"
-    #return round(float(s),2) if not((s is None) or s== '') else None
-
-def showDistance(s):
-    if ((s is None) or s==''):
-        return ''
-    s = float(s)
-    cm = floor((s % 1)*100)
-    m = floor(s)
-    km = floor(s / 1000)
-    m = m - 1000*km
-    return f"{km:01d}km {m:03d}m" #{cm:02d}"
-
-def showMeanSpeed(d,t):
-    if ((d is None) or d==''):
-        return ''
-    if ((t is None) or t==''):
-        return ''
-    d = float(d)
-    t = float(t)
-    kmh = d/t*3.6
-    return f"{kmh:03.2f}km/h"
-
-# added function for track condition tracking (quite quick and dirty)
-def handleCurrentTrackCondition(r:dict):
-    if ( ( "enter_data" in r ) and not ( r["enter_data"] is None ) ):
-        if ( ("last_recognized_target" in r ) and not ( r["last_recognized_target"] is None ) ):
-# handle rally-cross here
-            if( r["enter_data"]["track_bundle"] == "rally_cross" ):
-                if( r["last_recognized_target"] == 4 ):
-                    current_track_condition = f"{st.session_state.track_dry_emoji}"
-                elif( r["last_recognized_target"] == 5 ):
-                    current_track_condition = f"{st.session_state.track_wet_emoji}"
-                elif( r["last_recognized_target"] == 6 ):
-                    current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                elif( r["last_recognized_target"] == 7 ):
-                    delay = datetime.now() - datetime.strptime(r["last_target_timestamp"],'%Y-%m-%dT%H:%M:%S.%f')
-                    if(delay.total_seconds() <= 3):
-                        current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-                    else:
-                        if( r["second_last_recognized_target"] == 4 ):
-                            current_track_condition = f"{st.session_state.track_dry_emoji}"
-                        elif( r["second_last_recognized_target"] == 5 ):
-                            current_track_condition = f"{st.session_state.track_wet_emoji}"
-                        elif( r["second_last_recognized_target"] == 6 ):
-                            current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                        else:
-                            if( r["third_last_recognized_target"] == 4 ):
-                                current_track_condition = f"{st.session_state.track_dry_emoji}"
-                            elif( r["third_last_recognized_target"] == 5 ):
-                                current_track_condition = f"{st.session_state.track_wet_emoji}"
-                            elif( r["third_last_recognized_target"] == 6 ):
-                                current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                            else:
-                                if( r["forth_last_recognized_target"] == 4 ):
-                                    current_track_condition = f"{st.session_state.track_dry_emoji}"
-                                elif( r["forth_last_recognized_target"] == 5 ):
-                                    current_track_condition = f"{st.session_state.track_wet_emoji}"
-                                elif( r["forth_last_recognized_target"] == 6 ):
-                                    current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                                else:
-                                    if( r["fith_last_recognized_target"] == 4 ):
-                                        current_track_condition = f"{st.session_state.track_dry_emoji}"
-                                    elif( r["fith_last_recognized_target"] == 5 ):
-                                        current_track_condition = f"{st.session_state.track_wet_emoji}"
-                                    elif( r["fith_last_recognized_target"] == 6 ):
-                                        current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                                    else: # be aware this might be wrong
-                                        if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                                            current_track_condition = f"{st.session_state.track_dry_emoji}"
-                                        elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                                            current_track_condition = f"{st.session_state.track_wet_emoji}"
-                                        elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                                            current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                                        elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                                            current_track_condition = f"{st.session_state.track_snow_emoji}"
-                                        else:
-                                            current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-# handle rally-cross here when last target has been start/finish
-                else:
-                    if( r["second_last_recognized_target"] == None):
-                        if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                            current_track_condition = f"{st.session_state.track_dry_emoji}"
-                        elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                            current_track_condition = f"{st.session_state.track_wet_emoji}"
-                        elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                            current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                        elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                            current_track_condition = f"{st.session_state.track_snow_emoji}"
-                        else:
-                            current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-                    elif( r["second_last_recognized_target"] == 4 ):
-                        current_track_condition = f"{st.session_state.track_dry_emoji}"
-                    elif( r["second_last_recognized_target"] == 5 ):
-                        current_track_condition = f"{st.session_state.track_wet_emoji}"
-                    elif( r["second_last_recognized_target"] == 6 ):
-                        current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                    else:
-# handle rally-cross here when last two target have been start/finish
-                        if( r["third_last_recognized_target"] == None):
-                            if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                                current_track_condition = f"{st.session_state.track_dry_emoji}"
-                            elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                                current_track_condition = f"{st.session_state.track_wet_emoji}"
-                            elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                                current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                            elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                                current_track_condition = f"{st.session_state.track_snow_emoji}"
-                            else:
-                                current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-                        elif( r["third_last_recognized_target"] == 4 ):
-                            current_track_condition = f"{st.session_state.track_dry_emoji}"
-                        elif( r["third_last_recognized_target"] == 5 ):
-                            current_track_condition = f"{st.session_state.track_wet_emoji}"
-                        elif( r["third_last_recognized_target"] == 6 ):
-                            current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                        else:
-# handle rally-cross here when last three target have been start/finish
-                            if( r["forth_last_recognized_target"] == None):
-                                if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                                    current_track_condition = f"{st.session_state.track_dry_emoji}"
-                                elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                                    current_track_condition = f"{st.session_state.track_wet_emoji}"
-                                elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                                    current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                                elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                                    current_track_condition = f"{st.session_state.track_snow_emoji}"
-                                else:
-                                    current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-                            elif( r["forth_last_recognized_target"] == 4 ):
-                                current_track_condition = f"{st.session_state.track_dry_emoji}"
-                            elif( r["forth_last_recognized_target"] == 5 ):
-                                current_track_condition = f"{st.session_state.track_wet_emoji}"
-                            elif( r["forth_last_recognized_target"] == 6 ):
-                                current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                            else:
-# handle rally-cross here when last four target have been start/finish
-                                if( r["fith_last_recognized_target"] == None):
-                                    if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                                        current_track_condition = f"{st.session_state.track_dry_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                                        current_track_condition = f"{st.session_state.track_wet_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                                        current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                                        current_track_condition = f"{st.session_state.track_snow_emoji}"
-                                    else:
-                                        current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-                                elif( r["fith_last_recognized_target"] == 4 ):
-                                    current_track_condition = f"{st.session_state.track_dry_emoji}"
-                                elif( r["fith_last_recognized_target"] == 5 ):
-                                    current_track_condition = f"{st.session_state.track_wet_emoji}"
-                                elif( r["fith_last_recognized_target"] == 6 ):
-                                    current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                                else:
-# finaly give up... nobody should come to this point...
-                                    if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                                        current_track_condition = f"{st.session_state.track_dry_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                                        current_track_condition = f"{st.session_state.track_wet_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                                        current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                                        current_track_condition = f"{st.session_state.track_snow_emoji}"
-                                    else:
-                                        current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-# handle rally here
-            elif( r["enter_data"]["track_bundle"] == "rally" ):
-                if( r["last_recognized_target"] == 4 ):
-                    current_track_condition = f"{st.session_state.track_dry_emoji}"
-                elif( r["last_recognized_target"] == 5 ):
-                    current_track_condition = f"{st.session_state.track_wet_emoji}"
-                elif( r["last_recognized_target"] == 6 ):
-                    current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                elif( r["last_recognized_target"] == 7 ):
-                    current_track_condition = f"{st.session_state.track_snow_emoji}"
-# handle rally here when last target has been start/finish
-                else:
-                    if( r["second_last_recognized_target"] == None):
-                        if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                            current_track_condition = f"{st.session_state.track_dry_emoji}"
-                        elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                            current_track_condition = f"{st.session_state.track_wet_emoji}"
-                        elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                            current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                        elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                            current_track_condition = f"{st.session_state.track_snow_emoji}"
-                        else:
-                            current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-                    elif( r["second_last_recognized_target"] == 4 ):
-                        current_track_condition = f"{st.session_state.track_dry_emoji}"
-                    elif( r["second_last_recognized_target"] == 5 ):
-                        current_track_condition = f"{st.session_state.track_wet_emoji}"
-                    elif( r["second_last_recognized_target"] == 6 ):
-                        current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                    elif( r["second_last_recognized_target"] == 7 ):
-                        current_track_condition = f"{st.session_state.track_snow_emoji}"
-                    else:
-# handle rally here when last two target have been start/finish
-                        if( r["third_last_recognized_target"] == None):
-                            if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                                current_track_condition = f"{st.session_state.track_dry_emoji}"
-                            elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                                current_track_condition = f"{st.session_state.track_wet_emoji}"
-                            elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                                current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                            elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                                current_track_condition = f"{st.session_state.track_snow_emoji}"
-                            else:
-                                current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-                        elif( r["third_last_recognized_target"] == 4 ):
-                            current_track_condition = f"{st.session_state.track_dry_emoji}"
-                        elif( r["third_last_recognized_target"] == 5 ):
-                            current_track_condition = f"{st.session_state.track_wet_emoji}"
-                        elif( r["third_last_recognized_target"] == 6 ):
-                            current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                        elif( r["third_last_recognized_target"] == 7 ):
-                            current_track_condition = f"{st.session_state.track_snow_emoji}"
-                        else:
-# handle rally here when last three target have been start/finish
-                            if( r["forth_last_recognized_target"] == None):
-                                if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                                    current_track_condition = f"{st.session_state.track_dry_emoji}"
-                                elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                                    current_track_condition = f"{st.session_state.track_wet_emoji}"
-                                elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                                    current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                                elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                                    current_track_condition = f"{st.session_state.track_snow_emoji}"
-                                else:
-                                    current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-                            elif( r["forth_last_recognized_target"] == 4 ):
-                                current_track_condition = f"{st.session_state.track_dry_emoji}"
-                            elif( r["forth_last_recognized_target"] == 5 ):
-                                current_track_condition = f"{st.session_state.track_wet_emoji}"
-                            elif( r["forth_last_recognized_target"] == 6 ):
-                                current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                            elif( r["forth_last_recognized_target"] == 7 ):
-                                current_track_condition = f"{st.session_state.track_snow_emoji}"
-                            else:
-# handle rally here when last four target have been start/finish
-                                if( r["fith_last_recognized_target"] == None):
-                                    if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                                        current_track_condition = f"{st.session_state.track_dry_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                                        current_track_condition = f"{st.session_state.track_wet_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                                        current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                                        current_track_condition = f"{st.session_state.track_snow_emoji}"
-                                    else:
-                                        current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-                                elif( r["fith_last_recognized_target"] == 4 ):
-                                    current_track_condition = f"{st.session_state.track_dry_emoji}"
-                                elif( r["fith_last_recognized_target"] == 5 ):
-                                    current_track_condition = f"{st.session_state.track_wet_emoji}"
-                                elif( r["fith_last_recognized_target"] == 6 ):
-                                    current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                                elif( r["fith_last_recognized_target"] == 7 ):
-                                    current_track_condition = f"{st.session_state.track_snow_emoji}"
-                                else:
-# finaly give up... nobody should come to this point...
-                                    if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                                        current_track_condition = f"{st.session_state.track_dry_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                                        current_track_condition = f"{st.session_state.track_wet_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                                        current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                                    elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                                        current_track_condition = f"{st.session_state.track_snow_emoji}"
-                                    else:
-                                        current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-# handle none here
-            else:
-                if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                    current_track_condition = f"{st.session_state.track_dry_emoji}"
-                elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                    current_track_condition = f"{st.session_state.track_wet_emoji}"
-                elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                    current_track_condition = f"{st.session_state.track_gravel_emoji}"
-                elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                    current_track_condition = f"{st.session_state.track_snow_emoji}"
-                else:
-                    current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-# handle car in starting position here                                
-        else:
-            if(r["enter_data"]["track_condition"] == "drift_asphalt"):
-                current_track_condition = f"{st.session_state.track_dry_emoji}"
-            elif(r["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                current_track_condition = f"{st.session_state.track_wet_emoji}"
-            elif(r["enter_data"]["track_condition"] == "drift_dirt"):
-                current_track_condition = f"{st.session_state.track_gravel_emoji}"
-            elif(r["enter_data"]["track_condition"] == "drift_ice"):
-                current_track_condition = f"{st.session_state.track_snow_emoji}"
-            else:
-                current_track_condition = f"{st.session_state.track_gravel_trap_emoji}"
-    else: 
-        current_track_condition = "-"
-    return current_track_condition
 
 def get_min_race_time_value(inputlist):
     #get the minimum value in the list
@@ -419,7 +103,7 @@ def app():
         st.session_state.nextpage = "main_page"
         st.experimental_rerun()
  
-    st.header("Time Race " + str(game_id) + " in Lobby " + str(lobby_id) + " over " + str(int(game["time_limit"])) + " minute(s)")
+    st.subheader("Time Race " + str(game_id) + " in Lobby " + str(lobby_id) + " over " + str(int(game["time_limit"])) + " minute(s)")
 
     next_race = st.empty()
 
@@ -524,38 +208,123 @@ def app():
                 time.sleep(0.1)
                 st.experimental_rerun()
 
-    with placeholder1.container():
-        show_detailed_stats = st.checkbox("Show detailed Statistics", value=False, key=None, help="if set, detailed time race statistics will be shown", on_change=None)
-
-    with placeholder2.container():  
+    with placeholder1.container():  
         with st.expander(f"Game Settings {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+" and GAME ID: "+str(game_id), expanded=False):
+
+            game_mode = get_app_game_mode(game["game_mode"])
+            starttime = get_starttime(game["start_time"])
+            time_limit = int(game["time_limit"])
+            track_cond = get_track_cond(game["track_condition"])
+            track_bundle = get_track_bundle(game["track_bundle"])
+            wheels = get_wheels(game["wheels"])
+            setup = get_setup(game["setup_mode"])
             
-            track_image = st.empty()
+            if ( ("joker_lap_code" in game) and not ( game["joker_lap_code"] is None) ):
+                joker_lap_code = get_joker_lap_code(game["joker_lap_code"])
+                if ( ("joker_lap_precondition_code" in game) and not ( game["joker_lap_precondition_code"] is None) ):
+                    joker_lap_precondition_code = get_joker_lap_code(game["joker_lap_precondition_code"])
+             
+            num_sectors = int(game["num_sectors"])
 
-            track_image_upload = st.file_uploader("Here you can upload the track layout", type=['png', 'jpg'], accept_multiple_files=False, key=None, help=None, on_change=None, args=None, kwargs=None, disabled=False)
+            col11, col12, col13, col14 = st.columns(4)
+            with col11:
+                st.markdown("**GAME MODE:**")
+            with col12:
+                st.markdown(str(game_mode))
 
-            if(game_track_images_set == False): # no track image upload so far
-                if(track_image_upload != None): # user has supplied a track image
-                    game_track_images_set = True
-                    track_image = st.image(track_image_upload, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
-                    game_track_images = track_image_upload # store in session state
-            elif(game_track_images_set == True): # track image existing
-                if(track_image_upload != None): # user has supplied a new track image
-                    game_track_images_set = True
-                    track_image = st.image(track_image_upload, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
-                    game_track_images = track_image_upload # store in session state
-                else:
-                    track_image = st.image(game_track_images, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Prev. Uploaded Track Image
-            if st.button(f"Remove Image {st.session_state.remove_emoji}", key=None):
-                track_image.empty()
-                game_track_images_set = False
+            col21, col22, col23, col24 = st.columns(4)
+            with col21:
+                st.markdown("**STARTTIME:**")
+            with col22:
+                st.markdown(str(starttime))
+                 
+            col31, col32, col33, col34 = st.columns(4)
+            with col31:
+                st.markdown("**TIME LIMIT:**")
+            with col32:
+                st.markdown(str(time_limit))
+
+            col41, col42, col43, col44 = st.columns(4)
+            with col41:
+                st.markdown("**TRACK CONDITION:**")
+            with col42:
+                st.markdown(str(track_cond))
+
+            col51, col52, col53, col54 = st.columns(4)
+            with col51:
+                st.markdown("**TRACK MODE:**")
+            with col52:
+                st.markdown(str(track_bundle))
+                        
+            col61, col62, col63, col64 = st.columns(4)
+            with col61:
+                st.markdown("**WHEELS:**")
+            with col62:
+                st.markdown(str(wheels))                       
+
+            col71, col72, col73, col74 = st.columns(4)
+            with col71:
+                st.markdown("**SETUP:**")
+            with col72:
+                st.markdown(str(setup))  
+
+#            col81, col82, col83, col84 = st.columns(4)
+#            with col81:
+#                st.markdown("**MODEL:**")
+#            with col82:
+#                st.markdown(str(model)) 
+
+#            col91, col92, col93, col94 = st.columns(4)
+#            with col91:
+#                st.markdown("**TUNING:**")
+#            with col92:
+#                st.markdown(str(tuning)) 
+
+            if ( ("joker_lap_code" in game) and not ( game["joker_lap_code"] is None) ):
+                
+                col101, col102, col103, col104 = st.columns(4)
+                with col101:
+                    st.markdown("**JOKER LAP TARGET:**")
+                with col102:
+                    st.markdown(str(joker_lap_code)) 
+
+                if ( ("joker_lap_precondition_code" in game) and not ( game["joker_lap_precondition_code"] is None) ):
+
+                    col111, col112, col113, col114 = st.columns(4)
+                    with col111:
+                        st.markdown("**JOKER LAP PRECONDITION TARGET:**")
+                    with col112:
+                        st.markdown(str(joker_lap_precondition_code)) 
+
+            col121, col122, col123, col124 = st.columns(4)
+            with col121:
+                st.markdown("**NUM SECTORS:**")
+            with col122:
+                st.markdown(str(num_sectors)) 
 
             submitUri:str = "http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)
             st.image(getqrcode(submitUri), clamp=True)
             st.write("URL: "+submitUri)
             st.write("GAME ID: "+game_id)
 
-            st.write(game)
+    with placeholder2.container():  
+        with st.expander(f"Track Layout {st.session_state.show_game_emoji}", expanded=False):
+            
+            track_image = st.empty()
+            track_image_upload = st.file_uploader("Here you can upload the track layout", type=['png', 'jpg'], accept_multiple_files=False, key=None, help=None, on_change=None, args=None, kwargs=None, disabled=False)
+
+            if(game_track_images_set == False): # no track image upload so far
+                if(track_image_upload != None): # user has supplied a track image
+                    game_track_images_set = True
+                    track_image.image(track_image_upload, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
+                    game_track_images = track_image_upload # store in session state
+            elif(game_track_images_set == True): # track image existing
+                if(track_image_upload != None): # user has supplied a new track image
+                    game_track_images_set = True
+                    track_image.image(track_image_upload, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Uploaded Track Image
+                    game_track_images = track_image_upload # store in session state
+                else:
+                    track_image.image(game_track_images, caption=None, width=None, use_column_width=None, clamp=False, channels="RGB", output_format="auto") # Show Prev. Uploaded Track Image
 
     while True:
 
@@ -614,10 +383,10 @@ def app():
                         player_status = f"{st.session_state.ready_emoji}" #"Ready"
                     else:
                         player_status = ""                    
-                    d["Spieler"] = r["user_name"]
+                    d["DRIVER"] = r["user_name"]
                     d[f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"] =  player_status
                 else:
-                    d["Spieler"] = ""
+                    d["DRIVER"] = ""
                     d[f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"] =  "-"
     
                 if ( ( "start_data" in r ) and not ( r["start_data"] is None ) ):
@@ -675,10 +444,10 @@ def app():
                         player_race_time = timedelta(seconds=int(0)) # fake 0 seconds
 
                     if(round_cnt>0):
-                        d["Abg. Runden"] = str(round_cnt-1)
+                        d["LAPS"] = str(round_cnt-1)
                     else:
-                        d["Abg. Runden"] = str(0)
-                    d["Sektor"] = str(sector_cnt)
+                        d["LAPS"] = str(0)
+                    d["SECTOR"] = str(sector_cnt)
                     
                     if(round_cnt>0):
                         current_rounds_and_sectors_list[0].append(round_cnt-1)
@@ -733,31 +502,31 @@ def app():
                     if "enter_data" in r:
                         if ( ( "end_data" in r ) and not ( r["end_data"] is None ) ): # EndEvent
                             if ( r["enter_data"]["lap_count"] == r["laps_completed"]): # finished Race (all laps completed)
-                                d["Abg. Runden"] = str(r["laps_completed"])
+                                d["LAPS"] = str(r["laps_completed"])
                             else: # not all laps completed
-                                d["Abg. Runden"] = str(r["laps_completed"])
+                                d["LAPS"] = str(r["laps_completed"])
                         elif ( ( "start_data" in r ) and not ( r["start_data"] is None ) ): # driving
                             if( r["target_code_counter"]["0"] == 0 ): # player not driven over start/finish so far
-                                d["Abg. Runden"] = str(0)
+                                d["LAPS"] = str(0)
                             elif( r["enter_data"]["lap_count"] == r["laps_completed"]):
-                                d["Abg. Runden"] = str(r["laps_completed"])
+                                d["LAPS"] = str(r["laps_completed"])
                             else: # player driven over start/finish
-                                d["Abg. Runden"] = str(r["laps_completed"])
+                                d["LAPS"] = str(r["laps_completed"])
                         elif "enter_data" in r: #"Ready"
-                            d["Abg. Runden"] = str(0)
+                            d["LAPS"] = str(0)
                     else:       
-                        d["Abg. Runden"] = ""
+                        d["LAPS"] = ""
 
                     if "num_sectors" in game:
                         if "enter_data" in r:
                             if ( ( "end_data" in r ) and not ( r["end_data"] is None ) ):
-                                d["Sektor"] = str(completed_sectors_cnt)
+                                d["SECTOR"] = str(completed_sectors_cnt)
                             elif(r["laps_completed"] == r["enter_data"]["lap_count"]):
-                                d["Sektor"] = str(game["num_sectors"])
+                                d["SECTOR"] = str(game["num_sectors"])
                             else:
-                                d["Sektor"] = str(completed_sectors_cnt)
+                                d["SECTOR"] = str(completed_sectors_cnt)
                         else:
-                            d["Sektor"] = str(completed_sectors_cnt)
+                            d["SECTOR"] = str(completed_sectors_cnt)
 
                     current_rounds_and_sectors_list[0].append(r["laps_completed"])
                     current_rounds_and_sectors_list[1].append(completed_sectors_cnt)
@@ -781,7 +550,7 @@ def app():
                 for x in range(scoreboard_data_len): # number of players
 # first signal players disqualified due to false start (even if engine is still running)
                     if(player_false_start_list[x] == True):
-                        racedisplay_data[x]["Spieler"] = scoreboard_data[x]["user_name"] + f"{st.session_state.false_start_emoji}"
+                        racedisplay_data[x]["DRIVER"] = scoreboard_data[x]["user_name"] + f"{st.session_state.false_start_emoji}"
                 
                     if(racedisplay_data[x][f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"] == f"{st.session_state.finish_emoji}"):
                         player_finished_list[x] = True
@@ -807,13 +576,13 @@ def app():
                         shortest_race_time_indices_list_len = len(shortest_race_time_indices_list)
 
                         for x in range(shortest_race_time_indices_list_len):
-                            racedisplay_data[shortest_race_time_indices_list[x]]["Platz"] = str(position)
+                            racedisplay_data[shortest_race_time_indices_list[x]]["POS"] = str(position)
                             if(best_player_handled == False):
-                                racedisplay_data[shortest_race_time_indices_list[x]]["Zeit"] = showTime(player_race_time_list[shortest_race_time_indices_list[x]].total_seconds())
+                                racedisplay_data[shortest_race_time_indices_list[x]]["TIME"] = showTime(player_race_time_list[shortest_race_time_indices_list[x]].total_seconds())
                                 best_time = player_race_time_list[shortest_race_time_indices_list[x]]
                                 best_player_handled = True
                             else:
-                                racedisplay_data[shortest_race_time_indices_list[x]]["Zeit"] = showTime(best_time.total_seconds()) + " + " + showTime((player_race_time_list[shortest_race_time_indices_list[x]]-best_time).total_seconds()) #"+ " + str(datetime.strptime(scoreboard_data[shortest_race_time_indices_list[x]]["last_lap_timestamp"],'%Y-%m-%dT%H:%M:%S.%f') - datetime.strptime(player_finished_timestamp,'%Y-%m-%dT%H:%M:%S.%f'))
+                                racedisplay_data[shortest_race_time_indices_list[x]]["TIME"] = showTime(best_time.total_seconds()) + " + " + showTime((player_race_time_list[shortest_race_time_indices_list[x]]-best_time).total_seconds()) #"+ " + str(datetime.strptime(scoreboard_data[shortest_race_time_indices_list[x]]["last_lap_timestamp"],'%Y-%m-%dT%H:%M:%S.%f') - datetime.strptime(player_finished_timestamp,'%Y-%m-%dT%H:%M:%S.%f'))
                             current_rounds_and_sectors_list[0][shortest_race_time_indices_list[x]] = -1 # fake -1 rounds - meaning player has been handled
                             handled_finished_players+=1
                             player_race_time_list[shortest_race_time_indices_list[x]] = timedelta(seconds=int(0)) # fake 0 seconds
@@ -848,31 +617,31 @@ def app():
                         youngest_time_indices_list_len = len(youngest_time_indices_list)
                             
                         for x in youngest_time_indices_list:
-                            racedisplay_data[max_rounds_indices_list[max_sectors_indices_list[x]]]["Platz"] = str(position)
+                            racedisplay_data[max_rounds_indices_list[max_sectors_indices_list[x]]]["POS"] = str(position)
                             if( ( "start_data" in scoreboard_data[max_rounds_indices_list[max_sectors_indices_list[x]]] ) and not ( scoreboard_data[max_rounds_indices_list[max_sectors_indices_list[x]]]["start_data"] is None ) ):
                                 current_time = datetime.now().astimezone(timezone.utc) 
                                 start_time = datetime.strptime(scoreboard_data[max_rounds_indices_list[max_sectors_indices_list[x]]]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
                                 race_time = current_time - start_time                            
-                                racedisplay_data[max_rounds_indices_list[max_sectors_indices_list[x]]]["Zeit"] = showTime(race_time.total_seconds())
+                                racedisplay_data[max_rounds_indices_list[max_sectors_indices_list[x]]]["TIME"] = showTime(race_time.total_seconds())
                             else:
-                                racedisplay_data[max_rounds_indices_list[max_sectors_indices_list[x]]]["Zeit"] = showTime(timedelta(seconds=int(0)).total_seconds())
+                                racedisplay_data[max_rounds_indices_list[max_sectors_indices_list[x]]]["TIME"] = showTime(timedelta(seconds=int(0)).total_seconds())
                             current_rounds_and_sectors_list[0][max_rounds_indices_list[max_sectors_indices_list[x]]] = -1 # fake -1 rounds - meaning player has been handled
                             handled_players+=1
 
                         position+=1
                         
-                racedisplay_data = (sorted(racedisplay_data, key=operator.itemgetter('Platz')))
+                racedisplay_data = (sorted(racedisplay_data, key=operator.itemgetter('POS')))
                 
                 if(player_finished_indices_list_len == scoreboard_data_len): # all players finished race - award ceremony can take place now
                     if(scoreboard_data_len >= 1):
-                        racedisplay_data[0]["Auszeichnung"] = f"{st.session_state.award_1st_emoji}"
+                        racedisplay_data[0]["AWARD"] = f"{st.session_state.award_1st_emoji}"
                     if(scoreboard_data_len >= 2):
-                        racedisplay_data[1]["Auszeichnung"] = f"{st.session_state.award_2nd_emoji}"
+                        racedisplay_data[1]["AWARD"] = f"{st.session_state.award_2nd_emoji}"
                     if(scoreboard_data_len >= 3):
-                        racedisplay_data[2]["Auszeichnung"] = f"{st.session_state.award_3rd_emoji}" 
+                        racedisplay_data[2]["AWARD"] = f"{st.session_state.award_3rd_emoji}" 
                 
             else:
-                racedisplay_data = [{"Spieler": "-", f"{st.session_state.status_emoji} / {st.session_state.track_emoji}": "-", "Abg. Runden": "-", "Sektor": "-", "Platz": "-", "Zeit":"-"}]
+                racedisplay_data = [{"DRIVER": "-", f"{st.session_state.status_emoji} / {st.session_state.track_emoji}": "-", "LAPS": "-", "SECTOR": "-", "POS": "-", "TIME":"-"}]
 
             df = pd.DataFrame( racedisplay_data )
             df = df.style.set_properties(**{
@@ -884,198 +653,290 @@ def app():
             st.table(df)
 
         with placeholder3.container():
-        
-            if (show_detailed_stats == True):
-            
-                def constructDetailedEntry(r:dict,last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time, section_condition, user_name):
-                    
-                    d_detailed = { } # new dict
 
-                    next_section_condition = section_condition
-
-                    if "target_data" in r:
-                        if(str(game["track_bundle"]) == "rally"):
-                            if(r["target_data"]["target_code"] == 4):
-                                next_section_condition = f" {st.session_state.track_dry_emoji}"
-                            elif(r["target_data"]["target_code"] == 5):
-                                next_section_condition = f" {st.session_state.track_wet_emoji}"
-                            elif(r["target_data"]["target_code"] == 6):
-                                next_section_condition = f" {st.session_state.track_gravel_emoji}"
-                            elif(r["target_data"]["target_code"] == 7):
-                                next_section_condition = f" {st.session_state.track_snow_emoji}"
-                            section_distance = r["target_data"]["driven_distance"] - last_driven_distance
-                            section_time = r["target_data"]["driven_time"] - last_driven_time
-                            if(section_time != 0): # normal case
-                                d_detailed[str(scoreboard_data[player]["user_name"]) + f" Sektor - {st.session_state.distance_emoji}"] = showDistance(section_distance)
-                                d_detailed[f"Sektor - {st.session_state.time_emoji}"] = showTime(section_time)
-                                d_detailed[f"Sektor - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(section_distance,section_time)
-                                d_detailed[f"Sektor - {st.session_state.track_emoji}"] = section_condition
-                            else: # this occurs if after finish further targets will be crossed
-                                d_detailed[str(scoreboard_data[player]["user_name"]) + f" Sektor - {st.session_state.distance_emoji}"] = f"{st.session_state.false_start_emoji}"
-                                d_detailed[f"Sektor - {st.session_state.time_emoji}"] = f"{st.session_state.false_start_emoji}"
-                                d_detailed[f"Sektor - {st.session_state.average_speed_emoji}"] = f"{st.session_state.false_start_emoji}"
-                                d_detailed[f"Sektor - {st.session_state.track_emoji}"] = f"{st.session_state.false_start_emoji}"
-                            last_driven_distance = r["target_data"]["driven_distance"]
-                            last_driven_time = r["target_data"]["driven_time"]      
-                        elif(str(game["track_bundle"]) == "rally_cross"):
-                            if(r["target_data"]["target_code"] == 0):
-                                next_section_condition = section_condition
-                            elif(r["target_data"]["target_code"] == 4):
-                                next_section_condition = f" {st.session_state.track_dry_emoji}"
-                            elif(r["target_data"]["target_code"] == 5):
-                                next_section_condition = f" {st.session_state.track_wet_emoji}"
-                            elif(r["target_data"]["target_code"] == 6):
-                                next_section_condition = f" {st.session_state.track_gravel_emoji}"
-                            elif(r["target_data"]["target_code"] == 7):
-                                next_section_condition = section_condition
-                                section_condition = next_section_condition + f" {st.session_state.track_gravel_trap_emoji}"
-                            section_distance = r["target_data"]["driven_distance"] - last_driven_distance
-                            section_time = r["target_data"]["driven_time"] - last_driven_time
-                            if(section_time != 0): # normal case
-                                d_detailed[str(scoreboard_data[player]["user_name"]) + f" Sektor - {st.session_state.distance_emoji}"] = showDistance(section_distance)
-                                d_detailed[f"Sektor - {st.session_state.time_emoji}"] = showTime(section_time)
-                                d_detailed[f"Sektor - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(section_distance,section_time)
-                                d_detailed[f"Sektor - {st.session_state.track_emoji}"] = section_condition
-                            else: # this occurs if after finish further targets will be crossed
-                                d_detailed[str(scoreboard_data[player]["user_name"]) + f" Sektor - {st.session_state.distance_emoji}"] = f"{st.session_state.false_start_emoji}"
-                                d_detailed[f"Sektor - {st.session_state.time_emoji}"] = f"{st.session_state.false_start_emoji}"
-                                d_detailed[f"Sektor - {st.session_state.average_speed_emoji}"] = f"{st.session_state.false_start_emoji}"
-                                d_detailed[f"Sektor - {st.session_state.track_emoji}"] = f"{st.session_state.false_start_emoji}"
-                            last_driven_distance = r["target_data"]["driven_distance"]
-                            last_driven_time = r["target_data"]["driven_time"]
-                        else:
-                            section_distance = r["target_data"]["driven_distance"] - last_driven_distance
-                            section_time = r["target_data"]["driven_time"] - last_driven_time
-                            if(section_time != 0): # normal case
-                                d_detailed[str(scoreboard_data[player]["user_name"]) + f" Sektor - {st.session_state.distance_emoji}"] = showDistance(section_distance)
-                                d_detailed[f"Sektor - {st.session_state.time_emoji}"] = showTime(section_time)
-                                d_detailed[f"Sektor - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(section_distance,section_time)
-                                d_detailed[f"Sektor - {st.session_state.track_emoji}"] = section_condition
-                            else: # this occurs if after finish further targets will be crossed
-                                d_detailed[str(scoreboard_data[player]["user_name"]) + f" Sektor - {st.session_state.distance_emoji}"] = f"{st.session_state.false_start_emoji}"
-                                d_detailed[f"Sektor - {st.session_state.time_emoji}"] = f"{st.session_state.false_start_emoji}"
-                                d_detailed[f"Sektor - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.false_start_emoji}"
-                                d_detailed[f"Sektor - {st.session_state.track_emoji}"] = f"{st.session_state.false_start_emoji}"
-                            last_driven_distance = r["target_data"]["driven_distance"]
-                            last_driven_time = r["target_data"]["driven_time"]  
-
-                        if(r["target_data"]["target_code"] == 0):
-                            if(section_time != 0): # normal case
-                                round_distance = r["target_data"]["driven_distance"] - last_round_driven_distance
-                                round_time = r["target_data"]["driven_time"] - last_round_driven_time
-                                d_detailed[f" ∑ Sektoren - {st.session_state.distance2_emoji}"] = showDistance(round_distance) + f" {st.session_state.round_emoji}"
-                                d_detailed[f" ∑ Sektoren - {st.session_state.time2_emoji}"] = showTime(round_time) + f" {st.session_state.round_emoji}"
-                                d_detailed[f"Cum. Sektoren - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(round_distance,round_time) + f" {st.session_state.round_emoji}"
-                                last_round_driven_distance = r["target_data"]["driven_distance"]
-                                last_round_driven_time = r["target_data"]["driven_time"]
-                            else:
-                                d_detailed[f" ∑ Sektoren - {st.session_state.distance2_emoji}"] = f"{st.session_state.false_start_emoji}"
-                                d_detailed[f" ∑ Sektoren - {st.session_state.time2_emoji}"] = f"{st.session_state.false_start_emoji}"
-                                d_detailed[f"Cum. Sektoren - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.false_start_emoji}"
-                        else:
-                            if(section_time != 0): # normal case
-                                d_detailed[f" ∑ Sektoren - {st.session_state.distance2_emoji}"] = showDistance(r["target_data"]["driven_distance"] - last_round_driven_distance)
-                                d_detailed[f" ∑ Sektoren - {st.session_state.time2_emoji}"] = showTime(r["target_data"]["driven_time"] - last_round_driven_time)
-                                d_detailed[f"Cum. Sektoren - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(r["target_data"]["driven_distance"] - last_round_driven_distance,r["target_data"]["driven_time"] - last_round_driven_time)
-                            else:
-                                d_detailed[f" ∑ Sektoren - {st.session_state.distance2_emoji}"] = f"{st.session_state.false_start_emoji}"
-                                d_detailed[f" ∑ Sektoren - {st.session_state.time2_emoji}"] = f"{st.session_state.false_start_emoji}"
-                                d_detailed[f"Cum. Sektoren - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.false_start_emoji}"
-
-                    return (d_detailed,last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,next_section_condition)
-
-                for player in range(scoreboard_data_len):
-                    targetboard_data = getDetailedTargetData(lobby_id, game_id, stage_id, scoreboard_data[player]["user_name"])
-    #                targetboard_data = (sorted(targetboard_data, key=operator.itemgetter('target_ctr')))
-                    targetboard_data_len = len(targetboard_data)            
-                   
-                    last_driven_distance = float(0)
-                    last_driven_time = float(0)
-                    last_round_driven_distance = float(0)
-                    last_round_driven_time = float(0)
-
-                    if "enter_data" in scoreboard_data[player]:
-                        if(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_asphalt"):
-                            section_condition = f" {st.session_state.track_dry_emoji}"
-                        elif(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                            section_condition = f" {st.session_state.track_wet_emoji}"
-                        elif(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_dirt"):
-                            section_condition = f" {st.session_state.track_gravel_emoji}"
-                        elif(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_ice"):
-                            section_condition = f" {st.session_state.track_snow_emoji}"
-                    else:
-                        section_condition = f" {st.session_state.track_unknown_emoji}"
-                    for x in range(targetboard_data_len):
-
-                        if ( ( "start_data" in scoreboard_data[player] ) and not ( scoreboard_data[player]["start_data"] is None ) ):
-                            current_time = datetime.now().astimezone(timezone.utc) 
-                            start_time = datetime.strptime(scoreboard_data[player]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
-                            race_time = current_time - start_time
-                        else:
-                            race_time = timedelta(seconds=int(0)) # fake 0 seconds
+            def constructDetailedEntry(r:dict,last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time, section_condition, user_name):
                 
-                        if(race_time.total_seconds() >= (int(game["time_limit"])*60)):
+                d_detailed = { } # new dict
 
-                            start_time = datetime.strptime(scoreboard_data[player]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
-                            start_time+=timedelta(minutes=game["time_limit"])
-                            if (targetboard_data[x]["target_data"]["crossing_time"] < start_time.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f%z')): # use all those targets
+                next_section_condition = section_condition
 
-                                (targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition) = constructDetailedEntry(targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])
-                                if ( game["game_mode"] == "TIME_RACE" ) and (x == 0):
-                                    last_driven_distance = float(0)
-                                    last_driven_time = float(0)
-                                    last_round_driven_distance = float(0)
-                                    last_round_driven_time = float(0)
+                if "target_data" in r:
+                    if(str(game["track_bundle"]) == "rally"):
+                        if(r["target_data"]["target_code"] == 4):
+                            next_section_condition = f" {st.session_state.track_dry_emoji}"
+                        elif(r["target_data"]["target_code"] == 5):
+                            next_section_condition = f" {st.session_state.track_wet_emoji}"
+                        elif(r["target_data"]["target_code"] == 6):
+                            next_section_condition = f" {st.session_state.track_gravel_emoji}"
+                        elif(r["target_data"]["target_code"] == 7):
+                            next_section_condition = f" {st.session_state.track_snow_emoji}"
+                        section_distance = r["target_data"]["driven_distance"] - last_driven_distance
+                        section_time = r["target_data"]["driven_time"] - last_driven_time
+                        if(section_time != 0): # normal case
+                            d_detailed[str(scoreboard_data[player]["user_name"]) + f" SECTOR - {st.session_state.distance_emoji}"] = showDistance(section_distance)
+                            d_detailed[f"SECTOR - {st.session_state.time_emoji}"] = showTime(section_time)
+                            d_detailed[f"SECTOR - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(section_distance,section_time)
+                            d_detailed[f"SECTOR - {st.session_state.track_emoji}"] = section_condition
+                        else: # this occurs if after finish further targets will be crossed
+                            d_detailed[str(scoreboard_data[player]["user_name"]) + f" SECTOR - {st.session_state.distance_emoji}"] = f"{st.session_state.false_start_emoji}"
+                            d_detailed[f"SECTOR - {st.session_state.time_emoji}"] = f"{st.session_state.false_start_emoji}"
+                            d_detailed[f"SECTOR - {st.session_state.average_speed_emoji}"] = f"{st.session_state.false_start_emoji}"
+                            d_detailed[f"SECTOR - {st.session_state.track_emoji}"] = f"{st.session_state.false_start_emoji}"
+                        last_driven_distance = r["target_data"]["driven_distance"]
+                        last_driven_time = r["target_data"]["driven_time"]      
+                    elif(str(game["track_bundle"]) == "rally_cross"):
+                        if(r["target_data"]["target_code"] == 0):
+                            next_section_condition = section_condition
+                        elif(r["target_data"]["target_code"] == 4):
+                            next_section_condition = f" {st.session_state.track_dry_emoji}"
+                        elif(r["target_data"]["target_code"] == 5):
+                            next_section_condition = f" {st.session_state.track_wet_emoji}"
+                        elif(r["target_data"]["target_code"] == 6):
+                            next_section_condition = f" {st.session_state.track_gravel_emoji}"
+                        elif(r["target_data"]["target_code"] == 7):
+                            next_section_condition = section_condition
+                            section_condition = next_section_condition + f" {st.session_state.track_gravel_trap_emoji}"
+                        section_distance = r["target_data"]["driven_distance"] - last_driven_distance
+                        section_time = r["target_data"]["driven_time"] - last_driven_time
+                        if(section_time != 0): # normal case
+                            d_detailed[str(scoreboard_data[player]["user_name"]) + f" SECTOR - {st.session_state.distance_emoji}"] = showDistance(section_distance)
+                            d_detailed[f"SECTOR - {st.session_state.time_emoji}"] = showTime(section_time)
+                            d_detailed[f"SECTOR - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(section_distance,section_time)
+                            d_detailed[f"SECTOR - {st.session_state.track_emoji}"] = section_condition
+                        else: # this occurs if after finish further targets will be crossed
+                            d_detailed[str(scoreboard_data[player]["user_name"]) + f" SECTOR - {st.session_state.distance_emoji}"] = f"{st.session_state.false_start_emoji}"
+                            d_detailed[f"SECTOR - {st.session_state.time_emoji}"] = f"{st.session_state.false_start_emoji}"
+                            d_detailed[f"SECTOR - {st.session_state.average_speed_emoji}"] = f"{st.session_state.false_start_emoji}"
+                            d_detailed[f"SECTOR - {st.session_state.track_emoji}"] = f"{st.session_state.false_start_emoji}"
+                        last_driven_distance = r["target_data"]["driven_distance"]
+                        last_driven_time = r["target_data"]["driven_time"]
+                    else:
+                        section_distance = r["target_data"]["driven_distance"] - last_driven_distance
+                        section_time = r["target_data"]["driven_time"] - last_driven_time
+                        if(section_time != 0): # normal case
+                            d_detailed[str(scoreboard_data[player]["user_name"]) + f" SECTOR - {st.session_state.distance_emoji}"] = showDistance(section_distance)
+                            d_detailed[f"SECTOR - {st.session_state.time_emoji}"] = showTime(section_time)
+                            d_detailed[f"SECTOR - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(section_distance,section_time)
+                            d_detailed[f"SECTOR - {st.session_state.track_emoji}"] = section_condition
+                        else: # this occurs if after finish further targets will be crossed
+                            d_detailed[str(scoreboard_data[player]["user_name"]) + f" SECTOR - {st.session_state.distance_emoji}"] = f"{st.session_state.false_start_emoji}"
+                            d_detailed[f"SECTOR - {st.session_state.time_emoji}"] = f"{st.session_state.false_start_emoji}"
+                            d_detailed[f"SECTOR - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.false_start_emoji}"
+                            d_detailed[f"SECTOR - {st.session_state.track_emoji}"] = f"{st.session_state.false_start_emoji}"
+                        last_driven_distance = r["target_data"]["driven_distance"]
+                        last_driven_time = r["target_data"]["driven_time"]  
 
-                            else:
-                                if(targetboard_data[x]["target_data"]["target_code"] == 0):
-                                    player_total_driven_distance = targetboard_data[x]["target_data"]["driven_distance"]
-                                    player_total_time = targetboard_data[x]["target_data"]["driven_time"]
-                                    (targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition) = constructDetailedEntry(targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])
-                                    break
-                                else:
-                                    (targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition) = constructDetailedEntry(targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])
+                    if(r["target_data"]["target_code"] == 0):
+                        if(section_time != 0): # normal case
+                            round_distance = r["target_data"]["driven_distance"] - last_round_driven_distance
+                            round_time = r["target_data"]["driven_time"] - last_round_driven_time
+                            d_detailed[f" ∑ SECTORS - {st.session_state.distance2_emoji}"] = showDistance(round_distance) + f" {st.session_state.round_emoji}"
+                            d_detailed[f" ∑ SECTORS - {st.session_state.time2_emoji}"] = showTime(round_time) + f" {st.session_state.round_emoji}"
+                            d_detailed[f"CUM. SECTORS - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(round_distance,round_time) + f" {st.session_state.round_emoji}"
+                            last_round_driven_distance = r["target_data"]["driven_distance"]
+                            last_round_driven_time = r["target_data"]["driven_time"]
                         else:
+                            d_detailed[f" ∑ SECTORS - {st.session_state.distance2_emoji}"] = f"{st.session_state.false_start_emoji}"
+                            d_detailed[f" ∑ SECTORS - {st.session_state.time2_emoji}"] = f"{st.session_state.false_start_emoji}"
+                            d_detailed[f"CUM. SECTORS - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.false_start_emoji}"
+                    else:
+                        if(section_time != 0): # normal case
+                            d_detailed[f" ∑ SECTORS - {st.session_state.distance2_emoji}"] = showDistance(r["target_data"]["driven_distance"] - last_round_driven_distance)
+                            d_detailed[f" ∑ SECTORS - {st.session_state.time2_emoji}"] = showTime(r["target_data"]["driven_time"] - last_round_driven_time)
+                            d_detailed[f"CUM. SECTORS - Ø {st.session_state.average_speed_emoji}"] = showMeanSpeed(r["target_data"]["driven_distance"] - last_round_driven_distance,r["target_data"]["driven_time"] - last_round_driven_time)
+                        else:
+                            d_detailed[f" ∑ SECTORS - {st.session_state.distance2_emoji}"] = f"{st.session_state.false_start_emoji}"
+                            d_detailed[f" ∑ SECTORS - {st.session_state.time2_emoji}"] = f"{st.session_state.false_start_emoji}"
+                            d_detailed[f"CUM. SECTORS - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.false_start_emoji}"
+
+                return (d_detailed,last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,next_section_condition)
+
+            for player in range(scoreboard_data_len):
+                targetboard_data = getDetailedTargetData(lobby_id, game_id, stage_id, scoreboard_data[player]["user_name"])
+#                targetboard_data = (sorted(targetboard_data, key=operator.itemgetter('target_ctr')))
+                targetboard_data_len = len(targetboard_data)            
+               
+                detailed_targetboard_data = []
+               
+                last_driven_distance = float(0)
+                last_driven_time = float(0)
+                last_round_driven_distance = float(0)
+                last_round_driven_time = float(0)
+
+                if "enter_data" in scoreboard_data[player]:
+                    if(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_asphalt"):
+                        section_condition = f" {st.session_state.track_dry_emoji}"
+                    elif(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_asphalt_wet"):
+                        section_condition = f" {st.session_state.track_wet_emoji}"
+                    elif(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_dirt"):
+                        section_condition = f" {st.session_state.track_gravel_emoji}"
+                    elif(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_ice"):
+                        section_condition = f" {st.session_state.track_snow_emoji}"
+                else:
+                    section_condition = f" {st.session_state.track_unknown_emoji}"
+                for x in range(targetboard_data_len):
+
+                    if ( ( "start_data" in scoreboard_data[player] ) and not ( scoreboard_data[player]["start_data"] is None ) ):
+                        current_time = datetime.now().astimezone(timezone.utc) 
+                        start_time = datetime.strptime(scoreboard_data[player]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
+                        race_time = current_time - start_time
+                    else:
+                        race_time = timedelta(seconds=int(0)) # fake 0 seconds
+            
+                    if(race_time.total_seconds() >= (int(game["time_limit"])*60)):
+
+                        start_time = datetime.strptime(scoreboard_data[player]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
+                        start_time+=timedelta(minutes=game["time_limit"])
+                        if (targetboard_data[x]["target_data"]["crossing_time"] < start_time.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f%z')): # use all those targets
+
                             (targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition) = constructDetailedEntry(targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])
                             if ( game["game_mode"] == "TIME_RACE" ) and (x == 0):
                                 last_driven_distance = float(0)
                                 last_driven_time = float(0)
                                 last_round_driven_distance = float(0)
-                                last_round_driven_time = float(0)    
-                            
+                                last_round_driven_time = float(0)
+
+                        else:
+                            if(targetboard_data[x]["target_data"]["target_code"] == 0):
+                                player_total_driven_distance = targetboard_data[x]["target_data"]["driven_distance"]
+                                player_total_time = targetboard_data[x]["target_data"]["driven_time"]
+                                (targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition) = constructDetailedEntry(targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])
+                                detailed_targetboard_data.append(targetboard_data[x])
+                                break
+                            else:
+                                (targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition) = constructDetailedEntry(targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])
+
+                        detailed_targetboard_data.append(targetboard_data[x])
+                    else:
+                        (targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition) = constructDetailedEntry(targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])
+                        if ( game["game_mode"] == "TIME_RACE" ) and (x == 0):
+                            last_driven_distance = float(0)
+                            last_driven_time = float(0)
+                            last_round_driven_distance = float(0)
+                            last_round_driven_time = float(0)   
+
+                        detailed_targetboard_data.append(targetboard_data[x])
+                        
 #                    if ( ( "end_data" in scoreboard_data[player] ) and not ( scoreboard_data[player]["end_data"] is None ) ):
 # use new determination if player finished here:
-                    if (player_finished_list[player] == True):
-                        if( game["game_mode"] == "TIME_RACE" ):
-                            d_detailed = {}
-#                            d_detailed[str(scoreboard_data[player]["user_name"]) + f" Sektor - {st.session_state.distance_emoji}"] = f"∑ {st.session_state.distance2_emoji} " + showDistance(scoreboard_data[player]["end_data"]["total_driven_distance"])
-#                            d_detailed[f"Sektor - {st.session_state.time_emoji}"] = f"∑ {st.session_state.time2_emoji} " + showTime(scoreboard_data[player]["total_time"])
-#                            d_detailed[f"Sektor - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.average_speed_emoji} " + showMeanSpeed(scoreboard_data[player]["end_data"]["total_driven_distance"],scoreboard_data[player]["total_time"])
-                            d_detailed[str(scoreboard_data[player]["user_name"]) + f" Sektor - {st.session_state.distance_emoji}"] = f"∑ {st.session_state.distance2_emoji} " + showDistance(player_total_driven_distance)
-                            d_detailed[f"Sektor - {st.session_state.time_emoji}"] = f"∑ {st.session_state.time2_emoji} " + showTime(player_total_time)
-                            d_detailed[f"Sektor - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.average_speed_emoji} " + showMeanSpeed(player_total_driven_distance,player_total_time)
-                            d_detailed[f"Sektor - {st.session_state.track_emoji}"] = ""
-                            if(scoreboard_data[player]["laps_completed"] != 0):
-#                                d_detailed[f" ∑ Sektoren - {st.session_state.distance2_emoji}"] = f"Ø {st.session_state.distance2_emoji} / {st.session_state.round_emoji} " + showDistance(float(float(scoreboard_data[player]["end_data"]["total_driven_distance"])/float(scoreboard_data[player]["laps_completed"]))) 
-#                                d_detailed[f" ∑ Sektoren - {st.session_state.time2_emoji}"] = f"Ø {st.session_state.time2_emoji} / {st.session_state.round_emoji} " + showTime(float(float(scoreboard_data[player]["total_time"])/float(scoreboard_data[player]["laps_completed"])))
-                                d_detailed[f" ∑ Sektoren - {st.session_state.distance2_emoji}"] = f"Ø {st.session_state.distance2_emoji} / {st.session_state.round_emoji} " + showDistance(float(float(player_total_driven_distance)/float(scoreboard_data[player]["laps_completed"]))) 
-                                d_detailed[f" ∑ Sektoren - {st.session_state.time2_emoji}"] = f"Ø {st.session_state.time2_emoji} / {st.session_state.round_emoji} " + showTime(float(float(player_total_time)/float(scoreboard_data[player]["laps_completed"])))
-                            else:
-                                d_detailed[f" ∑ Sektoren - {st.session_state.distance2_emoji}"] = ""
-                                d_detailed[f" ∑ Sektoren - {st.session_state.time2_emoji}"] = ""
-                            d_detailed[f"Cum. Sektoren - Ø {st.session_state.average_speed_emoji}"] = ""
-                            targetboard_data.append(d_detailed)
-                            
-                    #if there is no entry, just add an empty one by calling the construct Entry with an empty dict
-                    while len(targetboard_data)<1:
-                        targetboard_data.append(constructDetailedEntry({},last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])[0])
+                if (player_finished_list[player] == True):
+                    if( game["game_mode"] == "TIME_RACE" ):
+                        d_detailed = {}
+#                            d_detailed[str(scoreboard_data[player]["user_name"]) + f" SECTOR - {st.session_state.distance_emoji}"] = f"∑ {st.session_state.distance2_emoji} " + showDistance(scoreboard_data[player]["end_data"]["total_driven_distance"])
+#                            d_detailed[f"SECTOR - {st.session_state.time_emoji}"] = f"∑ {st.session_state.time2_emoji} " + showTime(scoreboard_data[player]["total_time"])
+#                            d_detailed[f"SECTOR - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.average_speed_emoji} " + showMeanSpeed(scoreboard_data[player]["end_data"]["total_driven_distance"],scoreboard_data[player]["total_time"])
+                        d_detailed[str(scoreboard_data[player]["user_name"]) + f" SECTOR - {st.session_state.distance_emoji}"] = f"∑ {st.session_state.distance2_emoji} " + showDistance(player_total_driven_distance)
+                        d_detailed[f"SECTOR - {st.session_state.time_emoji}"] = f"∑ {st.session_state.time2_emoji} " + showTime(player_total_time)
+                        d_detailed[f"SECTOR - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.average_speed_emoji} " + showMeanSpeed(player_total_driven_distance,player_total_time)
+                        d_detailed[f"SECTOR - {st.session_state.track_emoji}"] = ""
+                        if(scoreboard_data[player]["laps_completed"] != 0):
+#                                d_detailed[f" ∑ SECTORS - {st.session_state.distance2_emoji}"] = f"Ø {st.session_state.distance2_emoji} / {st.session_state.round_emoji} " + showDistance(float(float(scoreboard_data[player]["end_data"]["total_driven_distance"])/float(scoreboard_data[player]["laps_completed"]))) 
+#                                d_detailed[f" ∑ SECTORS - {st.session_state.time2_emoji}"] = f"Ø {st.session_state.time2_emoji} / {st.session_state.round_emoji} " + showTime(float(float(scoreboard_data[player]["total_time"])/float(scoreboard_data[player]["laps_completed"])))
+                            d_detailed[f" ∑ SECTORS - {st.session_state.distance2_emoji}"] = f"Ø {st.session_state.distance2_emoji} / {st.session_state.round_emoji} " + showDistance(float(float(player_total_driven_distance)/float(scoreboard_data[player]["laps_completed"]))) 
+                            d_detailed[f" ∑ SECTORS - {st.session_state.time2_emoji}"] = f"Ø {st.session_state.time2_emoji} / {st.session_state.round_emoji} " + showTime(float(float(player_total_time)/float(scoreboard_data[player]["laps_completed"])))
+                        else:
+                            d_detailed[f" ∑ SECTORS - {st.session_state.distance2_emoji}"] = ""
+                            d_detailed[f" ∑ SECTORS - {st.session_state.time2_emoji}"] = ""
+                        d_detailed[f"CUM. SECTORS - Ø {st.session_state.average_speed_emoji}"] = ""
+                        detailed_targetboard_data.append(d_detailed)
+                        
+                #if there is no entry, just add an empty one by calling the construct Entry with an empty dict
+                while len(targetboard_data)<1:
+                    detailed_targetboard_data.append(constructDetailedEntry({},last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])[0])
 
-                    st.subheader("Detailed Statistics of " + str(scoreboard_data[player]["user_name"]))
-                    df_detailed = pd.DataFrame( targetboard_data ) 
-                    df_detailed = df_detailed.style.set_properties(**{
-                        'font-size': '20pt',
-                        'font-family': 'IBM Plex Mono',
-                    })
+                df_detailed = pd.DataFrame( detailed_targetboard_data ) 
+                df_detailed = df_detailed.style.set_properties(**{
+                    'font-size': '20pt',
+                    'font-family': 'IBM Plex Mono',
+                })
+
+                model = get_model(scoreboard_data[player]["enter_data"]["engine_type"],scoreboard_data[player]["enter_data"]["tuning_type"])
+                tuning = get_tuning(scoreboard_data[player]["enter_data"]["tuning_type"])
+                
+                with st.expander("Detailed Statistics of " + str(scoreboard_data[player]["user_name"]) + " (" + str(model) + " | " + str(tuning) + f") {st.session_state.show_game_emoji}", expanded=False):
+                
+                    game_mode = get_app_game_mode(scoreboard_data[player]["enter_data"]["game_mode"])
+                    starttime = get_starttime(scoreboard_data[player]["enter_data"]["start_time"])
+                    laps_app = scoreboard_data[player]["enter_data"]["lap_count"]
+                    track_cond = get_track_cond(scoreboard_data[player]["enter_data"]["track_condition"])
+                    track_bundle = get_track_bundle(scoreboard_data[player]["enter_data"]["track_bundle"])
+                    wheels = get_wheels(scoreboard_data[player]["enter_data"]["wheels"])
+                    setup = get_setup(scoreboard_data[player]["enter_data"]["setup_mode"])
+                    s_angle = int(scoreboard_data[player]["enter_data"]["steering_angle"])
+                    soft_s = get_bool(scoreboard_data[player]["enter_data"]["softsteering"])
+                    drift_a = get_bool(scoreboard_data[player]["enter_data"]["driftassist"])
+
+                    col11, col12, col13, col14 = st.columns(4)
+                    with col11:
+                        st.markdown("**GAME MODE:**")
+                    with col12:
+                        st.markdown(str(game_mode))
+
+                    col21, col22, col23, col24 = st.columns(4)
+                    with col21:
+                        st.markdown("**STARTTIME:**")
+                    with col22:
+                        st.markdown(str(starttime))
+                        
+                    col31, col32, col33, col34 = st.columns(4)
+                    with col31:
+                        st.markdown("**LAPS (IN APP):**")
+                    with col32:
+                        st.markdown(str(laps_app))
+
+                    col41, col42, col43, col44 = st.columns(4)
+                    with col41:
+                        st.markdown("**TRACK CONDITION:**")
+                    with col42:
+                        st.markdown(str(track_cond))
+
+                    col51, col52, col53, col54 = st.columns(4)
+                    with col51:
+                        st.markdown("**TRACK MODE:**")
+                    with col52:
+                        st.markdown(str(track_bundle))
+                        
+                    col61, col62, col63, col64 = st.columns(4)
+                    with col61:
+                        st.markdown("**WHEELS:**")
+                    with col62:
+                        st.markdown(str(wheels))                       
+
+                    col71, col72, col73, col74 = st.columns(4)
+                    with col71:
+                        st.markdown("**SETUP:**")
+                    with col72:
+                        st.markdown(str(setup))  
+
+                    col81, col82, col83, col84 = st.columns(4)
+                    with col81:
+                        st.markdown("**MODEL:**")
+                    with col82:
+                        st.markdown(str(model)) 
+
+                    col91, col92, col93, col94 = st.columns(4)
+                    with col91:
+                        st.markdown("**TUNING:**")
+                    with col92:
+                        st.markdown(str(tuning)) 
+
+                    col101, col102, col103, col104 = st.columns(4)
+                    with col101:
+                        st.markdown("**STEERING ANGLE:**")
+                    with col102:
+                        st.markdown(str(s_angle)) 
+
+                    col111, col112, col113, col114 = st.columns(4)
+                    with col111:
+                        st.markdown("**SOFT STEERING:**")
+                    with col112:
+                        st.markdown(str(soft_s)) 
+
+                    col121, col122, col123, col124 = st.columns(4)
+                    with col121:
+                        st.markdown("**DRIFT ASSISTANT:**")
+                    with col122:
+                        st.markdown(str(drift_a)) 
 
 #                    st.dataframe(df_detailed)
                     st.table(df_detailed)

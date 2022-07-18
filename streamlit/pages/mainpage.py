@@ -12,7 +12,7 @@ def app():
     
     lobby_id = st.session_state.lobby_id        
 
-    st.header("You are currently in Lobby " + str(lobby_id))
+    st.subheader("You are currently in Lobby " + str(lobby_id))
 
     if 'game_id' in st.session_state:
         del st.session_state.game_id
@@ -214,11 +214,14 @@ def app():
     with placeholder5.container():
         result = fetch_post(f"{settings.driftapi_path}/driftapi/manage_game/find/{lobby_id}/", {})
         if result:
-            game_data = [{"Game:":r["game_id"], "Game Mode:":r["game_mode"]} for r in result if ("game_id" in r)]
+            game_data = [{"Game ID:":r["game_id"], "Game Mode:":r["game_mode"], "Track:":r["track_id"]} for r in result if ("game_id" in r)]
             
             for x in range(len(game_data)):
                 if(result[x]["num_stages"]>1):
                     game_data[x]["Game Mode:"] = "MULTIPLE"
+                if(result[x]["track_id"] == None):
+                    game_data[x]["Track:"] = "-"
+
             
             game_data = pd.DataFrame( game_data )
 #            result = pd.DataFrame( [{"Game:":r["game_id"], "Game Mode:":r["game_mode"]} for r in result if ("game_id" in r)] )
