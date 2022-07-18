@@ -1137,7 +1137,6 @@ def app():
                 while len(targetboard_data)<1:
                     detailed_targetboard_data.append(constructDetailedEntry({},last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])[0])
 
-                st.subheader("Detailed Statistics of " + str(scoreboard_data[player]["user_name"]))
                 df_detailed = pd.DataFrame( detailed_targetboard_data ) 
                 df_detailed = df_detailed.style.set_properties(**{
                     'font-size': '20pt',
