@@ -35,12 +35,12 @@ def get_joker_lap_code(joker_lap_code):
         "7": "360 Angle",
     }
 
-    get_joker_lap_code = get_joker_lap_code_dict.get(str(get_joker_lap_code))
+    joker_lap_code = get_joker_lap_code_dict.get(str(joker_lap_code))
 
-    if(get_joker_lap_code == None):
+    if(joker_lap_code == None):
         return "--"
 
-    return get_joker_lap_code
+    return joker_lap_code
 
 def get_bonus_target(bonus_target):
 
