@@ -15,7 +15,7 @@ from math import floor
 
 from .session import fetch_post, fetch_put, fetch_get, fetch_delete
 from .singletons import settings, logger
-from .helper import get_model, get_tuning, get_app_game_mode, get_starttime, get_track_cond, get_track_bundle, get_wheels, get_setup, getGameInfo, getScoreBoard, getDetailedTargetData, showTime, showDistance, showMeanSpeed, decode_targets
+from .helper import get_model, get_tuning, get_game_mode, get_app_game_mode, get_starttime, get_track_cond, get_track_bundle, get_wheels, get_setup, getGameInfo, getScoreBoard, getDetailedTargetData, showTime, showDistance, showMeanSpeed, decode_targets
 
 import base64
 import shutil
@@ -187,7 +187,7 @@ def app():
     with placeholder3.container():
         with st.expander(f"Game Settings {st.session_state.show_game_emoji} - Join the game via URL: http://"+str(st.session_state.ip_address)+":8001/driftapi/game/"+str(lobby_id)+"/"+str(stage_id)+" and GAME ID: "+str(game_id), expanded=False):
 
-            game_mode = get_app_game_mode(game["game_mode"])
+            game_mode = get_game_mode(game["game_mode"])
             starttime = get_starttime(game["start_time"])
             if ( ("laps_app" in game) and not ( game["laps_app"] is None) ):
                 laps_app = int(game["lap_count"])

@@ -11,7 +11,7 @@ from math import floor
 
 from .session import fetch_post, fetch_put, fetch_get, fetch_delete
 from .singletons import settings, logger
-from .helper import get_model, get_tuning, get_app_game_mode, get_starttime, get_track_cond, get_track_bundle, get_wheels, get_setup, get_joker_lap_code, get_bool, handleCurrentTrackCondition, getGameInfo, getScoreBoard, getDetailedTargetData, showTime, showDistance, showMeanSpeed
+from .helper import get_model, get_tuning, get_game_mode, get_app_game_mode, get_starttime, get_track_cond, get_track_bundle, get_wheels, get_setup, get_joker_lap_code, get_bool, handleCurrentTrackCondition, getGameInfo, getScoreBoard, getDetailedTargetData, showTime, showDistance, showMeanSpeed
 
 def highlight_min(data, color='green'):
     is_min = data == data.min().min()

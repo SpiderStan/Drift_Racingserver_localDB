@@ -794,103 +794,105 @@ def app():
 
             return (d_detailed,last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,next_section_condition)
 
-        player_elinimated_indices_list = get_truevalue(player_eliminated_list)
-        player_elinimated_indices_list_len = len(player_elinimated_indices_list)
+        if(scoreboard_data_len >= 1):
 
-        for player in range(scoreboard_data_len):
-            targetboard_data = getDetailedTargetData(lobby_id, game_id, stage_id, scoreboard_data[player]["user_name"])
-        #                targetboard_data = (sorted(targetboard_data, key=operator.itemgetter('target_ctr')))
-            targetboard_data_len = len(targetboard_data)            
-           
-            detailed_targetboard_data = []
-           
-            last_driven_distance = float(0)
-            last_driven_time = float(0)
-            last_round_driven_distance = float(0)
-            last_round_driven_time = float(0)
+            player_elinimated_indices_list = get_truevalue(player_eliminated_list)
+            player_elinimated_indices_list_len = len(player_elinimated_indices_list)
 
-            if "enter_data" in scoreboard_data[player]:
-                if(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_asphalt"):
-                    section_condition = f" {st.session_state.track_dry_emoji}"
-                elif(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                    section_condition = f" {st.session_state.track_wet_emoji}"
-                elif(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_dirt"):
-                    section_condition = f" {st.session_state.track_gravel_emoji}"
-                elif(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_ice"):
-                    section_condition = f" {st.session_state.track_snow_emoji}"
-            else:
-                section_condition = f" {st.session_state.track_unknown_emoji}"
-                
-            player_position = next(item for item in racedisplay_data if item["DRIVER"] == scoreboard_data[player]["user_name"])["POS"]
-            player_status = next(item for item in racedisplay_data if item["DRIVER"] == scoreboard_data[player]["user_name"])[f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"]
-                
-            if(int(player_position) == 1):
-                if(player_status == f"{st.session_state.finish_emoji}"): # Finished
-                    num_elim = int(int(scoreboard_data_len) - int(player_position))
+            for player in range(scoreboard_data_len):
+                targetboard_data = getDetailedTargetData(lobby_id, game_id, stage_id, scoreboard_data[player]["user_name"])
+            #                targetboard_data = (sorted(targetboard_data, key=operator.itemgetter('target_ctr')))
+                targetboard_data_len = len(targetboard_data)            
+               
+                detailed_targetboard_data = []
+               
+                last_driven_distance = float(0)
+                last_driven_time = float(0)
+                last_round_driven_distance = float(0)
+                last_round_driven_time = float(0)
+
+                if "enter_data" in scoreboard_data[player]:
+                    if(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_asphalt"):
+                        section_condition = f" {st.session_state.track_dry_emoji}"
+                    elif(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_asphalt_wet"):
+                        section_condition = f" {st.session_state.track_wet_emoji}"
+                    elif(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_dirt"):
+                        section_condition = f" {st.session_state.track_gravel_emoji}"
+                    elif(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_ice"):
+                        section_condition = f" {st.session_state.track_snow_emoji}"
                 else:
-                    num_elim = 0
-            else:
-                if(player_status == f"{st.session_state.skull_emoji}"): # Eliminated
-                    num_elim = int(int(scoreboard_data_len+1) - int(player_position))
-                else:
-                    num_elim = 0
-
-            if ( ( "start_data" in scoreboard_data[player] ) and not ( scoreboard_data[player]["start_data"] is None ) ):
-                start_time = datetime.strptime(scoreboard_data[player]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
-                start_time+=timedelta(minutes=(game["time_limit"]*num_elim))
-            else:
-                start_time = timedelta(seconds=int(0)) # fake 0 seconds
+                    section_condition = f" {st.session_state.track_unknown_emoji}"
                     
-            for x in range(targetboard_data_len):                  
+                player_position = next(item for item in racedisplay_data if item["DRIVER"] == scoreboard_data[player]["user_name"])["POS"]
+                player_status = next(item for item in racedisplay_data if item["DRIVER"] == scoreboard_data[player]["user_name"])[f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"]
+                    
+                if(int(player_position) == 1):
+                    if(player_status == f"{st.session_state.finish_emoji}"): # Finished
+                        num_elim = int(int(scoreboard_data_len) - int(player_position))
+                    else:
+                        num_elim = 0
+                else:
+                    if(player_status == f"{st.session_state.skull_emoji}"): # Eliminated
+                        num_elim = int(int(scoreboard_data_len+1) - int(player_position))
+                    else:
+                        num_elim = 0
 
-                if(num_elim == 0): # evaluate all targets
-                    (targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition) = constructDetailedEntry(targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])
-                    if ( game["game_mode"] == "ELIMINATION" ) and (x == 0):
-                        last_driven_distance = float(0)
-                        last_driven_time = float(0)
-                        last_round_driven_distance = float(0)
-                        last_round_driven_time = float(0)
+                if ( ( "start_data" in scoreboard_data[player] ) and not ( scoreboard_data[player]["start_data"] is None ) ):
+                    start_time = datetime.strptime(scoreboard_data[player]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
+                    start_time+=timedelta(minutes=(game["time_limit"]*num_elim))
+                else:
+                    start_time = timedelta(seconds=int(0)) # fake 0 seconds
                         
-                    detailed_targetboard_data.append(targetboard_data[x])
-                    
-                else: # evaluate a subset of targets 
-                    
-                    if(targetboard_data[x]["target_data"]["crossing_time"] < start_time.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f%z')):
-              
+                for x in range(targetboard_data_len):                  
+
+                    if(num_elim == 0): # evaluate all targets
                         (targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition) = constructDetailedEntry(targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])
                         if ( game["game_mode"] == "ELIMINATION" ) and (x == 0):
                             last_driven_distance = float(0)
                             last_driven_time = float(0)
                             last_round_driven_distance = float(0)
-                            last_round_driven_time = float(0) 
-
+                            last_round_driven_time = float(0)
+                            
                         detailed_targetboard_data.append(targetboard_data[x])
+                        
+                    else: # evaluate a subset of targets 
+                        
+                        if(targetboard_data[x]["target_data"]["crossing_time"] < start_time.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f%z')):
+                  
+                            (targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition) = constructDetailedEntry(targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])
+                            if ( game["game_mode"] == "ELIMINATION" ) and (x == 0):
+                                last_driven_distance = float(0)
+                                last_driven_time = float(0)
+                                last_round_driven_distance = float(0)
+                                last_round_driven_time = float(0) 
 
-            #if there is no entry, just add an empty one by calling the construct Entry with an empty dict
-            while len(targetboard_data)<1:
-                detailed_targetboard_data.append(constructDetailedEntry({},last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])[0])
+                            detailed_targetboard_data.append(targetboard_data[x])
 
-            df_detailed = pd.DataFrame( detailed_targetboard_data )
+                #if there is no entry, just add an empty one by calling the construct Entry with an empty dict
+                while len(targetboard_data)<1:
+                    detailed_targetboard_data.append(constructDetailedEntry({},last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])[0])
 
-            col11, col12 = st.columns(2)
+                df_detailed = pd.DataFrame( detailed_targetboard_data )
 
-            with col11:
-                st.download_button(
-                    f"Download Stats of " + str(scoreboard_data[player]["user_name"]) + f" as csv {st.session_state.download_emoji}",
-                    df_detailed.to_csv(index = False).encode('utf-8'),
-                    "Stats_" + str(lobby_id) + "_" + str(game_id) + "_" + str(stage_id) + "_" + str(scoreboard_data[player]["user_name"])+".csv",
-                    "text/csv",
-                    key='download-csv'
-                )
+                col11, col12 = st.columns(2)
 
-            with col12:
-                st.download_button(
-                    f"Download Stats of " + str(scoreboard_data[player]["user_name"]) + f"  as json {st.session_state.download_emoji}",
-                    df_detailed.to_json(orient='records'),
-                    "Stats_" + str(lobby_id) + "_" + str(game_id) + "_" + str(stage_id) + "_" + str(scoreboard_data[player]["user_name"])+".json",
-                    "text/json",
-                    key='download-json'
-                )
+                with col11:
+                    st.download_button(
+                        f"Download Stats of " + str(scoreboard_data[player]["user_name"]) + f" as csv {st.session_state.download_emoji}",
+                        df_detailed.to_csv(index = False).encode('utf-8'),
+                        "Stats_" + str(lobby_id) + "_" + str(game_id) + "_" + str(stage_id) + "_" + str(scoreboard_data[player]["user_name"])+".csv",
+                        "text/csv",
+                        key='download-csv'
+                    )
+
+                with col12:
+                    st.download_button(
+                        f"Download Stats of " + str(scoreboard_data[player]["user_name"]) + f"  as json {st.session_state.download_emoji}",
+                        df_detailed.to_json(orient='records'),
+                        "Stats_" + str(lobby_id) + "_" + str(game_id) + "_" + str(stage_id) + "_" + str(scoreboard_data[player]["user_name"])+".json",
+                        "text/json",
+                        key='download-json'
+                    )
 
 
 

@@ -11,7 +11,7 @@ from math import floor
 
 from .session import fetch_post, fetch_put, fetch_get, fetch_delete
 from .singletons import settings, logger
-from .helper import get_model, get_tuning, get_app_game_mode, get_starttime, get_track_cond, get_track_bundle, get_wheels, get_setup, get_joker_lap_code, get_bool, handleCurrentTrackCondition, getGameInfo, getScoreBoard, getDetailedTargetData, showTime, showDistance, showMeanSpeed
+from .helper import get_model, get_tuning, get_game_mode, get_app_game_mode, get_starttime, get_track_cond, get_track_bundle, get_wheels, get_setup, get_joker_lap_code, get_bool, handleCurrentTrackCondition, getGameInfo, getScoreBoard, getDetailedTargetData, showTime, showDistance, showMeanSpeed
 
 @st.cache
 def getqrcode(content):
@@ -1061,177 +1061,179 @@ def app():
 
                 return (d_detailed,last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,next_section_condition)
 
-            player_elinimated_indices_list = get_truevalue(player_eliminated_list)
-            player_elinimated_indices_list_len = len(player_elinimated_indices_list)
+            if(scoreboard_data_len >= 1):
 
-            for player in range(scoreboard_data_len):
-                targetboard_data = getDetailedTargetData(lobby_id, game_id, stage_id, scoreboard_data[player]["user_name"])
-#                targetboard_data = (sorted(targetboard_data, key=operator.itemgetter('target_ctr')))
-                targetboard_data_len = len(targetboard_data)            
-               
-                detailed_targetboard_data = []
-               
-                last_driven_distance = float(0)
-                last_driven_time = float(0)
-                last_round_driven_distance = float(0)
-                last_round_driven_time = float(0)
+                player_elinimated_indices_list = get_truevalue(player_eliminated_list)
+                player_elinimated_indices_list_len = len(player_elinimated_indices_list)
 
-                if "enter_data" in scoreboard_data[player]:
-                    if(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_asphalt"):
-                        section_condition = f" {st.session_state.track_dry_emoji}"
-                    elif(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_asphalt_wet"):
-                        section_condition = f" {st.session_state.track_wet_emoji}"
-                    elif(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_dirt"):
-                        section_condition = f" {st.session_state.track_gravel_emoji}"
-                    elif(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_ice"):
-                        section_condition = f" {st.session_state.track_snow_emoji}"
-                else:
-                    section_condition = f" {st.session_state.track_unknown_emoji}"
-                    
-                player_position = next(item for item in racedisplay_data if item["DRIVER"] == scoreboard_data[player]["user_name"])["POS"]
-                player_status = next(item for item in racedisplay_data if item["DRIVER"] == scoreboard_data[player]["user_name"])[f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"]
-                    
-                if(int(player_position) == 1):
-                    if(player_status == f"{st.session_state.finish_emoji}"): # Finished
-                        num_elim = int(int(scoreboard_data_len) - int(player_position))
+                for player in range(scoreboard_data_len):
+                    targetboard_data = getDetailedTargetData(lobby_id, game_id, stage_id, scoreboard_data[player]["user_name"])
+    #                targetboard_data = (sorted(targetboard_data, key=operator.itemgetter('target_ctr')))
+                    targetboard_data_len = len(targetboard_data)            
+                   
+                    detailed_targetboard_data = []
+                   
+                    last_driven_distance = float(0)
+                    last_driven_time = float(0)
+                    last_round_driven_distance = float(0)
+                    last_round_driven_time = float(0)
+
+                    if "enter_data" in scoreboard_data[player]:
+                        if(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_asphalt"):
+                            section_condition = f" {st.session_state.track_dry_emoji}"
+                        elif(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_asphalt_wet"):
+                            section_condition = f" {st.session_state.track_wet_emoji}"
+                        elif(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_dirt"):
+                            section_condition = f" {st.session_state.track_gravel_emoji}"
+                        elif(scoreboard_data[player]["enter_data"]["track_condition"] == "drift_ice"):
+                            section_condition = f" {st.session_state.track_snow_emoji}"
                     else:
-                        num_elim = 0
-                else:
-                    if(player_status == f"{st.session_state.skull_emoji}"): # Eliminated
-                        num_elim = int(int(scoreboard_data_len+1) - int(player_position))
-                    else:
-                        num_elim = 0
-
-                if ( ( "start_data" in scoreboard_data[player] ) and not ( scoreboard_data[player]["start_data"] is None ) ):
-                    start_time = datetime.strptime(scoreboard_data[player]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
-                    start_time+=timedelta(minutes=(game["time_limit"]*num_elim))
-                else:
-                    start_time = timedelta(seconds=int(0)) # fake 0 seconds
+                        section_condition = f" {st.session_state.track_unknown_emoji}"
                         
-                for x in range(targetboard_data_len):                  
+                    player_position = next(item for item in racedisplay_data if item["DRIVER"] == scoreboard_data[player]["user_name"])["POS"]
+                    player_status = next(item for item in racedisplay_data if item["DRIVER"] == scoreboard_data[player]["user_name"])[f"{st.session_state.status_emoji} / {st.session_state.track_emoji}"]
+                        
+                    if(int(player_position) == 1):
+                        if(player_status == f"{st.session_state.finish_emoji}"): # Finished
+                            num_elim = int(int(scoreboard_data_len) - int(player_position))
+                        else:
+                            num_elim = 0
+                    else:
+                        if(player_status == f"{st.session_state.skull_emoji}"): # Eliminated
+                            num_elim = int(int(scoreboard_data_len+1) - int(player_position))
+                        else:
+                            num_elim = 0
 
-                    if(num_elim == 0): # evaluate all targets
-                        (targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition) = constructDetailedEntry(targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])
-                        if ( game["game_mode"] == "ELIMINATION" ) and (x == 0):
-                            last_driven_distance = float(0)
-                            last_driven_time = float(0)
-                            last_round_driven_distance = float(0)
-                            last_round_driven_time = float(0)
+                    if ( ( "start_data" in scoreboard_data[player] ) and not ( scoreboard_data[player]["start_data"] is None ) ):
+                        start_time = datetime.strptime(scoreboard_data[player]["start_data"]["signal_time"],'%Y-%m-%dT%H:%M:%S.%f%z')
+                        start_time+=timedelta(minutes=(game["time_limit"]*num_elim))
+                    else:
+                        start_time = timedelta(seconds=int(0)) # fake 0 seconds
                             
-                        detailed_targetboard_data.append(targetboard_data[x])
-                        
-                    else: # evaluate a subset of targets 
-                        
-                        if(targetboard_data[x]["target_data"]["crossing_time"] < start_time.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f%z')):
-                  
+                    for x in range(targetboard_data_len):                  
+
+                        if(num_elim == 0): # evaluate all targets
                             (targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition) = constructDetailedEntry(targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])
                             if ( game["game_mode"] == "ELIMINATION" ) and (x == 0):
                                 last_driven_distance = float(0)
                                 last_driven_time = float(0)
                                 last_round_driven_distance = float(0)
-                                last_round_driven_time = float(0) 
-
+                                last_round_driven_time = float(0)
+                                
                             detailed_targetboard_data.append(targetboard_data[x])
+                            
+                        else: # evaluate a subset of targets 
+                            
+                            if(targetboard_data[x]["target_data"]["crossing_time"] < start_time.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f%z')):
+                      
+                                (targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition) = constructDetailedEntry(targetboard_data[x],last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])
+                                if ( game["game_mode"] == "ELIMINATION" ) and (x == 0):
+                                    last_driven_distance = float(0)
+                                    last_driven_time = float(0)
+                                    last_round_driven_distance = float(0)
+                                    last_round_driven_time = float(0) 
 
-                #if there is no entry, just add an empty one by calling the construct Entry with an empty dict
-                while len(targetboard_data)<1:
-                    detailed_targetboard_data.append(constructDetailedEntry({},last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])[0])
+                                detailed_targetboard_data.append(targetboard_data[x])
 
-                df_detailed = pd.DataFrame( detailed_targetboard_data ) 
-                df_detailed = df_detailed.style.set_properties(**{
-                    'font-size': '20pt',
-                    'font-family': 'IBM Plex Mono',
-                })
+                    #if there is no entry, just add an empty one by calling the construct Entry with an empty dict
+                    while len(targetboard_data)<1:
+                        detailed_targetboard_data.append(constructDetailedEntry({},last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])[0])
 
-                model = get_model(scoreboard_data[player]["enter_data"]["engine_type"],scoreboard_data[player]["enter_data"]["tuning_type"])
-                tuning = get_tuning(scoreboard_data[player]["enter_data"]["tuning_type"])
-                
-                with st.expander("Detailed Statistics of " + str(scoreboard_data[player]["user_name"]) + " (" + str(model) + " | " + str(tuning) + f") {st.session_state.show_game_emoji}", expanded=False):
-                
-                    game_mode = get_app_game_mode(scoreboard_data[player]["enter_data"]["game_mode"])
-                    starttime = get_starttime(scoreboard_data[player]["enter_data"]["start_time"])
-                    laps_app = scoreboard_data[player]["enter_data"]["lap_count"]
-                    track_cond = get_track_cond(scoreboard_data[player]["enter_data"]["track_condition"])
-                    track_bundle = get_track_bundle(scoreboard_data[player]["enter_data"]["track_bundle"])
-                    wheels = get_wheels(scoreboard_data[player]["enter_data"]["wheels"])
-                    setup = get_setup(scoreboard_data[player]["enter_data"]["setup_mode"])
-                    s_angle = int(scoreboard_data[player]["enter_data"]["steering_angle"])
-                    soft_s = get_bool(scoreboard_data[player]["enter_data"]["softsteering"])
-                    drift_a = get_bool(scoreboard_data[player]["enter_data"]["driftassist"])
+                    df_detailed = pd.DataFrame( detailed_targetboard_data ) 
+                    df_detailed = df_detailed.style.set_properties(**{
+                        'font-size': '20pt',
+                        'font-family': 'IBM Plex Mono',
+                    })
 
-                    col11, col12, col13, col14 = st.columns(4)
-                    with col11:
-                        st.markdown("**GAME MODE:**")
-                    with col12:
-                        st.markdown(str(game_mode))
+                    model = get_model(scoreboard_data[player]["enter_data"]["engine_type"],scoreboard_data[player]["enter_data"]["tuning_type"])
+                    tuning = get_tuning(scoreboard_data[player]["enter_data"]["tuning_type"])
+                    
+                    with st.expander("Detailed Statistics of " + str(scoreboard_data[player]["user_name"]) + " (" + str(model) + " | " + str(tuning) + f") {st.session_state.show_game_emoji}", expanded=False):
+                    
+                        game_mode = get_app_game_mode(scoreboard_data[player]["enter_data"]["game_mode"])
+                        starttime = get_starttime(scoreboard_data[player]["enter_data"]["start_time"])
+                        laps_app = scoreboard_data[player]["enter_data"]["lap_count"]
+                        track_cond = get_track_cond(scoreboard_data[player]["enter_data"]["track_condition"])
+                        track_bundle = get_track_bundle(scoreboard_data[player]["enter_data"]["track_bundle"])
+                        wheels = get_wheels(scoreboard_data[player]["enter_data"]["wheels"])
+                        setup = get_setup(scoreboard_data[player]["enter_data"]["setup_mode"])
+                        s_angle = int(scoreboard_data[player]["enter_data"]["steering_angle"])
+                        soft_s = get_bool(scoreboard_data[player]["enter_data"]["softsteering"])
+                        drift_a = get_bool(scoreboard_data[player]["enter_data"]["driftassist"])
 
-                    col21, col22, col23, col24 = st.columns(4)
-                    with col21:
-                        st.markdown("**STARTTIME:**")
-                    with col22:
-                        st.markdown(str(starttime))
-                        
-                    col31, col32, col33, col34 = st.columns(4)
-                    with col31:
-                        st.markdown("**LAPS (IN APP):**")
-                    with col32:
-                        st.markdown(str(laps_app))
+                        col11, col12, col13, col14 = st.columns(4)
+                        with col11:
+                            st.markdown("**GAME MODE:**")
+                        with col12:
+                            st.markdown(str(game_mode))
 
-                    col41, col42, col43, col44 = st.columns(4)
-                    with col41:
-                        st.markdown("**TRACK CONDITION:**")
-                    with col42:
-                        st.markdown(str(track_cond))
+                        col21, col22, col23, col24 = st.columns(4)
+                        with col21:
+                            st.markdown("**STARTTIME:**")
+                        with col22:
+                            st.markdown(str(starttime))
+                            
+                        col31, col32, col33, col34 = st.columns(4)
+                        with col31:
+                            st.markdown("**LAPS (IN APP):**")
+                        with col32:
+                            st.markdown(str(laps_app))
 
-                    col51, col52, col53, col54 = st.columns(4)
-                    with col51:
-                        st.markdown("**TRACK MODE:**")
-                    with col52:
-                        st.markdown(str(track_bundle))
-                        
-                    col61, col62, col63, col64 = st.columns(4)
-                    with col61:
-                        st.markdown("**WHEELS:**")
-                    with col62:
-                        st.markdown(str(wheels))                       
+                        col41, col42, col43, col44 = st.columns(4)
+                        with col41:
+                            st.markdown("**TRACK CONDITION:**")
+                        with col42:
+                            st.markdown(str(track_cond))
 
-                    col71, col72, col73, col74 = st.columns(4)
-                    with col71:
-                        st.markdown("**SETUP:**")
-                    with col72:
-                        st.markdown(str(setup))  
+                        col51, col52, col53, col54 = st.columns(4)
+                        with col51:
+                            st.markdown("**TRACK MODE:**")
+                        with col52:
+                            st.markdown(str(track_bundle))
+                            
+                        col61, col62, col63, col64 = st.columns(4)
+                        with col61:
+                            st.markdown("**WHEELS:**")
+                        with col62:
+                            st.markdown(str(wheels))                       
 
-                    col81, col82, col83, col84 = st.columns(4)
-                    with col81:
-                        st.markdown("**MODEL:**")
-                    with col82:
-                        st.markdown(str(model)) 
+                        col71, col72, col73, col74 = st.columns(4)
+                        with col71:
+                            st.markdown("**SETUP:**")
+                        with col72:
+                            st.markdown(str(setup))  
 
-                    col91, col92, col93, col94 = st.columns(4)
-                    with col91:
-                        st.markdown("**TUNING:**")
-                    with col92:
-                        st.markdown(str(tuning)) 
+                        col81, col82, col83, col84 = st.columns(4)
+                        with col81:
+                            st.markdown("**MODEL:**")
+                        with col82:
+                            st.markdown(str(model)) 
 
-                    col101, col102, col103, col104 = st.columns(4)
-                    with col101:
-                        st.markdown("**STEERING ANGLE:**")
-                    with col102:
-                        st.markdown(str(s_angle)) 
+                        col91, col92, col93, col94 = st.columns(4)
+                        with col91:
+                            st.markdown("**TUNING:**")
+                        with col92:
+                            st.markdown(str(tuning)) 
 
-                    col111, col112, col113, col114 = st.columns(4)
-                    with col111:
-                        st.markdown("**SOFT STEERING:**")
-                    with col112:
-                        st.markdown(str(soft_s)) 
+                        col101, col102, col103, col104 = st.columns(4)
+                        with col101:
+                            st.markdown("**STEERING ANGLE:**")
+                        with col102:
+                            st.markdown(str(s_angle)) 
 
-                    col121, col122, col123, col124 = st.columns(4)
-                    with col121:
-                        st.markdown("**DRIFT ASSISTANT:**")
-                    with col122:
-                        st.markdown(str(drift_a)) 
+                        col111, col112, col113, col114 = st.columns(4)
+                        with col111:
+                            st.markdown("**SOFT STEERING:**")
+                        with col112:
+                            st.markdown(str(soft_s)) 
 
-#                    st.dataframe(df_detailed)
-                    st.table(df_detailed)
+                        col121, col122, col123, col124 = st.columns(4)
+                        with col121:
+                            st.markdown("**DRIFT ASSISTANT:**")
+                        with col122:
+                            st.markdown(str(drift_a)) 
+
+    #                    st.dataframe(df_detailed)
+                        st.table(df_detailed)
 
         time.sleep(0.2)
