@@ -105,14 +105,35 @@ def app():
 
             def constructEntry(r:dict):
 
-                model = get_model(r["engine_type"],r["tuning_type"])
-                tuning = get_tuning(r["tuning_type"])
-                setup = get_setup(r["setup_mode"])
-                soft_s = get_bool(r["softsteering"])
-                drift_a = get_bool(r["driftassist"])
-                wheels = get_wheels(r["wheels"])
-
-
+                if((("engine_type" in r) and (r["engine_type"] is not None)) and (("tuning_type" in r) and (r["tuning_type"] is not None))):
+                    model = get_model(r["engine_type"],r["tuning_type"])
+                else:
+                    model = "-"
+                    
+                if(("tuning_type" in r) and (r["tuning_type"] is not None)):
+                    tuning = get_tuning(r["tuning_type"])
+                else:
+                    tuning = "-"
+                    
+                if(("setup_mode" in r) and (r["setup_mode"] is not None)):  
+                    setup = get_setup(r["setup_mode"])
+                else:
+                    setup = "-"
+                    
+                if(("softsteering" in r) and (r["softsteering"] is not None)):
+                    soft_s = get_bool(r["softsteering"])
+                else:
+                    soft_s = "-"
+                    
+                if(("driftassist" in r) and (r["driftassist"] is not None)):
+                    drift_a = get_bool(r["driftassist"])
+                else:
+                    drift_a = "-"
+                    
+                if(("wheels" in r) and (r["wheels"] is not None)):
+                    wheels = get_wheels(r["wheels"])
+                else:
+                    wheels = "-"
 
                 d = {
                     "DRIVER":r["user_name"] if "user_name" in r else "",
@@ -151,7 +172,8 @@ def app():
 
                 return (d)
 
-            (highscoreboard_data) = [constructEntry(r) for r in highscoreboard_data if (type(r) is dict)]
+            if(len(highscoreboard_data) > 0):
+                (highscoreboard_data) = [constructEntry(r) for r in highscoreboard_data if (type(r) is dict)]
 
             #if there is no entry, just add an empty one by calling the construct Entry with an empty dict
             while len(highscoreboard_data)<1:
