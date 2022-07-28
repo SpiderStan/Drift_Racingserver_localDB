@@ -345,10 +345,10 @@ def app():
             else:
                 next_race.text("Time elapsed! Please press Button 'Reset Game' and Sync. in Sturmkind App before entering the Game")
 
+        scoreboard_data = getScoreBoard(lobby_id, game_id, stage_id)
+        scoreboard_data_len = len(scoreboard_data)
+
         with scoreboard.container():
-        
-            scoreboard_data = getScoreBoard(lobby_id, game_id, stage_id)
-            scoreboard_data_len = len(scoreboard_data)
 
             # CSS to inject contained in a string
             hide_dataframe_row_index = """
@@ -959,7 +959,6 @@ def app():
                 'font-family': 'IBM Plex Mono',
             })
 
-#            st.dataframe(df)
             st.table(df)
 
         with placeholder3.container():
@@ -1136,7 +1135,7 @@ def app():
                                 detailed_targetboard_data.append(targetboard_data[x])
 
                     #if there is no entry, just add an empty one by calling the construct Entry with an empty dict
-                    while len(targetboard_data)<1:
+                    while len(detailed_targetboard_data)<1:
                         detailed_targetboard_data.append(constructDetailedEntry({},last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])[0])
 
                     df_detailed = pd.DataFrame( detailed_targetboard_data ) 
@@ -1233,7 +1232,6 @@ def app():
                         with col122:
                             st.markdown(str(drift_a)) 
 
-    #                    st.dataframe(df_detailed)
                         st.table(df_detailed)
 
         time.sleep(0.2)

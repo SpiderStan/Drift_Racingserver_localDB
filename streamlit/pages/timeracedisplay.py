@@ -345,10 +345,10 @@ def app():
             else:
                 next_race.text("Time elapsed! Please press Button 'Reset Game' and Sync. in Sturmkind App before entering the Game")
 
+        scoreboard_data = getScoreBoard(lobby_id, game_id, stage_id)
+        scoreboard_data_len = len(scoreboard_data)
+
         with scoreboard.container():
-        
-            scoreboard_data = getScoreBoard(lobby_id, game_id, stage_id)
-            scoreboard_data_len = len(scoreboard_data)
 
             # CSS to inject contained in a string
             hide_dataframe_row_index = """
@@ -649,7 +649,6 @@ def app():
                 'font-family': 'IBM Plex Mono',
             })
 
-#            st.dataframe(df)
             st.table(df)
 
         with placeholder3.container():
@@ -816,22 +815,15 @@ def app():
                             last_round_driven_time = float(0)   
 
                         detailed_targetboard_data.append(targetboard_data[x])
-                        
-#                    if ( ( "end_data" in scoreboard_data[player] ) and not ( scoreboard_data[player]["end_data"] is None ) ):
-# use new determination if player finished here:
+
                 if (player_finished_list[player] == True):
                     if( game["game_mode"] == "TIME_RACE" ):
                         d_detailed = {}
-#                            d_detailed[str(scoreboard_data[player]["user_name"]) + f" SECTOR - {st.session_state.distance_emoji}"] = f"∑ {st.session_state.distance2_emoji} " + showDistance(scoreboard_data[player]["end_data"]["total_driven_distance"])
-#                            d_detailed[f"SECTOR - {st.session_state.time_emoji}"] = f"∑ {st.session_state.time2_emoji} " + showTime(scoreboard_data[player]["total_time"])
-#                            d_detailed[f"SECTOR - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.average_speed_emoji} " + showMeanSpeed(scoreboard_data[player]["end_data"]["total_driven_distance"],scoreboard_data[player]["total_time"])
                         d_detailed[str(scoreboard_data[player]["user_name"]) + f" SECTOR - {st.session_state.distance_emoji}"] = f"∑ {st.session_state.distance2_emoji} " + showDistance(player_total_driven_distance)
                         d_detailed[f"SECTOR - {st.session_state.time_emoji}"] = f"∑ {st.session_state.time2_emoji} " + showTime(player_total_time)
                         d_detailed[f"SECTOR - Ø {st.session_state.average_speed_emoji}"] = f"{st.session_state.average_speed_emoji} " + showMeanSpeed(player_total_driven_distance,player_total_time)
                         d_detailed[f"SECTOR - {st.session_state.track_emoji}"] = ""
                         if(scoreboard_data[player]["laps_completed"] != 0):
-#                                d_detailed[f" ∑ SECTORS - {st.session_state.distance2_emoji}"] = f"Ø {st.session_state.distance2_emoji} / {st.session_state.round_emoji} " + showDistance(float(float(scoreboard_data[player]["end_data"]["total_driven_distance"])/float(scoreboard_data[player]["laps_completed"]))) 
-#                                d_detailed[f" ∑ SECTORS - {st.session_state.time2_emoji}"] = f"Ø {st.session_state.time2_emoji} / {st.session_state.round_emoji} " + showTime(float(float(scoreboard_data[player]["total_time"])/float(scoreboard_data[player]["laps_completed"])))
                             d_detailed[f" ∑ SECTORS - {st.session_state.distance2_emoji}"] = f"Ø {st.session_state.distance2_emoji} / {st.session_state.round_emoji} " + showDistance(float(float(player_total_driven_distance)/float(scoreboard_data[player]["laps_completed"]))) 
                             d_detailed[f" ∑ SECTORS - {st.session_state.time2_emoji}"] = f"Ø {st.session_state.time2_emoji} / {st.session_state.round_emoji} " + showTime(float(float(player_total_time)/float(scoreboard_data[player]["laps_completed"])))
                         else:
@@ -841,14 +833,10 @@ def app():
                         detailed_targetboard_data.append(d_detailed)
                         
                 #if there is no entry, just add an empty one by calling the construct Entry with an empty dict
-                while len(targetboard_data)<1:
+                while len(detailed_targetboard_data)<1:
                     detailed_targetboard_data.append(constructDetailedEntry({},last_driven_distance,last_driven_time,last_round_driven_distance,last_round_driven_time,section_condition, scoreboard_data[player]["user_name"])[0])
 
                 df_detailed = pd.DataFrame( detailed_targetboard_data ) 
-                df_detailed = df_detailed.style.set_properties(**{
-                    'font-size': '20pt',
-                    'font-family': 'IBM Plex Mono',
-                })
 
                 model = get_model(scoreboard_data[player]["enter_data"]["engine_type"],scoreboard_data[player]["enter_data"]["tuning_type"])
                 tuning = get_tuning(scoreboard_data[player]["enter_data"]["tuning_type"])
@@ -938,7 +926,6 @@ def app():
                     with col122:
                         st.markdown(str(drift_a)) 
 
-#                    st.dataframe(df_detailed)
                     st.table(df_detailed)
 
         time.sleep(0.2)
